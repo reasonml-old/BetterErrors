@@ -20,7 +20,7 @@ Executable rea
   BuildTools: ocamlbuild
   # install: true
   CompiledObject: best
-  BuildDepends: Str
+  BuildDepends: Pcre
 
 # Another comment, this builds a library called rea
 # Library rea

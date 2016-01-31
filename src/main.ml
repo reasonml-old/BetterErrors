@@ -17,18 +17,21 @@ let lines_of_file filename =
 
 
 (* ------------- actual code ------------- *)
-let filenameR = Str.regexp {|File "\(.+\)"|}
-let lineR = Str.regexp {|File .+, line \([0-9]+\)|}
-let chars1R = Str.regexp {|File .+, characters \([0-9]+\)|}
-let chars2R = Str.regexp {|File .+, characters .+-\([0-9]+\)|}
+let filenameR = {|File "(.+)"|}
+let lineR = {|File .+, line ([0-9]+)|}
+let chars1R = {|File .+, characters ([0-9]+)|}
+let chars2R = {|File .+, characters .+-([0-9]+)|}
+
+(* helper for getting the first (presumably only) match in a string *)
+let get_match pat str = Pcre.get_substring (Pcre.exec ~pat:pat str) 1
 
 let extractor1 err errLines =
   try
-    let filename = ignore (Str.string_match filenameR err 0); Str.matched_group 1 err in
+    let filename = get_match filenameR err in
     let fileLines = lines_of_file filename in
-    let line = ignore (Str.string_match lineR err 0); Str.matched_group 1 err in
-    let chars1 = ignore (Str.string_match chars1R err 0); Str.matched_group 1 err in
-    let chars2 = ignore (Str.string_match chars2R err 0); Str.matched_group 1 err in
+    let line = get_match lineR err in
+    let chars1 = get_match chars1R err in
+    let chars2 = get_match chars2R err in
       Some (
         filename ^ " " ^ line ^ ":" ^ chars1 ^ "-" ^ chars2 ^ "\n" ^
         (List.nth fileLines ((int_of_string line) - 1)) ^ "\n" ^
@@ -36,7 +39,7 @@ let extractor1 err errLines =
         (String.make ((int_of_string chars2) - (int_of_string chars1)) '^') ^ "\n" ^
         String.concat "\n" (List.tl errLines)
       )
-  with Invalid_argument _ -> None
+  with Not_found -> None
 
 let () =
   let lines = ref [] in
