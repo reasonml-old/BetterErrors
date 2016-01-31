@@ -1,8 +1,5 @@
-(* let () = print_int (Array.length Sys.argv) *)
-(* 0: script name, 1: first arg (if any) *)
-(* let () = print_endline Sys.argv.(0);; *)
+open Types
 
-(* ------------- actual code ------------- *)
 let filenameR = {|File "(.+)"|}
 let lineR = {|File .+, line (\d+)|}
 let chars1R = {|File .+, characters (\d+)|}
@@ -18,18 +15,16 @@ let extractor1 err errLines =
     let line = get_match lineR err in
     let chars1 = get_match chars1R err in
     let chars2 = get_match chars2R err in
-      Some (
+      TypeError (
         filename ^ " " ^ line ^ ":" ^ chars1 ^ "-" ^ chars2 ^ "\n" ^
         (List.nth fileLines ((int_of_string line) - 1)) ^ "\n" ^
         (String.make (int_of_string chars1) ' ') ^
         (String.make ((int_of_string chars2) - (int_of_string chars1)) '^') ^ "\n" ^
         String.concat "\n" (List.tl errLines)
       )
-  with Not_found -> None
+  with Not_found -> Unparsable err
 
 let () =
   (* read stdin til end *)
   let err = BatIO.nread BatIO.stdin 99999 in
-    match extractor1 err (Pcre.split ~pat:"\n" err) with
-    | Some msg -> print_endline msg
-    | None -> print_endline "couldn't parse error, original:"; print_endline err
+    Reporter.print (extractor1 err (Pcre.split ~pat:"\n" err))
