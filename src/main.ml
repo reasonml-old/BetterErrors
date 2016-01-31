@@ -18,9 +18,9 @@ let lines_of_file filename =
 
 (* ------------- actual code ------------- *)
 let filenameR = {|File "(.+)"|}
-let lineR = {|File .+, line ([0-9]+)|}
-let chars1R = {|File .+, characters ([0-9]+)|}
-let chars2R = {|File .+, characters .+-([0-9]+)|}
+let lineR = {|File .+, line (\d+)|}
+let chars1R = {|File .+, characters (\d+)|}
+let chars2R = {|File .+, characters .+-(\d+)|}
 
 (* helper for getting the first (presumably only) match in a string *)
 let get_match pat str = Pcre.get_substring (Pcre.exec ~pat:pat str) 1
