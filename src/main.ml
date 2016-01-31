@@ -1,6 +1,3 @@
-#load "str.cma";;
-#load "unix.cma";;
-
 let lines_of_file filename =
   let lines = ref [] in
   let chan = open_in filename in
@@ -20,10 +17,10 @@ let lines_of_file filename =
 
 
 (* ------------- actual code ------------- *)
-let filenameR = Str.regexp "File \"\\(.+\\)\""
-let lineR = Str.regexp "File .+, line \\([0-9]+\\)"
-let chars1R = Str.regexp "File .+, characters \\([0-9]+\\)"
-let chars2R = Str.regexp "File .+, characters .+-\\([0-9]+\\)"
+let filenameR = Str.regexp {|File "\(.+\)"|}
+let lineR = Str.regexp {|File .+, line \([0-9]+\)|}
+let chars1R = Str.regexp {|File .+, characters \([0-9]+\)|}
+let chars2R = Str.regexp {|File .+, characters .+-\([0-9]+\)|}
 
 let extractor1 err errLines =
   try

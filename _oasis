@@ -1,0 +1,33 @@
+OASISFormat:  0.4
+OCamlVersion: >= 4.02.3
+Name:         Reason
+Version:      0.1
+Maintainers:  chenglou
+Homepage:     http://my_coolsite.com
+Synopsis:     Some short description
+Authors:      Cool@me.com
+License:      MIT
+Plugins:      META (0.4), DevFiles (0.4)
+AlphaFeatures: ocamlbuild_more_args
+
+Description:
+  Some cool description
+
+# This is a comment and this below creates an binary program
+Executable rea
+  Path: src
+  MainIs: main.ml
+  BuildTools: ocamlbuild
+  # install: true
+  CompiledObject: best
+  BuildDepends: Str
+
+# Another comment, this builds a library called rea
+# Library rea
+#   Path: src
+#   # oasis will figure out the dependencies,
+#   # Just list the modules you want public,
+#   # Note that there's no .ml, just give the name
+#   Modules: Rea
+#   CompiledObject: byte
+#   # BuildDepends: some_package
