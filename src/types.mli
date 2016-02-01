@@ -32,8 +32,10 @@ type incompatibleType = {
   (* conflicts: conflictPair list; *)
   (* existentialMessage: string option; *)
 }
-
-type notAFunction = {constructor: string; expectedCount: int; observedCount: int}
+type notAFunction = {
+  fileInfo: fileInfo;
+  inferred: string;
+}
 
 type message =
   | Type_MismatchTypeArguments of mismatchTypeArguments
@@ -50,12 +52,13 @@ type message =
   | Type_FieldNotBelong of string
 
   | Type_IncompatibleType of incompatibleType
+  | Type_NotAFunction of notAFunction
 
-  | Type_NotAFunction of string
   | File_SyntaxError of string
   | Build_InconsistentAssumptions of string
   | Warning_CatchAll of string
 
+  (* not in jordan's stuff *)
   | Warning_UnusedVariable of string
   | Unparsable of string
   (* | General_CatchAll of string *)

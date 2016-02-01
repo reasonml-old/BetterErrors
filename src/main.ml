@@ -47,10 +47,10 @@ let getConflictPairs incompatText =
 
 (* agnostic extractors, turning err string into proper data structures *)
 let type_MismatchTypeArguments err errLines =
-  let filename = get_match filenameR err in
+  (* let filename = get_match filenameR err in
   let line = get_match lineR err in
   let chars1 = get_match chars1R err in
-  let chars2 = get_match chars2R err in
+  let chars2 = get_match chars2R err in *)
   (* let regex = {|Error: The type constructor\s*([\w\.]*)\s*expects[\s]*(\d+)\s*argument\(s\),\s*but is here applied to\s*(\d+)\s*argument\(s\)|} in *)
     Type_MismatchTypeArguments {
       constructor = "asd";
@@ -82,6 +82,7 @@ let type_IncompatibleType err errLines =
   let line = int_of_string (get_match lineR err) in
   let chars1 = int_of_string (get_match chars1R err) in
   let chars2 = int_of_string (get_match chars2R err) in
+
   let inferredR = {|This expression has type (.+) but an expression was expected of type|} in
   let expectedR = {|This expression has type .+ but an expression was expected of type\n +(.+)|} in
   let inferred = get_match inferredR err in
@@ -96,8 +97,23 @@ let type_IncompatibleType err errLines =
       expected = expected;
     }
 
+let type_NotAFunction err errLines =
+  let filename = get_match filenameR err in
+  let line = int_of_string (get_match lineR err) in
+  let chars1 = int_of_string (get_match chars1R err) in
+  let chars2 = int_of_string (get_match chars2R err) in
 
-let type_NotAFunction err errLines = raise Not_found
+  let inferredR = {|This expression has type (.+)\n +This is not a function; it cannot be applied.|} in
+  let inferred = get_match inferredR err in
+    Type_NotAFunction {
+      fileInfo = {
+        name = filename;
+        line = line;
+        cols = (chars1, chars2);
+      };
+      inferred = inferred;
+    }
+
 let file_SyntaxError err errLines = raise Not_found
 let build_InconsistentAssumptions err errLines = raise Not_found
 let warning_CatchAll err errLines = raise Not_found
@@ -120,8 +136,8 @@ let parsers = [
   type_FieldNotBelong;
 
   type_IncompatibleType;
-
   type_NotAFunction;
+
   file_SyntaxError;
   build_InconsistentAssumptions;
   warning_CatchAll;

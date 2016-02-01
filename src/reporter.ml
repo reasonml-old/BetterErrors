@@ -12,5 +12,9 @@ let print msg = match msg with
   | Type_MismatchTypeArguments err -> print_endline err.constructor
   | Type_IncompatibleType {fileInfo; inferred; expected} ->
     print_string (highlightFile fileInfo ^ " ");
-    print_endline ("wanted " ^ expected ^ ", got " ^ inferred ^ " instead!")
+    print_endline ("this is " ^ inferred ^ ", wanted " ^ expected ^ " instead.")
+  | Type_NotAFunction {fileInfo; inferred} ->
+    print_string (highlightFile fileInfo ^ " ");
+    print_endline ("this is " ^ inferred ^ ". You seem to have called it as a function.");
+    print_endline "Careful with the spaces and the parentheses, and whatever's in-between!"
   | _ -> print_endline "huh"
