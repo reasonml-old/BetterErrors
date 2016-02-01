@@ -19,7 +19,7 @@ Executable rea
   MainIs: main.ml
   BuildTools: ocamlbuild
   # install: true
-  CompiledObject: best
+  CompiledObject: byte
   BuildDepends: Pcre, Batteries
 
 # Another comment, this builds a library called rea

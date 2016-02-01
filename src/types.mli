@@ -23,7 +23,6 @@ type appliedTooMany = {
 
 type recordFieldNotInExpression = {constructor: string; expectedCount: int; observedCount: int}
 type recordFieldError = {constructor: string; expectedCount: int; observedCount: int}
-type syntaxError = {constructor: string; expectedCount: int; observedCount: int}
 type inconsistentAssumptions = {constructor: string; expectedCount: int; observedCount: int}
 type catchAll = {constructor: string; expectedCount: int; observedCount: int}
 type fieldNotBelong = {constructor: string; expectedCount: int; observedCount: int}
@@ -43,6 +42,9 @@ type notAFunction = {
   fileInfo: fileInfo;
   actual: string;
 }
+type syntaxError = {
+  fileInfo: fileInfo;
+}
 
 type message =
   | Type_MismatchTypeArguments of mismatchTypeArguments
@@ -58,20 +60,22 @@ type message =
 
   | Type_RecordFieldNotInExpression of recordFieldNotInExpression
   | Type_RecordFieldError of recordFieldError
-  (* might be the same thing as above *)
+  (* might be the same thing as above? jordan wrote "record expression" instead
+  of "pattern" *)
   | Type_RecordFieldNotBelong of recordFieldError
   | Type_FieldNotBelong of fieldNotBelong
 
   | Type_IncompatibleType of incompatibleType
   | Type_NotAFunction of notAFunction
-
   | File_SyntaxError of syntaxError
+
   | Build_InconsistentAssumptions of inconsistentAssumptions
   | Warning_CatchAll of catchAll
 
   (* not in jordan's stuff *)
   | Warning_UnusedVariable of unusedVariable
   | Warning_OptionalArgumentNotErased of unusedVariable
+  | File_IllegalCharacter of syntaxError
   | Unparsable of string
   (* | General_CatchAll of string *)
   (* | Project_Unknown of string *)

@@ -140,7 +140,25 @@ let type_NotAFunction err errLines =
       actual = actual;
     }
 
-let file_SyntaxError err errLines = raise Not_found
+(* TODO: apparently syntax error can be followed by more indications *)
+(* need: way, way more information, I can't even *)
+let file_SyntaxError err errLines =
+  let filename = get_match filenameR err in
+  let line = int_of_string (get_match lineR err) in
+  let chars1 = int_of_string (get_match chars1R err) in
+  let chars2 = int_of_string (get_match chars2R err) in
+
+  let fieldR = {|Error: Syntax error|} in
+    (* raise the same error than if we failed to match *)
+    if not (Pcre.pmatch ~pat:fieldR err) then raise Not_found
+    else File_SyntaxError {
+      fileInfo = {
+        name = filename;
+        line = line;
+        cols = (chars1, chars2);
+      };
+    }
+
 let build_InconsistentAssumptions err errLines = raise Not_found
 let warning_CatchAll err errLines = raise Not_found
 let warning_UnusedVariable err errLines = raise Not_found

@@ -22,4 +22,8 @@ let print msg = match msg with
     print_endline ("this function has type " ^ functionType);
     Printf.printf "It accepts only %d arguments. You gave more." expectedArgCount;
     print_endline "Maybe you forgot a `;` somewhere?"
+  | File_SyntaxError {fileInfo} ->
+    print_string (highlightFile fileInfo ^ " ");
+    print_endline "the syntax's' wrong.";
+    print_endline "Note: the location indicated might not be accurate."
   | _ -> print_endline "huh"
