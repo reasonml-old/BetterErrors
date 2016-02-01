@@ -72,20 +72,46 @@ let type_UnboundModule err errLines = raise Not_found
 let type_UnboundRecordField err errLines = raise Not_found
 let type_UnboundConstructor err errLines = raise Not_found
 let type_UnboundTypeConstructor err errLines = raise Not_found
-let type_AppliedTooMany err errLines = raise Not_found
+
+(* need: number of arguments actually applied to it, and what they are *)
+(* need: number of args the function asks, and what types they are *)
+let type_AppliedTooMany err errLines =
+  let filename = get_match filenameR err in
+  let line = int_of_string (get_match lineR err) in
+  let chars1 = int_of_string (get_match chars1R err) in
+  let chars2 = int_of_string (get_match chars2R err) in
+
+  let functionTypeR = {|This function has type (.+)\n +It is applied to too many arguments; maybe you forgot a `;'.|} in
+  let functionType = get_match functionTypeR err in
+  (* the func type 'a -> (int -> 'b) -> string has 2 arguments *)
+  (* strip out false positive -> from nested function types passed as param *)
+  let nestedFunctionTypeR = {|\(.+\)|} in
+  let cleaned = Pcre.replace ~pat:nestedFunctionTypeR ~templ:"bla" functionType in
+  let expectedArgCount = List.length (split "->" cleaned) - 1 in
+    Type_AppliedTooMany {
+      fileInfo = {
+        name = filename;
+        line = line;
+        cols = (chars1, chars2);
+      };
+      functionType = functionType;
+      expectedArgCount = expectedArgCount;
+    }
+
 let type_RecordFieldNotInExpression err errLines = raise Not_found
 let type_RecordFieldError err errLines = raise Not_found
 let type_FieldNotBelong err errLines = raise Not_found
 
+(* need: where the original expected comes from  *)
 let type_IncompatibleType err errLines =
   let filename = get_match filenameR err in
   let line = int_of_string (get_match lineR err) in
   let chars1 = int_of_string (get_match chars1R err) in
   let chars2 = int_of_string (get_match chars2R err) in
 
-  let inferredR = {|This expression has type (.+) but an expression was expected of type|} in
+  let actualR = {|This expression has type (.+) but an expression was expected of type|} in
   let expectedR = {|This expression has type .+ but an expression was expected of type\n +(.+)|} in
-  let inferred = get_match inferredR err in
+  let actual = get_match actualR err in
   let expected = get_match expectedR err in
     Type_IncompatibleType {
       fileInfo = {
@@ -93,7 +119,7 @@ let type_IncompatibleType err errLines =
         line = line;
         cols = (chars1, chars2);
       };
-      inferred = inferred;
+      actual = actual;
       expected = expected;
     }
 
@@ -103,15 +129,15 @@ let type_NotAFunction err errLines =
   let chars1 = int_of_string (get_match chars1R err) in
   let chars2 = int_of_string (get_match chars2R err) in
 
-  let inferredR = {|This expression has type (.+)\n +This is not a function; it cannot be applied.|} in
-  let inferred = get_match inferredR err in
+  let actualR = {|This expression has type (.+)\n +This is not a function; it cannot be applied.|} in
+  let actual = get_match actualR err in
     Type_NotAFunction {
       fileInfo = {
         name = filename;
         line = line;
         cols = (chars1, chars2);
       };
-      inferred = inferred;
+      actual = actual;
     }
 
 let file_SyntaxError err errLines = raise Not_found
@@ -130,7 +156,9 @@ let parsers = [
   type_UnboundRecordField;
   type_UnboundConstructor;
   type_UnboundTypeConstructor;
+
   type_AppliedTooMany;
+
   type_RecordFieldNotInExpression;
   type_RecordFieldError;
   type_FieldNotBelong;
@@ -151,8 +179,10 @@ let parsers = [
 
 let () =
   (* read stdin til end *)
-  let err = BatIO.nread BatIO.stdin 99999 in
-  let errLines = split "\n" err in
-    let matched = Batteries.List.find_map (fun f ->
-      try Some (f err errLines) with Not_found -> None
-    ) parsers in Reporter.print matched
+  try
+    let err = BatIO.nread BatIO.stdin 99999 in
+    let errLines = split "\n" err in
+      let matched = Batteries.List.find_map (fun f ->
+        try Some (f err errLines) with Not_found -> None
+      ) parsers in Reporter.print matched
+  with Batteries.IO.No_more_input -> print_endline "All good!"

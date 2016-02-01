@@ -10,11 +10,16 @@ let highlightFile {name ; line ; cols = (chars1, chars2)} =
 let print msg = match msg with
   | Unparsable err -> print_endline "couldn't parse error, original:"; print_endline err
   | Type_MismatchTypeArguments err -> print_endline err.constructor
-  | Type_IncompatibleType {fileInfo; inferred; expected} ->
+  | Type_IncompatibleType {fileInfo; actual; expected} ->
     print_string (highlightFile fileInfo ^ " ");
-    print_endline ("this is " ^ inferred ^ ", wanted " ^ expected ^ " instead.")
-  | Type_NotAFunction {fileInfo; inferred} ->
+    print_endline ("this is " ^ actual ^ ", wanted " ^ expected ^ " instead.")
+  | Type_NotAFunction {fileInfo; actual} ->
     print_string (highlightFile fileInfo ^ " ");
-    print_endline ("this is " ^ inferred ^ ". You seem to have called it as a function.");
+    print_endline ("this is " ^ actual ^ ". You seem to have called it as a function.");
     print_endline "Careful with the spaces and the parentheses, and whatever's in-between!"
+  | Type_AppliedTooMany {fileInfo; functionType; expectedArgCount} ->
+    print_string (highlightFile fileInfo ^ " ");
+    print_endline ("this function has type " ^ functionType);
+    Printf.printf "It accepts only %d arguments. You gave more." expectedArgCount;
+    print_endline "Maybe you forgot a `;` somewhere?"
   | _ -> print_endline "huh"
