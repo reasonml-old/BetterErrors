@@ -1,3 +1,11 @@
+(* type termKind = Expression | Pattern *)
+type conflictPair = {inferred: string list; expected: string list}
+type fileInfo = {
+  name: string;
+  line: int;
+  cols: int * int;
+}
+
 type mismatchTypeArguments = {constructor: string; expectedCount: int; observedCount: int}
 type unboundValue = {constructor: string; expectedCount: int; observedCount: int}
 type signatureMismatch = {constructor: string; expectedCount: int; observedCount: int}
@@ -13,11 +21,21 @@ type syntaxError = {constructor: string; expectedCount: int; observedCount: int}
 type inconsistentAssumptions = {constructor: string; expectedCount: int; observedCount: int}
 type catchAll = {constructor: string; expectedCount: int; observedCount: int}
 type fieldNotBelong = {constructor: string; expectedCount: int; observedCount: int}
-type incompatibleType = {constructor: string; expectedCount: int; observedCount: int}
+
+type incompatibleType = {
+  (* termKind: termKind; *)
+  fileInfo: fileInfo;
+  inferred: string;
+  expected: string;
+  (* inferredEquivalentTypes: string list;
+  expectedEquivalentTypes: string list; *)
+  (* conflicts: conflictPair list; *)
+  (* existentialMessage: string option; *)
+}
+
 type notAFunction = {constructor: string; expectedCount: int; observedCount: int}
 
 type message =
-  | Unparsable of string
   | Type_MismatchTypeArguments of mismatchTypeArguments
   | Type_UnboundValue of string
   | Type_SignatureMismatch of string
@@ -29,13 +47,16 @@ type message =
   | Type_AppliedTooMany of string
   | Type_RecordFieldNotInExpression of string
   | Type_RecordFieldError of string
+  | Type_FieldNotBelong of string
+
+  | Type_IncompatibleType of incompatibleType
+
+  | Type_NotAFunction of string
   | File_SyntaxError of string
   | Build_InconsistentAssumptions of string
   | Warning_CatchAll of string
-  | Type_FieldNotBelong of string
-  | Type_IncompatibleType of string
-  | Type_NotAFunction of string
 
   | Warning_UnusedVariable of string
+  | Unparsable of string
   (* | General_CatchAll of string *)
   (* | Project_Unknown of string *)
