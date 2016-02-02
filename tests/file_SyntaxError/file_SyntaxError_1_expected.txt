@@ -1,2 +1,4 @@
-File "tests/file_SyntaxError/file_SyntaxError_1.ml", line 2, characters 11-17:
-Error: Syntax error
+tests/file_SyntaxError/file_SyntaxError_1.ml:2 11-17
+  I'm glad you're looking at this file =)
+           ^^^^^^ the syntax's' wrong.
+Note: the location indicated might not be accurate.

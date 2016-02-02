@@ -1,3 +1,4 @@
-File "tests/type_NotAFunction/type_NotAFunction_1.ml", line 2, characters 2-3:
-Error: This expression has type int
-       This is not a function; it cannot be applied.
+tests/type_NotAFunction/type_NotAFunction_1.ml:2 2-3
+  5 ()
+  ^ this is int. You seem to have called it as a function.
+Careful with the spaces and the parentheses, and whatever's in-between!

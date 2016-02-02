@@ -1,2 +1,4 @@
+couldn't parse error, original:
 File "tests/type_RecordFieldsUndefined/type_RecordFieldsUndefined_1.ml", line 6, characters 10-22:
 Error: Some record fields are undefined: b
+

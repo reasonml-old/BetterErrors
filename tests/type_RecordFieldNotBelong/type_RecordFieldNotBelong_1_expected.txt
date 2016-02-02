@@ -1,3 +1,5 @@
+couldn't parse error, original:
 File "tests/type_RecordFieldNotBelong/type_RecordFieldNotBelong_1.ml", line 9, characters 23-24:
 Error: This record pattern is expected to have type asd
        The field b does not belong to type asd
+

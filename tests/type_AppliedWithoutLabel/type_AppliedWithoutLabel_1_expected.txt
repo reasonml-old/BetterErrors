@@ -1,6 +1,8 @@
+couldn't parse error, original:
 File "tests/type_AppliedWithoutLabel/type_AppliedWithoutLabel_1.ml", line 2, characters 12-13:
 Warning 16: this optional argument cannot be erased.
 File "tests/type_AppliedWithoutLabel/type_AppliedWithoutLabel_1.ml", line 4, characters 28-30:
 Error: The function applied to this argument has type
          ?a:'a -> ?b:'b -> string
 This argument cannot be applied without label
+

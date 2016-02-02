@@ -1,3 +1,4 @@
-File "tests/type_AppliedTooMany/type_AppliedTooMany_1.ml", line 3, characters 24-36:
-Error: This function has type 'a -> (int -> 'b) -> string
-       It is applied to too many arguments; maybe you forgot a `;'.
+tests/type_AppliedTooMany/type_AppliedTooMany_1.ml:3 24-36
+let () = print_endline (omNomNomArgs 1 (fun x -> "a") 1)
+                        ^^^^^^^^^^^^ this function has type 'a -> (int -> 'b) -> string
+It accepts only 2 arguments. You gave more. Maybe you forgot a `;` somewhere?

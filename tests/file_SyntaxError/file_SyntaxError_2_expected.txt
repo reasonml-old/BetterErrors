@@ -1,2 +1,4 @@
-File "tests/file_SyntaxError/file_SyntaxError_2.ml", line 1, characters 20-21:
-Error: Syntax error: operator expected.
+tests/file_SyntaxError/file_SyntaxError_2.ml:1 20-21
+let a = (print_char 'a)
+                    ^ the syntax's' wrong.
+Note: the location indicated might not be accurate.

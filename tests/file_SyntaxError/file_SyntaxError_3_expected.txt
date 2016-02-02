@@ -1,4 +1,4 @@
-File "tests/file_SyntaxError/file_SyntaxError_3.ml", line 2, characters 0-0:
-Error: Syntax error: ')' expected
-File "tests/file_SyntaxError/file_SyntaxError_3.ml", line 1, characters 8-9:
-Error: This '(' might be unmatched
+tests/file_SyntaxError/file_SyntaxError_3.ml:1 0-1
+let a = (1, 2
+^ the syntax's' wrong.
+Note: the location indicated might not be accurate.

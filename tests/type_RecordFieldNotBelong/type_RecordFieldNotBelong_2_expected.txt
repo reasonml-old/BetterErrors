@@ -1,3 +1,5 @@
+couldn't parse error, original:
 File "tests/type_RecordFieldNotBelong/type_RecordFieldNotBelong_2.ml", line 8, characters 2-4:
 Error: This record expression is expected to have type point
        The field xs does not belong to type point
+
