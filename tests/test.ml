@@ -21,7 +21,7 @@ let folders = [
 exception Not_equal of string
 
 let () =
-  List.iter (fun (dirname, fileCount) -> for i = 1 to fileCount do
+  folders |> List.iter (fun (dirname, fileCount) -> for i = 1 to fileCount do
     let testsDirname = Filename.concat "tests" dirname in
     let filename = Filename.concat testsDirname (Printf.sprintf "%s_%d.ml" dirname i) in
     let expectedOutputName = Filename.concat testsDirname (Printf.sprintf "%s_%d_expected.txt" dirname i) in
@@ -36,6 +36,10 @@ let () =
           if actual = expected then () else raise (Not_equal filename)
         )
       )
-
-  done) folders;
+  done);
+  (* trust me I'm not evil *)
+  (* the leftover cmi and cmo files from some partially failed ocamlc above
+  cause the next `make` build to fail out of refusal to compile with these
+  leftover artifact, so we remove them *)
+  ignore @@ Sys.command "rm -rf ./tests/**/*.{cmi,cmo}";
   print_endline "ALL GOOD!"
