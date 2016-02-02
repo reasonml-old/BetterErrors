@@ -196,11 +196,10 @@ let parsers = [
 (* ------------------------ *)
 
 let () =
-  (* read stdin til end *)
   try
-    let err = BatIO.nread BatIO.stdin 99999 in
+    let err = BatPervasives.input_all stdin in
     let errLines = split "\n" err in
-      let matched = Batteries.List.find_map (fun f ->
+      let matched = BatList.find_map (fun f ->
         try Some (f err errLines) with Not_found -> None
       ) parsers in Reporter.print matched
-  with Batteries.IO.No_more_input -> print_endline "All good!"
+  with BatIO.No_more_input -> print_endline "All good!"
