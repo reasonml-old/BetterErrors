@@ -167,6 +167,25 @@ let file_SyntaxError err errLines =
 let build_InconsistentAssumptions err errLines = raise Not_found
 let warning_CatchAll err errLines = raise Not_found
 let warning_UnusedVariable err errLines = raise Not_found
+let warning_OptionalArgumentNotErased err errLines = raise Not_found
+
+(* need: list of legal characters *)
+let file_IllegalCharacter err errLines =
+  let filename = get_match filenameR err in
+  let line = int_of_string (get_match lineR err) in
+  let chars1 = int_of_string (get_match chars1R err) in
+  let chars2 = int_of_string (get_match chars2R err) in
+
+  let characterR = {|Error: Illegal character \((.+)\)|} in
+  let character = get_match characterR err in
+    File_IllegalCharacter {
+      fileInfo = {
+        name = filename;
+        line = line;
+        cols = (chars1, chars2);
+      };
+      character = character;
+    }
 
 let unparsable err errLines = Unparsable err
 
@@ -193,7 +212,9 @@ let parsers = [
   build_InconsistentAssumptions;
   warning_CatchAll;
   warning_UnusedVariable;
+  warning_OptionalArgumentNotErased;
 
+  file_IllegalCharacter;
   (* this should stay at last position. It's a catch-all that doesn't throw *)
   unparsable;
 ]

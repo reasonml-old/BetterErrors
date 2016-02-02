@@ -1,4 +1,3 @@
-couldn't parse error, original:
-File "tests/file_IllegalCharacter/file_IllegalCharacter_1.ml", line 2, characters 2-3:
-Error: Illegal character (\\)
-
+tests/file_IllegalCharacter/file_IllegalCharacter_1.ml:2 2-3
+  \hahaha look at me
+  ^ The character `\\` is illegal. EVERY CHARACTER THAT'S NOT AMERICAN IS ILLEGAL!

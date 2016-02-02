@@ -45,6 +45,10 @@ type notAFunction = {
 type syntaxError = {
   fileInfo: fileInfo;
 }
+type illegalCharacter = {
+  fileInfo: fileInfo;
+  character: string;
+}
 
 type message =
   | Type_MismatchTypeArguments of mismatchTypeArguments
@@ -75,7 +79,8 @@ type message =
   (* not in jordan's stuff *)
   | Warning_UnusedVariable of unusedVariable
   | Warning_OptionalArgumentNotErased of unusedVariable
-  | File_IllegalCharacter of syntaxError
+
+  | File_IllegalCharacter of illegalCharacter
   | Unparsable of string
   (* | General_CatchAll of string *)
   (* | Project_Unknown of string *)

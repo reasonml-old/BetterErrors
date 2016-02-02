@@ -26,4 +26,7 @@ let print msg = match msg with
     print_string (highlightFile fileInfo ^ " ");
     print_endline "the syntax's' wrong.";
     print_endline "Note: the location indicated might not be accurate."
+  | File_IllegalCharacter {fileInfo; character} ->
+    print_string (highlightFile fileInfo ^ " ");
+    Printf.printf "The character `%s` is illegal. EVERY CHARACTER THAT'S NOT AMERICAN IS ILLEGAL!\n" character
   | _ -> print_endline "huh"
