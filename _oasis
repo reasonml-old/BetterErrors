@@ -22,6 +22,14 @@ Executable rea
   CompiledObject: byte
   BuildDepends: Pcre, Batteries
 
+Executable test
+  Path: tests
+  MainIs: test.ml
+  BuildTools: ocamlbuild
+  # install: true
+  CompiledObject: byte
+  BuildDepends: Batteries
+
 # Another comment, this builds a library called rea
 # Library rea
 #   Path: src
