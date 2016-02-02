@@ -1,0 +1,2 @@
+File "tests/type_UnboundValue/type_UnboundValue_2.ml", line 1, characters 21-24:
+Error: Unbound value nvm

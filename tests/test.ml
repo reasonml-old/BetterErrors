@@ -1,20 +1,3 @@
-(* let folders = [
-  (* [directory, files] *)
-  ["bad source file name"; "bad source file name.ml"];
-  ["file_IllegalCharacter"; "file_IllegalCharacter.ml"];
-  ["file_SyntaxError"; "file_SyntaxError_1.ml"; "file_SyntaxError_2.ml"; "file_SyntaxError_3.ml"];
-  ["file_SyntaxError"; "file_SyntaxError.ml"];
-  ["type_AppliedTooMany"; "type_AppliedTooMany.ml"];
-  ["type_AppliedWithoutLabel"; "type_AppliedWithoutLabel.ml"];
-  ["type_IncompatibleType"; "type_IncompatibleType_1.ml", "type_IncompatibleType_2.ml"];
-  ["type_NotAFunction"; "type_NotAFunction.ml"];
-  ["type_RecordFieldNotBelong"; "type_RecordFieldNotBelong_1.ml", "type_RecordFieldNotBelong_2.ml"];
-  ["type_RecordFieldsUndefined"; "type_RecordFieldsUndefined.ml"];
-  ["type_UnboundRecordField"; "type_UnboundRecordField_1.ml", "type_UnboundRecordField_2.ml"];
-  ["type_UnboundTypeConstructor"; "type_UnboundTypeConstructor.ml"];
-  ["warning_OptionalArgumentNotErased"; "warning_OptionalArgumentNotErased.ml"];
-]; *)
-
 (* Note: this file must be run at root directory of the project. Otherwise the
 Sys.command calls below happen in the wrong directory *)
 
@@ -31,8 +14,11 @@ let folders = [
   ("type_RecordFieldsUndefined", 1);
   ("type_UnboundRecordField", 2);
   ("type_UnboundTypeConstructor", 1);
+  ("type_UnboundValue", 2);
   ("warning_OptionalArgumentNotErased", 1);
 ]
+
+exception Not_equal of string
 
 let () =
   List.iter (fun (dirname, fileCount) -> for i = 1 to fileCount do
@@ -47,7 +33,7 @@ let () =
         let expected = BatIO.read_all inp in
         BatFile.with_file_in actualOutputName (fun inp2 ->
           let actual = BatIO.read_all inp2 in
-          assert (expected = actual)
+          if actual = expected then () else raise (Not_equal filename)
         )
       )
 
