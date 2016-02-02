@@ -1,0 +1,2 @@
+File "tests/file_SyntaxError/file_SyntaxError_2.ml", line 1, characters 20-21:
+Error: Syntax error: operator expected.

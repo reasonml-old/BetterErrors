@@ -1,0 +1,2 @@
+File "tests/type_UnboundRecordField/type_UnboundRecordField_1.ml", line 7, characters 2-3:
+Error: Unbound record field b

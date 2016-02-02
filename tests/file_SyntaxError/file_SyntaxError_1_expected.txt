@@ -1,0 +1,2 @@
+File "tests/file_SyntaxError/file_SyntaxError_1.ml", line 2, characters 11-17:
+Error: Syntax error

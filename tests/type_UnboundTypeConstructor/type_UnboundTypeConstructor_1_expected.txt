@@ -1,0 +1,2 @@
+File "tests/type_UnboundTypeConstructor/type_UnboundTypeConstructor_1.ml", line 2, characters 13-21:
+Error: Unbound type constructor whereAmI

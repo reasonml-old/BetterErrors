@@ -1,0 +1,2 @@
+File "tests/warning_OptionalArgumentNotErased/warning_OptionalArgumentNotErased_1.ml", line 1, characters 11-12:
+Warning 16: this optional argument cannot be erased.

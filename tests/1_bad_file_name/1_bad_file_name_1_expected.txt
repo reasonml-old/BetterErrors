@@ -1,0 +1,4 @@
+File "tests/1_bad_file_name/1_bad_file_name_1.ml", line 1:
+Warning 24: bad source file name: "1_bad_file_name_1" is not a valid module name.
+File "tests/1_bad_file_name/1_bad_file_name_1.ml", line 2, characters 0-0:
+Error: Syntax error
