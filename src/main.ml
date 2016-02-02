@@ -149,13 +149,18 @@ let file_SyntaxError err errLines =
   let chars2 = int_of_string (get_match chars2R err) in
 
   let fieldR = {|Error: Syntax error|} in
+  let fileLines = Batteries.List.of_enum (BatFile.lines_of filename) in
+   (* some syntax errors will make the output point at the last line + 1, char
+   0-0, to indicate e.g. "there's something missing at the end here". Ofc that
+   isn't a valid location to point to in a reporter *)
+  let passedBoundary = List.length fileLines = line - 1 in
     (* raise the same error than if we failed to match *)
     if not (Pcre.pmatch ~pat:fieldR err) then raise Not_found
     else File_SyntaxError {
       fileInfo = {
         name = filename;
-        line = line;
-        cols = (chars1, chars2);
+        line = if passedBoundary then line - 1 else line;
+        cols = (chars1, if passedBoundary then chars2 + 1 else chars2);
       };
     }
 
