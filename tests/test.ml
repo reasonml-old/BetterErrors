@@ -21,25 +21,29 @@ let folders = [
 exception Not_equal of string
 
 let () =
-  folders |> List.iter (fun (dirname, fileCount) -> for i = 1 to fileCount do
-    let testsDirname = Filename.concat "tests" dirname in
-    let filename = Filename.concat testsDirname (Printf.sprintf "%s_%d.ml" dirname i) in
-    let expectedOutputName = Filename.concat testsDirname (Printf.sprintf "%s_%d_expected.txt" dirname i) in
-    let actualOutputName = Filename.concat testsDirname (Printf.sprintf "%s_%d_actual.txt" dirname i) in
-      (* expecting compiling errors in stderr; pipe to a file *)
-      ignore @@ Sys.command @@ Printf.sprintf "ocamlc %s 2> %s" filename actualOutputName;
-      (* open the produced error output *)
-      BatFile.with_file_in expectedOutputName (fun inp ->
-        let expected = BatIO.read_all inp in
-        BatFile.with_file_in actualOutputName (fun inp2 ->
-          let actual = BatIO.read_all inp2 in
-          if actual = expected then () else raise (Not_equal filename)
+  try
+    folders |> List.iter (fun (dirname, fileCount) -> for i = 1 to fileCount do
+      let testsDirname = Filename.concat "tests" dirname in
+      let filename = Filename.concat testsDirname (Printf.sprintf "%s_%d.ml" dirname i) in
+      let expectedOutputName = Filename.concat testsDirname (Printf.sprintf "%s_%d_expected.txt" dirname i) in
+      let actualOutputName = Filename.concat testsDirname (Printf.sprintf "%s_%d_actual.txt" dirname i) in
+        (* expecting compiling errors in stderr; pipe to a file *)
+        ignore @@ Sys.command @@ Printf.sprintf "ocamlc %s 2>&1 | ./main.byte > %s" filename actualOutputName;
+        (* open the produced error output *)
+        BatFile.with_file_in expectedOutputName (fun inp ->
+          let expected = BatIO.read_all inp in
+          BatFile.with_file_in actualOutputName (fun inp2 ->
+            let actual = BatIO.read_all inp2 in
+            if actual = expected then () else raise (Not_equal filename)
+          )
         )
-      )
-  done);
+    done);
+    print_endline "ALL GOOD!";
+    ignore @@ Sys.command "rm -rf ./tests/**/*.{cmi,cmo}";
   (* trust me I'm not evil *)
   (* the leftover cmi and cmo files from some partially failed ocamlc above
   cause the next `make` build to fail out of refusal to compile with these
   leftover artifact, so we remove them *)
-  ignore @@ Sys.command "rm -rf ./tests/**/*.{cmi,cmo}";
-  print_endline "ALL GOOD!"
+  with Not_equal filename ->
+    ignore @@ Sys.command "rm -rf ./tests/**/*.{cmi,cmo}";
+    raise (Not_equal filename)
