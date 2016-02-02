@@ -5,8 +5,11 @@ let lineR = {|File .+, line (\d+)|}
 let chars1R = {|File .+, characters (\d+)|}
 let chars2R = {|File .+, characters .+-(\d+)|}
 
-(* helper for getting the first (presumably only) match in a string *)
+(* helpers for getting the first (presumably only) match in a string *)
 let get_match pat str = Pcre.get_substring (Pcre.exec ~pat:pat str) 1
+let get_match_maybe pat str =
+  try Some (Pcre.get_substring (Pcre.exec ~pat:pat str) 1)
+  with Not_found -> None
 (* helpers for turning Not_found exception into an optional *)
 let exec ~rex str =
   try Some (Pcre.exec ~rex str) with Not_found -> None
@@ -71,7 +74,26 @@ let type_SignatureItemMissing err errLines = raise Not_found
 let type_UnboundModule err errLines = raise Not_found
 let type_UnboundRecordField err errLines = raise Not_found
 let type_UnboundConstructor err errLines = raise Not_found
-let type_UnboundTypeConstructor err errLines = raise Not_found
+
+let type_UnboundTypeConstructor err errLines =
+  let filename = get_match filenameR err in
+  let line = int_of_string (get_match lineR err) in
+  let chars1 = int_of_string (get_match chars1R err) in
+  let chars2 = int_of_string (get_match chars2R err) in
+
+  let constructorR = {|Error: Unbound type constructor (.+)|} in
+  let constructor = get_match constructorR err in
+  let suggestionR = {|Hint: Did you mean (.+)\?|} in
+  let suggestion = get_match_maybe suggestionR err in
+    Type_UnboundTypeConstructor {
+      fileInfo = {
+        name = filename;
+        line = line;
+        cols = (chars1, chars2);
+      };
+      namespacedConstructor = constructor;
+      suggestion = suggestion
+    }
 
 (* need: number of arguments actually applied to it, and what they are *)
 (* need: number of args the function asks, and what types they are *)

@@ -29,4 +29,10 @@ let print msg = match msg with
   | File_IllegalCharacter {fileInfo; character} ->
     print_string (highlightFile fileInfo ^ " ");
     Printf.printf "The character `%s` is illegal. EVERY CHARACTER THAT'S NOT AMERICAN IS ILLEGAL!\n" character
+  | Type_UnboundTypeConstructor {fileInfo; namespacedConstructor; suggestion} ->
+    print_string (highlightFile fileInfo ^ " ");
+    print_endline ("The type constructor " ^ namespacedConstructor ^ " can't be found.");
+    (match suggestion with
+    | None -> ()
+    | Some h -> print_endline ("Hint: did you mean `" ^ h ^ "`?"))
   | _ -> print_endline "huh"

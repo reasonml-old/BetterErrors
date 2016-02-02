@@ -13,8 +13,12 @@ type signatureItemMissing = {constructor: string; expectedCount: int; observedCo
 type unboundModule = {constructor: string; expectedCount: int; observedCount: int}
 type unboundRecordField = {constructor: string; expectedCount: int; observedCount: int}
 type unboundConstructor = {constructor: string; expectedCount: int; observedCount: int}
-type unboundTypeConstructor = {constructor: string; expectedCount: int; observedCount: int}
 
+type unboundTypeConstructor = {
+  fileInfo: fileInfo;
+  namespacedConstructor: string;
+  suggestion: string option;
+}
 type appliedTooMany = {
   fileInfo: fileInfo;
   functionType: string;
@@ -25,18 +29,17 @@ type recordFieldNotInExpression = {constructor: string; expectedCount: int; obse
 type recordFieldError = {constructor: string; expectedCount: int; observedCount: int}
 type inconsistentAssumptions = {constructor: string; expectedCount: int; observedCount: int}
 type catchAll = {constructor: string; expectedCount: int; observedCount: int}
-type fieldNotBelong = {constructor: string; expectedCount: int; observedCount: int}
 type unusedVariable = {constructor: string; expectedCount: int; observedCount: int}
 
-type incompatibleType = {
-  (* termKind: termKind; *)
+type fieldNotBelong = {
   fileInfo: fileInfo;
   actual: string;
   expected: string;
-  (* inferredEquivalentTypes: string list;
-  expectedEquivalentTypes: string list; *)
-  (* conflicts: conflictPair list; *)
-  (* existentialMessage: string option; *)
+}
+type incompatibleType = {
+  fileInfo: fileInfo;
+  actual: string;
+  expected: string;
 }
 type notAFunction = {
   fileInfo: fileInfo;
@@ -58,8 +61,8 @@ type message =
   | Type_UnboundModule of unboundModule
   | Type_UnboundRecordField of unboundRecordField
   | Type_UnboundConstructor of unboundConstructor
-  | Type_UnboundTypeConstructor of unboundTypeConstructor
 
+  | Type_UnboundTypeConstructor of unboundTypeConstructor
   | Type_AppliedTooMany of appliedTooMany
 
   | Type_RecordFieldNotInExpression of recordFieldNotInExpression

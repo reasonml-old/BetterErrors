@@ -13,7 +13,7 @@ let folders = [
   ("type_RecordFieldNotBelong", 2);
   ("type_RecordFieldsUndefined", 1);
   ("type_UnboundRecordField", 2);
-  ("type_UnboundTypeConstructor", 1);
+  ("type_UnboundTypeConstructor", 2);
   ("type_UnboundValue", 2);
   ("warning_OptionalArgumentNotErased", 1);
 ]
