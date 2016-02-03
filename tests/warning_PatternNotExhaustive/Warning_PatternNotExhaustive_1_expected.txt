@@ -1,0 +1,6 @@
+couldn't parse error, original:
+File "tests/Warning_PatternNotExhaustive/Warning_PatternNotExhaustive_1.ml", line 5, characters 12-38:
+Warning 8: this pattern-matching is not exhaustive.
+Here is an example of a value that is not matched:
+Goodbye
+

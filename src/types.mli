@@ -81,6 +81,8 @@ type message =
 
   (* not in jordan's stuff *)
   | Warning_UnusedVariable of unusedVariable
+  | Warning_PatternNotExhaustive of unusedVariable
+  | Warning_PatternUnused of unusedVariable
   | Warning_OptionalArgumentNotErased of unusedVariable
 
   | File_IllegalCharacter of illegalCharacter

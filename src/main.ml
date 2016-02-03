@@ -219,8 +219,8 @@ let parsers = [
   type_UnboundModule;
   type_UnboundRecordField;
   type_UnboundConstructor;
-  type_UnboundTypeConstructor;
 
+  type_UnboundTypeConstructor;
   type_AppliedTooMany;
 
   type_RecordFieldNotInExpression;
@@ -229,8 +229,8 @@ let parsers = [
 
   type_IncompatibleType;
   type_NotAFunction;
-
   file_SyntaxError;
+
   build_InconsistentAssumptions;
   warning_CatchAll;
   warning_UnusedVariable;

@@ -16,6 +16,8 @@ let folders = [
   ("type_UnboundTypeConstructor", 2);
   ("type_UnboundValue", 2);
   ("warning_OptionalArgumentNotErased", 1);
+  ("Warning_PatternNotExhaustive", 2);
+  ("warning_PatternUnused", 1);
 ]
 
 exception Not_equal of string
@@ -44,6 +46,6 @@ let () =
   (* the leftover cmi and cmo files from some partially failed ocamlc above
   cause the next `make` build to fail out of refusal to compile with these
   leftover artifact, so we remove them *)
-  with Not_equal filename ->
+  with a ->
     ignore @@ Sys.command "rm -rf ./tests/**/*.{cmi,cmo}";
-    raise (Not_equal filename)
+    raise a
