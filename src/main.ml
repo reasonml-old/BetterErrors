@@ -133,10 +133,11 @@ let type_IncompatibleType err errLines =
   let chars1 = int_of_string (get_match chars1R err) in
   let chars2 = int_of_string (get_match chars2R err) in
 
-  let actualR = {|This expression has type (.+) but an expression was expected of type|} in
-  let expectedR = {|This expression has type .+ but an expression was expected of type\n +(.+)|} in
-  let actual = get_match actualR err in
-  let expected = get_match expectedR err in
+  (* the type actual and expected might be on their own line *)
+  let actualR = {|Error: This expression has type([\s\S]*?)but an expression was expected of type|} in
+  let expectedR = {|Error: This expression has type[\s\S]*?but an expression was expected of type([\s\S]*?)$|} in
+  let actual = get_match actualR err |> BatString.trim in
+  let expected = get_match expectedR err |> BatString.trim in
     Type_IncompatibleType {
       fileInfo = {
         content = Batteries.List.of_enum (BatFile.lines_of filename);
