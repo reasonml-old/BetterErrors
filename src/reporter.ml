@@ -1,9 +1,8 @@
 open Types
 
-let highlightFile {name ; line ; cols = (chars1, chars2)} =
-  let fileLines = Batteries.List.of_enum (BatFile.lines_of name) in
+let highlightFile {content; name; line; cols = (chars1, chars2)} =
     (Printf.sprintf "%s:%d %d-%d\n" name line chars1 chars2) ^
-    (List.nth fileLines (line - 1)) ^ "\n" ^
+    (List.nth content (line - 1)) ^ "\n" ^
     (String.make chars1 ' ') ^
     (String.make (chars2 - chars1) '^')
 

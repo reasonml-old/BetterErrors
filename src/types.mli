@@ -2,6 +2,7 @@
 (* type conflictPair = {inferred: string list; expected: string list} *)
 type fileInfo = {
   name: string;
+  content: string list;
   line: int;
   cols: int * int;
 }

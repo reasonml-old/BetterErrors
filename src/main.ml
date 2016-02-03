@@ -87,6 +87,7 @@ let type_UnboundTypeConstructor err errLines =
   let suggestion = get_match_maybe suggestionR err in
     Type_UnboundTypeConstructor {
       fileInfo = {
+        content = Batteries.List.of_enum (BatFile.lines_of filename);
         name = filename;
         line = line;
         cols = (chars1, chars2);
@@ -112,6 +113,7 @@ let type_AppliedTooMany err errLines =
   let expectedArgCount = List.length (split "->" cleaned) - 1 in
     Type_AppliedTooMany {
       fileInfo = {
+        content = Batteries.List.of_enum (BatFile.lines_of filename);
         name = filename;
         line = line;
         cols = (chars1, chars2);
@@ -137,6 +139,7 @@ let type_IncompatibleType err errLines =
   let expected = get_match expectedR err in
     Type_IncompatibleType {
       fileInfo = {
+        content = Batteries.List.of_enum (BatFile.lines_of filename);
         name = filename;
         line = line;
         cols = (chars1, chars2);
@@ -155,6 +158,7 @@ let type_NotAFunction err errLines =
   let actual = get_match actualR err in
     Type_NotAFunction {
       fileInfo = {
+        content = Batteries.List.of_enum (BatFile.lines_of filename);
         name = filename;
         line = line;
         cols = (chars1, chars2);
@@ -180,6 +184,7 @@ let file_SyntaxError err errLines =
     if not (Pcre.pmatch ~pat:fieldR err) then raise Not_found
     else File_SyntaxError {
       fileInfo = {
+        content = Batteries.List.of_enum (BatFile.lines_of filename);
         name = filename;
         line = if passedBoundary then line - 1 else line;
         cols = (chars1, if passedBoundary then chars2 + 1 else chars2);
@@ -202,6 +207,7 @@ let file_IllegalCharacter err errLines =
   let character = get_match characterR err in
     File_IllegalCharacter {
       fileInfo = {
+        content = Batteries.List.of_enum (BatFile.lines_of filename);
         name = filename;
         line = line;
         cols = (chars1, chars2);
@@ -237,8 +243,8 @@ let parsers = [
   warning_OptionalArgumentNotErased;
 
   file_IllegalCharacter;
-  (* this should stay at last position. It's a catch-all that doesn't throw *)
   unparsable;
+  (* this should stay at last position. It's a catch-all that doesn't throw *)
 ]
 
 (* ------------------------ *)
