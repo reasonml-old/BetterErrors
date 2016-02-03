@@ -7,7 +7,12 @@ type fileInfo = {
   cols: int * int;
 }
 
-type mismatchTypeArguments = {constructor: string; expectedCount: int; observedCount: int}
+type mismatchTypeArguments = {
+  fileInfo: fileInfo;
+  typeConstructor: string;
+  expectedCount: int;
+  actualCount: int;
+}
 type unboundValue = {constructor: string; expectedCount: int; observedCount: int}
 type signatureMismatch = {constructor: string; expectedCount: int; observedCount: int}
 type signatureItemMissing = {constructor: string; expectedCount: int; observedCount: int}

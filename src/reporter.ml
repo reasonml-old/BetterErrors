@@ -8,7 +8,9 @@ let highlightFile {content; name; line; cols = (chars1, chars2)} =
 
 let print msg = match msg with
   | Unparsable err -> print_endline "couldn't parse error, original:"; print_endline err
-  | Type_MismatchTypeArguments err -> print_endline err.constructor
+  | Type_MismatchTypeArguments {fileInfo; typeConstructor; expectedCount; actualCount} ->
+    print_string (highlightFile fileInfo ^ " ");
+    Printf.printf "This needs to be applied to %d argument(s), we found %d.\n" expectedCount actualCount
   | Type_IncompatibleType {fileInfo; actual; expected} ->
     print_string (highlightFile fileInfo ^ " ");
     print_endline ("this is " ^ actual ^ ", wanted " ^ expected ^ " instead.")

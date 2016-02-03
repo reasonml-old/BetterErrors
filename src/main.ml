@@ -6,7 +6,8 @@ let chars1R = {|File .+, characters (\d+)|}
 let chars2R = {|File .+, characters .+-(\d+)|}
 
 (* helpers for getting the first (presumably only) match in a string *)
-let get_match pat str = Pcre.get_substring (Pcre.exec ~pat:pat str) 1
+let get_match_n n pat str = Pcre.get_substring (Pcre.exec ~pat:pat str) n
+let get_match = get_match_n 1
 let get_match_maybe pat str =
   try Some (Pcre.get_substring (Pcre.exec ~pat:pat str) 1)
   with Not_found -> None
@@ -17,23 +18,26 @@ let split sep str = Pcre.split ~pat:sep str
 
 (* agnostic extractors, turning err string into proper data structures *)
 let type_MismatchTypeArguments err errLines =
-  (* let filename = get_match filenameR err in
-  let line = get_match lineR err in
-  let chars1 = get_match chars1R err in
-  let chars2 = get_match chars2R err in *)
-  (* let regex = {|Error: The type constructor\s*([\w\.]*)\s*expects[\s]*(\d+)\s*argument\(s\),\s*but is here applied to\s*(\d+)\s*argument\(s\)|} in *)
-    Type_MismatchTypeArguments {
-      constructor = "asd";
-      expectedCount = 1;
-      observedCount = 2;
-    }
-    (* Type_MismatchTypeArguments (
-      filename ^ " " ^ line ^ ":" ^ chars1 ^ "-" ^ chars2 ^ "\n" ^
-      (List.nth fileLines ((int_of_string line) - 1)) ^ "\n" ^
-      (String.make (int_of_string chars1) ' ') ^
-      (String.make ((int_of_string chars2) - (int_of_string chars1)) '^') ^ "\n" ^
-      String.concat "\n" (List.tl errLines)
-    ) *)
+  let filename = get_match filenameR err in
+  let line = int_of_string (get_match lineR err) in
+  let chars1 = int_of_string (get_match chars1R err) in
+  let chars2 = int_of_string (get_match chars2R err) in
+
+  let allR = {|Error: The constructor ([\w\.]*) *expects[\s]*(\d+) *argument\(s\),\s*but is applied here to (\d+) argument\(s\)|} in
+  let typeConstructor = get_match_n 1 allR err in
+  let expectedCount = int_of_string @@ get_match_n 2 allR err in
+  let actualCount = int_of_string @@ get_match_n 3 allR err in
+  Type_MismatchTypeArguments {
+    fileInfo = {
+      content = Batteries.List.of_enum (BatFile.lines_of filename);
+      name = filename;
+      line = line;
+      cols = (chars1, chars2);
+    };
+    typeConstructor = typeConstructor;
+    expectedCount = expectedCount;
+    actualCount = actualCount;
+  }
 
 let type_UnboundValue err errLines = raise Not_found
 let type_SignatureMismatch err errLines = raise Not_found
@@ -220,7 +224,7 @@ let file_IllegalCharacter err errLines =
 let unparsable err errLines = Unparsable err
 
 let parsers = [
-  (* type_MismatchTypeArguments; *)
+  type_MismatchTypeArguments;
   type_UnboundValue;
   type_SignatureMismatch;
   type_SignatureItemMissing;
@@ -253,6 +257,6 @@ let () =
     let err = BatPervasives.input_all stdin in
     let errLines = split "\n" err in
       let matched = BatList.find_map (fun f ->
-        try Some (f err errLines) with Not_found -> None
+        try Some (f err errLines) with _ -> None
       ) parsers in Reporter.print matched
   with BatIO.No_more_input -> print_endline "All good!"

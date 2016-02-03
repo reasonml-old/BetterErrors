@@ -1,0 +1,3 @@
+tests/type_MismatchTypeArguments/type_MismatchTypeArguments_1.ml:4 14-21
+let morning = Coconut
+              ^^^^^^^ This needs to be applied to 1 argument(s), we found 0.
