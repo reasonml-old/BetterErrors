@@ -53,6 +53,11 @@ type illegalCharacter = {
   fileInfo: fileInfo;
   character: string;
 }
+type patternNotExhaustive = {
+  fileInfo: fileInfo;
+  unmatched: string list;
+  warningCode: int;
+}
 
 type message =
   | Type_MismatchTypeArguments of mismatchTypeArguments
@@ -82,7 +87,9 @@ type message =
 
   (* not in jordan's stuff *)
   | Warning_UnusedVariable of unusedVariable
-  | Warning_PatternNotExhaustive of unusedVariable
+
+  | Warning_PatternNotExhaustive of patternNotExhaustive
+
   | Warning_PatternUnused of unusedVariable
   | Warning_OptionalArgumentNotErased of unusedVariable
 

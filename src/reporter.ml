@@ -1,10 +1,10 @@
 open Types
 
 let highlightFile {content; name; line; cols = (chars1, chars2)} =
-    (Printf.sprintf "%s:%d %d-%d\n" name line chars1 chars2) ^
-    (List.nth content (line - 1)) ^ "\n" ^
-    (String.make chars1 ' ') ^
-    (String.make (chars2 - chars1) '^')
+  (Printf.sprintf "%s:%d %d-%d\n" name line chars1 chars2) ^
+  (List.nth content (line - 1)) ^ "\n" ^
+  (String.make chars1 ' ') ^
+  (String.make (chars2 - chars1) '^')
 
 let print msg = match msg with
   | Unparsable err -> print_endline "couldn't parse error, original:"; print_endline err
@@ -34,4 +34,12 @@ let print msg = match msg with
     (match suggestion with
     | None -> ()
     | Some h -> print_endline ("Hint: did you mean `" ^ h ^ "`?"))
+  | Warning_PatternNotExhaustive {fileInfo; unmatched; warningCode} ->
+    print_string (highlightFile fileInfo ^ " ");
+    Printf.printf "Warning %d: this match doesn't cover all possible values of the variant.\n" warningCode;
+    (match unmatched with
+    | [oneVariant] -> print_endline @@ "The case `" ^ oneVariant ^ "` is not matched"
+    | many ->
+        print_endline "These cases are not matched:";
+        List.iter (fun x -> print_endline @@ "- `" ^ x ^ "`") many)
   | _ -> print_endline "huh"

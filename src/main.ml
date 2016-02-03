@@ -194,6 +194,40 @@ let file_SyntaxError err errLines =
 let build_InconsistentAssumptions err errLines = raise Not_found
 let warning_CatchAll err errLines = raise Not_found
 let warning_UnusedVariable err errLines = raise Not_found
+
+let warning_PatternNotExhaustive err errLines =
+  let filename = get_match filenameR err in
+  let line = int_of_string (get_match lineR err) in
+  let chars1 = int_of_string (get_match chars1R err) in
+  (* let chars2 = int_of_string (get_match chars2R err) in *)
+
+  let unmatchedR = {|Warning 8: this pattern-matching is not exhaustive.\nHere is an example of a value that is not matched:\n(.+)|} in
+  let unmatchedRaw = get_match unmatchedR err in
+  (* ocaml has a bug/feature where it'll show that the range of the error for
+  the variant is from the first letter of "match bla with ..." to the end of the
+  whole pattern block, **as if the code was written on a single line**. This
+  might be because their file line reporting got too rigid and can't show you
+  line range. But for us it's pretty useless so we limit it to just highlight
+  the word match *)
+  let unmatched = if (BatString.get unmatchedRaw 0) = '(' then
+    (* format was (Variant1|Variant2|Variant3). We strip the surrounding parens *)
+    BatString.sub unmatchedRaw 1 (BatString.length unmatchedRaw - 2) |> split {|\||}
+  else
+    [unmatchedRaw]
+  in
+
+  Warning_PatternNotExhaustive {
+    fileInfo = {
+      content = Batteries.List.of_enum (BatFile.lines_of filename);
+      name = filename;
+      line = line;
+      cols = (chars1, chars1 + 5);
+    };
+    unmatched = unmatched;
+    warningCode = 8;
+  }
+
+let warning_PatternUnused err errLines = raise Not_found
 let warning_OptionalArgumentNotErased err errLines = raise Not_found
 
 (* need: list of legal characters *)
@@ -240,11 +274,15 @@ let parsers = [
   build_InconsistentAssumptions;
   warning_CatchAll;
   warning_UnusedVariable;
+
+  warning_PatternNotExhaustive;
+
+  warning_PatternUnused;
   warning_OptionalArgumentNotErased;
 
   file_IllegalCharacter;
-  unparsable;
   (* this should stay at last position. It's a catch-all that doesn't throw *)
+  unparsable;
 ]
 
 (* ------------------------ *)
