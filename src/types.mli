@@ -67,32 +67,24 @@ type message =
   | Type_UnboundModule of unboundModule
   | Type_UnboundRecordField of unboundRecordField
   | Type_UnboundConstructor of unboundConstructor
-
   | Type_UnboundTypeConstructor of unboundTypeConstructor
   | Type_AppliedTooMany of appliedTooMany
-
   | Type_RecordFieldNotInExpression of recordFieldNotInExpression
   | Type_RecordFieldError of recordFieldError
   (* might be the same thing as above? jordan wrote "record expression" instead
   of "pattern" *)
   | Type_RecordFieldNotBelong of recordFieldError
   | Type_FieldNotBelong of fieldNotBelong
-
   | Type_IncompatibleType of incompatibleType
   | Type_NotAFunction of notAFunction
   | File_SyntaxError of syntaxError
-
   | Build_InconsistentAssumptions of inconsistentAssumptions
   | Warning_CatchAll of catchAll
-
   (* not in jordan's stuff *)
   | Warning_UnusedVariable of unusedVariable
-
   | Warning_PatternNotExhaustive of patternNotExhaustive
-
   | Warning_PatternUnused of unusedVariable
   | Warning_OptionalArgumentNotErased of unusedVariable
-
   | File_IllegalCharacter of illegalCharacter
   | Unparsable of string
   (* | General_CatchAll of string *)

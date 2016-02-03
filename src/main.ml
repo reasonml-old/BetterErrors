@@ -10,43 +10,10 @@ let get_match pat str = Pcre.get_substring (Pcre.exec ~pat:pat str) 1
 let get_match_maybe pat str =
   try Some (Pcre.get_substring (Pcre.exec ~pat:pat str) 1)
   with Not_found -> None
-(* helpers for turning Not_found exception into an optional *)
-let exec ~rex str =
-  try Some (Pcre.exec ~rex str) with Not_found -> None
+(* helper for turning Not_found exception into an optional *)
+let exec ~rex str = try Some (Pcre.exec ~rex str) with Not_found -> None
 
 let split sep str = Pcre.split ~pat:sep str
-
-(* Perhaps this should be applied everywhere we see a type. *)
-(* let splitEquivalentTypes typeStr =
-   List.filter (fun typ -> (String.trim typ) != "") (split "=" typeStr)
-
-let getConflictPairs incompatText =
-  if !(Pcre.pmatch ~pat:"is not compatible with type"  incompatText) then None
-  else
-    let splitByIsNotCompatibleWith = split "is not compatible with type" incompatText in
-    let conflicts = [] in
-    let splitByType = List.map (fun text ->
-      let splitByType = split {|\bType\s|} text in
-
-    )
-    let splitByType = splitByIsNotCompatibleWith.map(function(text) {
-      let splitByType = text.split(/\bType\s/);
-      splitByType && splitByType.forEach(function(byType){
-        byType && byType.trim() && conflicts.push(byType.trim());
-      });
-    });
-    if (conflicts.length % 2 !== 0) {
-      throw new Error("Conflicts don't appear in pairs");
-    }
-    let conflictPairs = [];
-    for (let i = 0; i < conflicts.length; i+=2) {
-      conflictPairs.push({
-        inferred: splitEquivalentTypes(conflicts[i]),
-        expected: splitEquivalentTypes(conflicts[i+1])
-      });
-    }
-    return conflictPairs;
- *)
 
 (* agnostic extractors, turning err string into proper data structures *)
 let type_MismatchTypeArguments err errLines =
@@ -260,34 +227,27 @@ let parsers = [
   type_UnboundModule;
   type_UnboundRecordField;
   type_UnboundConstructor;
-
   type_UnboundTypeConstructor;
   type_AppliedTooMany;
-
   type_RecordFieldNotInExpression;
   type_RecordFieldError;
   type_FieldNotBelong;
-
   type_IncompatibleType;
   type_NotAFunction;
   file_SyntaxError;
-
   build_InconsistentAssumptions;
   warning_CatchAll;
   warning_UnusedVariable;
-
   warning_PatternNotExhaustive;
-
   warning_PatternUnused;
   warning_OptionalArgumentNotErased;
-
   file_IllegalCharacter;
   (* this should stay at last position. It's a catch-all that doesn't throw *)
   unparsable;
 ]
 
-(* ------------------------ *)
-
+(* entry point, for convenience purposes for now. Theoretically the parser and
+the reporters are decoupled *)
 let () =
   try
     let err = BatPervasives.input_all stdin in
