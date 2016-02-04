@@ -20,7 +20,7 @@ Executable rea
   BuildTools: ocamlbuild
   # install: true
   CompiledObject: byte
-  BuildDepends: Pcre, Batteries
+  BuildDepends: Pcre, Batteries, ANSITerminal
 
 Executable test
   Path: tests

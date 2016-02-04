@@ -21,18 +21,22 @@ let _printFile ?(sep=" | ") ~highlight:{line; cols = (chars1, chars2)} content =
   let startIndex = max 0 (line - 3) in
   let endIndex = min (List.length content - 1) (line + 3) in
   let lineNumWidth = numberOfDigits (List.length content) in
+  let highlightLength = chars2 - chars1 in
   let result = ref "" in
   for i = startIndex to endIndex do
-    result := !result ^ (pad (string_of_int (i + 1)) lineNumWidth) ^ sep ^ (List.nth content i) ^ "\n";
     if i = line - 1 then
-      result := !result ^ (String.make (chars1 + lineNumWidth + BatString.length sep) ' ')
-        ^ (String.make (chars2 - chars1) '^') ^ "\n"
-    else ()
+      let currLine = List.nth content i in
+      result := !result ^ (Printf.sprintf "%s" (pad (string_of_int (i + 1)) lineNumWidth)) ^ sep ^
+        (BatString.sub currLine 0 chars1) ^ (ANSITerminal.sprintf [ANSITerminal.red] "%s" (BatString.sub currLine chars1 highlightLength)) ^ (BatString.sub currLine chars2 ((BatString.length currLine) - chars2)) ^ "\n";
+      result := !result ^ (String.make (chars1 + lineNumWidth + BatString.length sep) ' ') ^
+        (String.make highlightLength '^') ^ "\n"
+    else
+      result := !result ^ (pad (string_of_int (i + 1)) lineNumWidth) ^ sep ^ (List.nth content i) ^ "\n"
   done;
   !result
 
 let printFile {content; name; line; cols = (chars1, chars2)} =
-  (Printf.sprintf "%s:%d %d-%d\n" name line chars1 chars2) ^
+  (ANSITerminal.sprintf [ANSITerminal.cyan] "%s:%d %d-%d\n" name line chars1 chars2) ^
   (_printFile
     ~sep: " | "
     ~highlight: {line = line; cols = (chars1, chars2)}

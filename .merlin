@@ -1,4 +1,4 @@
-PKG Pcre Batteries
+PKG Pcre Batteries ANSITerminal
 
 S src
 S tests/test.ml
