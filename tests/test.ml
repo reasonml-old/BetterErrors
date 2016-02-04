@@ -37,6 +37,10 @@ let () =
           let expected = BatIO.read_all inp in
           BatFile.with_file_in actualOutputName (fun inp2 ->
             let actual = BatIO.read_all inp2 in
+            (* swap-comment below two lines if you want to generate new expected
+            from the new actual *)
+
+            (* ignore @@ Sys.command @@ Printf.sprintf "cp %s %s" actualOutputName expectedOutputName *)
             if actual = expected then () else raise (Not_equal filename)
           )
         )
