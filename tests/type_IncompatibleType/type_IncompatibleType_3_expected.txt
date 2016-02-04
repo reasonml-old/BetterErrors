@@ -1,3 +1,8 @@
-tests/type_IncompatibleType/type_IncompatibleType_3.ml:6 8-13
-  bla = [|1|];
-        ^^^^^ this is 'a array, wanted string list instead.
+[36mtests/type_IncompatibleType/type_IncompatibleType_3.ml:6 8-13
+[0m4 | 
+5 | let takeMeAway = {
+6 |   bla = [31m[|1|][0m;
+            ^^^^^
+7 | }
+
+This is 'a array, wanted string list instead.

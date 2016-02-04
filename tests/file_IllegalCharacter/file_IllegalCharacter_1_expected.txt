@@ -1,3 +1,9 @@
-tests/file_IllegalCharacter/file_IllegalCharacter_1.ml:2 2-3
-  \hahaha look at me
-  ^ The character `\\` is illegal. EVERY CHARACTER THAT'S NOT AMERICAN IS ILLEGAL!
+[36mtests/file_IllegalCharacter/file_IllegalCharacter_1.ml:2 2-3
+[0m1 | let () =
+2 |   [31m\[0mhahaha look at me
+      ^
+3 |   roaming free
+4 |   this is a haiku
+5 |   kidding it's not
+
+The character `\\` is illegal. EVERY CHARACTER THAT'S NOT AMERICAN IS ILLEGAL!

@@ -1,4 +1,8 @@
-tests/type_AppliedTooMany/type_AppliedTooMany_1.ml:3 24-36
-let () = print_endline (omNomNomArgs 1 (fun x -> "a") 1)
-                        ^^^^^^^^^^^^ this function has type 'a -> (int -> 'b) -> string
+[36mtests/type_AppliedTooMany/type_AppliedTooMany_1.ml:3 24-36
+[0m1 | let omNomNomArgs a b = (ignore (b 1)); "hello world!"
+2 | 
+3 | let () = print_endline ([31momNomNomArgs[0m 1 (fun x -> "a") 1)
+                            ^^^^^^^^^^^^
+
+This function has type 'a -> (int -> 'b) -> string
 It accepts only 2 arguments. You gave more. Maybe you forgot a `;` somewhere?

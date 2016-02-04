@@ -1,4 +1,7 @@
-tests/file_SyntaxError/file_SyntaxError_1.ml:2 11-17
-  I'm glad you're looking at this file =)
-           ^^^^^^ the syntax's' wrong.
+[36mtests/file_SyntaxError/file_SyntaxError_1.ml:2 11-17
+[0m1 | let () =
+2 |   I'm glad [31myou're[0m looking at this file =)
+               ^^^^^^
+
+The syntax's' wrong.
 Note: the location indicated might not be accurate.

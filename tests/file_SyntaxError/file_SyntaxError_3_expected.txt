@@ -1,4 +1,6 @@
-tests/file_SyntaxError/file_SyntaxError_3.ml:1 0-1
-let a = (1, 2
-^ the syntax's' wrong.
+[36mtests/file_SyntaxError/file_SyntaxError_3.ml:1 0-1
+[0m1 | [31ml[0met a = (1, 2
+    ^
+
+The syntax's' wrong.
 Note: the location indicated might not be accurate.

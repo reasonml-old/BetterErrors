@@ -1,6 +1,11 @@
-tests/Warning_PatternNotExhaustive/Warning_PatternNotExhaustive_2.ml:6 12-17
-let say a = match a with
-            ^^^^^ Warning 8: this match doesn't cover all possible values of the variant.
+[36mtests/Warning_PatternNotExhaustive/Warning_PatternNotExhaustive_2.ml:6 12-17
+[0m4 |   | Hola of string
+5 | 
+6 | let say a = [31mmatch[0m a with
+                ^^^^^
+7 | | Hello -> ()
+
+Warning 8: this match doesn't cover all possible values of the variant.
 These cases are not matched:
 - `Goodbye`
 - `Hola _`

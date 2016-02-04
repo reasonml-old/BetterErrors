@@ -1,5 +1,6 @@
-type whereAm = {a: int}
-
-type asd =
+type whereAm = {
+  location: string
+}
+type greeting =
   | Hello of whereAmI
   | Goodbye
