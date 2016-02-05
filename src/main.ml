@@ -17,6 +17,19 @@ let exec ~rex str = try Some (Pcre.exec ~rex str) with Not_found -> None
 let split sep str = Pcre.split ~pat:sep str
 
 (* agnostic extractors, turning err string into proper data structures *)
+
+(* if you're first reading this code, skip this function for now and read the
+other ones. This function raises Not_found in order to bail and let the
+subsequent parsers parse the (certainly existing) error *)
+let noErrorNorWarning err errLines =
+  let errorR = {|Error: |} in
+  let error = get_match_maybe errorR err in
+  let warningR = {|Warning \d+: |} in
+  let warning = get_match_maybe warningR err in
+  match (error, warning) with
+  | (None, None) -> NoErrorNorWarning err
+  | _ -> raise Not_found
+
 let type_MismatchTypeArguments err errLines =
   let filename = get_match filenameR err in
   let line = int_of_string (get_match lineR err) in
@@ -244,9 +257,28 @@ let file_IllegalCharacter err errLines =
       character = character;
     }
 
+let unparsableButWithFileInfo err errLines =
+  let filename = get_match filenameR err in
+  let line = int_of_string (get_match lineR err) in
+  let chars1 = int_of_string (get_match chars1R err) in
+  let chars2 = int_of_string (get_match chars2R err) in
+  let errorR = {|Error: ([\s\S]+)|} in
+  let error = get_match errorR err in
+  UnparsableButWithFileInfo {
+    fileInfo = {
+      content = Batteries.List.of_enum (BatFile.lines_of filename);
+      name = filename;
+      line = line;
+      cols = (chars1, chars2);
+    };
+    error = error;
+  }
+
 let unparsable err errLines = Unparsable err
 
 let parsers = [
+  (* this should stay first. Gotta check if we even have an error *)
+  noErrorNorWarning;
   type_MismatchTypeArguments;
   type_UnboundValue;
   type_SignatureMismatch;
@@ -269,7 +301,10 @@ let parsers = [
   warning_PatternUnused;
   warning_OptionalArgumentNotErased;
   file_IllegalCharacter;
-  (* this should stay at last position. It's a catch-all that doesn't throw *)
+  (* these 2 should stay at last position. They're catch-alls *)
+  unparsableButWithFileInfo;
+  (* TODO: this _might_ never be reached if we can confirm that every wrong
+  output (the right ones are already handled by noErrorNorWarning above) *)
   unparsable;
 ]
 
@@ -282,4 +317,4 @@ let () =
       let matched = BatList.find_map (fun f ->
         try Some (f err errLines) with _ -> None
       ) parsers in Reporter.print matched
-  with BatIO.No_more_input -> print_endline "All good!"
+  with BatIO.No_more_input -> ()

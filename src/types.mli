@@ -67,6 +67,10 @@ type patternNotExhaustive = {
   unmatched: string list;
   warningCode: int;
 }
+type unparsableButWithFileInfo = {
+  fileInfo: fileInfo;
+  error: string;
+}
 
 type message =
   | Type_MismatchTypeArguments of mismatchTypeArguments
@@ -95,6 +99,8 @@ type message =
   | Warning_PatternUnused of unusedVariable
   | Warning_OptionalArgumentNotErased of unusedVariable
   | File_IllegalCharacter of illegalCharacter
+  | UnparsableButWithFileInfo of unparsableButWithFileInfo
   | Unparsable of string
+  | NoErrorNorWarning of string
   (* | General_CatchAll of string *)
   (* | Project_Unknown of string *)

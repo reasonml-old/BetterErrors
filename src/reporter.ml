@@ -18,8 +18,8 @@ let pad ?(ch=' ') content n =
   (BatString.make (n - (BatString.length content)) ch) ^ content
 
 let _printFile ?(sep=" | ") ~highlight:{line; cols = (chars1, chars2)} content =
-  let startIndex = max 0 (line - 3) in
-  let endIndex = min (List.length content - 1) (line + 3) in
+  let startIndex = max 0 (line - 4) in
+  let endIndex = min (List.length content - 1) (line + 2) in
   let lineNumWidth = numberOfDigits (List.length content) in
   let highlightLength = chars2 - chars1 in
   let result = ref "" in
@@ -45,7 +45,18 @@ let printFile {content; name; line; cols = (chars1, chars2)} =
   )
 
 let print msg = match msg with
-  | Unparsable err -> print_endline "couldn't parse error, original:"; print_endline err
+  (* let's handle the special cases first *)
+  | NoErrorNorWarning err ->
+    print_endline err;
+    ANSITerminal.printf [ANSITerminal.green] "%s\n" "✔ Seems fine!"
+  | UnparsableButWithFileInfo {fileInfo; error} ->
+    print_endline @@ printFile fileInfo;
+    print_string error
+  | Unparsable err ->
+    print_endline err;
+    ANSITerminal.printf [ANSITerminal.red] "%s.\n" "✘ Couldn't parse error."
+
+  (* normal cases now! *)
   | Type_MismatchTypeArguments {fileInfo; typeConstructor; expectedCount; actualCount} ->
     print_endline @@ printFile fileInfo;
     Printf.printf "This needs to be applied to %d argument(s), we found %d.\n" expectedCount actualCount
