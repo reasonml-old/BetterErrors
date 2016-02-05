@@ -27,6 +27,7 @@ let _printFile ?(sep=" | ") ~highlight:{line; cols = (chars1, chars2)} content =
     if i = line - 1 then
       let currLine = List.nth content i in
       result := !result ^ (Printf.sprintf "%s" (pad (string_of_int (i + 1)) lineNumWidth)) ^ sep ^
+        (* TODO: see warning_PatternNotExhaustive for error concerning sub *)
         (BatString.sub currLine 0 chars1) ^ (ANSITerminal.sprintf [ANSITerminal.red] "%s" (BatString.sub currLine chars1 highlightLength)) ^ (BatString.sub currLine chars2 ((BatString.length currLine) - chars2)) ^ "\n";
       result := !result ^ (String.make (chars1 + lineNumWidth + BatString.length sep) ' ') ^
         (String.make highlightLength '^') ^ "\n"
@@ -62,7 +63,7 @@ let print msg = match msg with
     print_endline "Maybe you forgot a `;` somewhere?"
   | File_SyntaxError {fileInfo} ->
     print_endline @@ printFile fileInfo;
-    print_endline "The syntax's' wrong.";
+    print_endline "The syntax is wrong.";
     print_endline "Note: the location indicated might not be accurate."
   | File_IllegalCharacter {fileInfo; character} ->
     print_endline @@ printFile fileInfo;

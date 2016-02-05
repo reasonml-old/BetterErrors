@@ -2,5 +2,5 @@
 [0m1 | [31ml[0met a = (1, 2
     ^
 
-The syntax's' wrong.
+The syntax is wrong.
 Note: the location indicated might not be accurate.

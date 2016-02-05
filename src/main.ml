@@ -203,7 +203,10 @@ let warning_PatternNotExhaustive err errLines =
   the word match *)
   let unmatched = if (BatString.get unmatchedRaw 0) = '(' then
     (* format was (Variant1|Variant2|Variant3). We strip the surrounding parens *)
-    BatString.sub unmatchedRaw 1 (BatString.length unmatchedRaw - 2) |> split {|\||}
+    unmatchedRaw
+    |> BatString.lchop
+    |> BatString.rchop
+    |> split {|\||}
   else
     [unmatchedRaw]
   in

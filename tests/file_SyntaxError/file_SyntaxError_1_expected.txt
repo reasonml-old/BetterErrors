@@ -3,5 +3,5 @@
 2 |   I'm glad [31myou're[0m looking at this file =)
                ^^^^^^
 
-The syntax's' wrong.
+The syntax is wrong.
 Note: the location indicated might not be accurate.

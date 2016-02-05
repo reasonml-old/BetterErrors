@@ -2,5 +2,5 @@
 [0m1 | let a = (print_char [31m'[0ma)
                         ^
 
-The syntax's' wrong.
+The syntax is wrong.
 Note: the location indicated might not be accurate.
