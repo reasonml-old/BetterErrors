@@ -21,7 +21,6 @@ type unboundValue = {
 type signatureMismatch = {constructor: string; expectedCount: int; observedCount: int}
 type signatureItemMissing = {constructor: string; expectedCount: int; observedCount: int}
 type unboundModule = {constructor: string; expectedCount: int; observedCount: int}
-type unboundRecordField = {constructor: string; expectedCount: int; observedCount: int}
 type unboundConstructor = {constructor: string; expectedCount: int; observedCount: int}
 
 type unboundTypeConstructor = {
@@ -71,6 +70,14 @@ type unparsableButWithFileInfo = {
   fileInfo: fileInfo;
   error: string;
 }
+type unboundRecordField = {
+  fileInfo: fileInfo;
+  recordField: string;
+  suggestion: string option;
+}
+type optionalArgumentNotErased = {
+  fileInfo: fileInfo;
+}
 
 type message =
   | Type_MismatchTypeArguments of mismatchTypeArguments
@@ -97,7 +104,7 @@ type message =
   | Warning_UnusedVariable of unusedVariable
   | Warning_PatternNotExhaustive of patternNotExhaustive
   | Warning_PatternUnused of unusedVariable
-  | Warning_OptionalArgumentNotErased of unusedVariable
+  | Warning_OptionalArgumentNotErased of optionalArgumentNotErased
   | File_IllegalCharacter of illegalCharacter
   | UnparsableButWithFileInfo of unparsableButWithFileInfo
   | Unparsable of string

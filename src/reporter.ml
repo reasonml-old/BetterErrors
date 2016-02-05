@@ -85,6 +85,16 @@ let print msg = match msg with
     (match suggestion with
     | None -> ()
     | Some h -> print_endline ("Hint: did you mean `" ^ h ^ "`?"))
+  | Type_UnboundValue {fileInfo; unboundValue; suggestion} ->
+    print_endline @@ printFile fileInfo;
+    (match suggestion with
+    | None -> print_endline ("`" ^ unboundValue ^ "` can't be found. Could it be a typo?")
+    | Some hint -> Printf.printf "`%s` can't be found. Did you mean `%s`?\n" unboundValue hint)
+  | Type_UnboundRecordField {fileInfo; recordField; suggestion} ->
+    print_endline @@ printFile fileInfo;
+    (match suggestion with
+    | None -> print_endline ("Field `" ^ recordField ^ "` can't be found in any declared types.")
+    | Some hint -> print_endline ("Field `" ^ recordField ^ "` can't be found in any declared types. Did you mean `" ^ hint ^ "`?\n"))
   | Warning_PatternNotExhaustive {fileInfo; unmatched; warningCode} ->
     print_endline @@ printFile fileInfo;
     Printf.printf "Warning %d: this match doesn't cover all possible values of the variant.\n" warningCode;
@@ -93,9 +103,7 @@ let print msg = match msg with
     | many ->
         print_endline "These cases are not matched:";
         List.iter (fun x -> print_endline @@ "- `" ^ x ^ "`") many)
-  | Type_UnboundValue {fileInfo; unboundValue; suggestion} ->
+  | Warning_OptionalArgumentNotErased {fileInfo} ->
     print_endline @@ printFile fileInfo;
-    (match suggestion with
-    | None -> print_endline ("`" ^ unboundValue ^ "` can't be found. Could it be a typo?")
-    | Some hint -> Printf.printf "`%s` can't be found. Did you mean `%s`?\n" unboundValue hint)
+    print_endline ("this optional argument cannot be erased.");
   | _ -> print_endline "huh"

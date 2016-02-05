@@ -76,8 +76,28 @@ let type_UnboundValue err errLines =
 let type_SignatureMismatch err errLines = raise Not_found
 let type_SignatureItemMissing err errLines = raise Not_found
 let type_UnboundModule err errLines = raise Not_found
-let type_UnboundRecordField err errLines = raise Not_found
 let type_UnboundConstructor err errLines = raise Not_found
+
+let type_UnboundRecordField err errLines =
+  let filename = get_match filenameR err in
+  let line = int_of_string (get_match lineR err) in
+  let chars1 = int_of_string (get_match chars1R err) in
+  let chars2 = int_of_string (get_match chars2R err) in
+
+  let recordFieldR = {|Error: Unbound record field (.+)|} in
+  let recordField = get_match recordFieldR err in
+  let suggestionR = {|Hint: Did you mean (.+)\?|} in
+  let suggestion = get_match_maybe suggestionR err in
+    Type_UnboundRecordField {
+      fileInfo = {
+        content = Batteries.List.of_enum (BatFile.lines_of filename);
+        name = filename;
+        line = line;
+        cols = (chars1, chars2);
+      };
+      recordField = recordField;
+      suggestion = suggestion
+    }
 
 let type_UnboundTypeConstructor err errLines =
   let filename = get_match filenameR err in
@@ -236,8 +256,19 @@ let warning_PatternNotExhaustive err errLines =
   }
 
 let warning_PatternUnused err errLines = raise Not_found
-let warning_OptionalArgumentNotErased err errLines = raise Not_found
-
+let warning_OptionalArgumentNotErased err errLines =
+  let filename = get_match filenameR err in
+  let line = int_of_string (get_match lineR err) in
+  let chars1 = int_of_string (get_match chars1R err) in
+  let chars2 = int_of_string (get_match chars2R err) in
+    Warning_OptionalArgumentNotErased {
+      fileInfo = {
+        content = Batteries.List.of_enum (BatFile.lines_of filename);
+        name = filename;
+        line = line;
+        cols = (chars1, chars2);
+      };
+    }
 (* need: list of legal characters *)
 let file_IllegalCharacter err errLines =
   let filename = get_match filenameR err in
