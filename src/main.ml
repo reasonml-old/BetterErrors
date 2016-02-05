@@ -39,7 +39,27 @@ let type_MismatchTypeArguments err errLines =
     actualCount = actualCount;
   }
 
-let type_UnboundValue err errLines = raise Not_found
+let type_UnboundValue err errLines =
+  let filename = get_match filenameR err in
+  let line = int_of_string (get_match lineR err) in
+  let chars1 = int_of_string (get_match chars1R err) in
+  let chars2 = int_of_string (get_match chars2R err) in
+
+  let unboundValueR = {|Error: Unbound value ([\w\.]*)|} in
+  let unboundValue = get_match unboundValueR err in
+  let suggestionR = {|Error: Unbound value [\w\.]*[\s\S]Hint: Did you mean (.+)\?|} in
+  let suggestion = get_match_maybe suggestionR err in
+  Type_UnboundValue {
+    fileInfo = {
+      content = Batteries.List.of_enum (BatFile.lines_of filename);
+      name = filename;
+      line = line;
+      cols = (chars1, chars2);
+    };
+    unboundValue = unboundValue;
+    suggestion = suggestion;
+  }
+
 let type_SignatureMismatch err errLines = raise Not_found
 let type_SignatureItemMissing err errLines = raise Not_found
 let type_UnboundModule err errLines = raise Not_found

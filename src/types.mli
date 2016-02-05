@@ -13,7 +13,11 @@ type mismatchTypeArguments = {
   expectedCount: int;
   actualCount: int;
 }
-type unboundValue = {constructor: string; expectedCount: int; observedCount: int}
+type unboundValue = {
+  fileInfo: fileInfo;
+  unboundValue: string;
+  suggestion: string option;
+}
 type signatureMismatch = {constructor: string; expectedCount: int; observedCount: int}
 type signatureItemMissing = {constructor: string; expectedCount: int; observedCount: int}
 type unboundModule = {constructor: string; expectedCount: int; observedCount: int}

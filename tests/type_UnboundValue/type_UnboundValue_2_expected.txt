@@ -1,4 +1,5 @@
-couldn't parse error, original:
-File "tests/type_UnboundValue/type_UnboundValue_2.ml", line 1, characters 21-24:
-Error: Unbound value nvm
+[36mtests/type_UnboundValue/type_UnboundValue_2.ml:1 21-24
+[0m1 | let callMe perhaps = [31mnvm[0m 1
+                         ^^^
 
+`nvm` can't be found. Could it be a typo?

@@ -1,5 +1,5 @@
-couldn't parse error, original:
-File "tests/type_UnboundValue/type_UnboundValue_1.ml", line 1, characters 21-27:
-Error: Unbound value perhap
-Hint: Did you mean perhaps?
+[36mtests/type_UnboundValue/type_UnboundValue_1.ml:1 21-27
+[0m1 | let callMe perhaps = [31mperhap[0m 1
+                         ^^^^^^
 
+`perhap` can't be found. Did you mean `perhaps`?

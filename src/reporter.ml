@@ -81,4 +81,9 @@ let print msg = match msg with
     | many ->
         print_endline "These cases are not matched:";
         List.iter (fun x -> print_endline @@ "- `" ^ x ^ "`") many)
+  | Type_UnboundValue {fileInfo; unboundValue; suggestion} ->
+    print_endline @@ printFile fileInfo;
+    (match suggestion with
+    | None -> print_endline ("`" ^ unboundValue ^ "` can't be found. Could it be a typo?")
+    | Some hint -> Printf.printf "`%s` can't be found. Did you mean `%s`?\n" unboundValue hint)
   | _ -> print_endline "huh"
