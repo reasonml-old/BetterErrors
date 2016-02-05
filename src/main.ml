@@ -76,7 +76,6 @@ let type_UnboundValue err errLines =
 let type_SignatureMismatch err errLines = raise Not_found
 let type_SignatureItemMissing err errLines = raise Not_found
 let type_UnboundModule err errLines = raise Not_found
-let type_UnboundConstructor err errLines = raise Not_found
 
 let type_UnboundRecordField err errLines =
   let filename = get_match filenameR err in
@@ -98,6 +97,8 @@ let type_UnboundRecordField err errLines =
       recordField = recordField;
       suggestion = suggestion
     }
+
+let type_UnboundConstructor err errLines = raise Not_found
 
 let type_UnboundTypeConstructor err errLines =
   let filename = get_match filenameR err in
@@ -261,6 +262,11 @@ let warning_OptionalArgumentNotErased err errLines =
   let line = int_of_string (get_match lineR err) in
   let chars1 = int_of_string (get_match chars1R err) in
   let chars2 = int_of_string (get_match chars2R err) in
+  (* Hardcoding 16 for now. We might one day switch to use the variant from
+  https://github.com/ocaml/ocaml/blob/901c67559469acc58935e1cc0ced253469a8c77a/utils/warnings.ml#L20 *)
+  let optionalErasureWarningR = {|Warning 16: this optional argument cannot be erased\.|} in
+  (* Using get_match_n because there's nothing to capture from the error message. *)
+  let _ = get_match_n 0 optionalErasureWarningR err in
     Warning_OptionalArgumentNotErased {
       fileInfo = {
         content = Batteries.List.of_enum (BatFile.lines_of filename);
