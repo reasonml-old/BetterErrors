@@ -98,4 +98,9 @@ let print msg = match msg with
     (match suggestion with
     | None -> print_endline ("`" ^ unboundValue ^ "` can't be found. Could it be a typo?")
     | Some hint -> Printf.printf "`%s` can't be found. Did you mean `%s`?\n" unboundValue hint)
+  | Type_UnboundRecordField {fileInfo; recordField; suggestion} ->
+    print_endline @@ printFile fileInfo;
+    (match suggestion with
+    | None -> print_endline ("Field `" ^ recordField ^ "` can't be found in any declared types.")
+    | Some hint -> print_endline ("Field `" ^ recordField ^ "` can't be found in any declared types. Did you mean `" ^ hint ^ "`?\n"))
   | _ -> print_endline "huh"
