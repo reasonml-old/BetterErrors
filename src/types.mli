@@ -70,11 +70,13 @@ type unparsableButWithFileInfo = {
   fileInfo: fileInfo;
   error: string;
 }
-
 type unboundRecordField = {
   fileInfo: fileInfo;
   recordField: string;
   suggestion: string option;
+}
+type optionalArgumentNotErased = {
+  fileInfo: fileInfo;
 }
 
 type message =
@@ -102,7 +104,7 @@ type message =
   | Warning_UnusedVariable of unusedVariable
   | Warning_PatternNotExhaustive of patternNotExhaustive
   | Warning_PatternUnused of unusedVariable
-  | Warning_OptionalArgumentNotErased of unusedVariable
+  | Warning_OptionalArgumentNotErased of optionalArgumentNotErased
   | File_IllegalCharacter of illegalCharacter
   | UnparsableButWithFileInfo of unparsableButWithFileInfo
   | Unparsable of string

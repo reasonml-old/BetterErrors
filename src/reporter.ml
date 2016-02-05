@@ -85,14 +85,6 @@ let print msg = match msg with
     (match suggestion with
     | None -> ()
     | Some h -> print_endline ("Hint: did you mean `" ^ h ^ "`?"))
-  | Warning_PatternNotExhaustive {fileInfo; unmatched; warningCode} ->
-    print_endline @@ printFile fileInfo;
-    Printf.printf "Warning %d: this match doesn't cover all possible values of the variant.\n" warningCode;
-    (match unmatched with
-    | [oneVariant] -> print_endline @@ "The case `" ^ oneVariant ^ "` is not matched"
-    | many ->
-        print_endline "These cases are not matched:";
-        List.iter (fun x -> print_endline @@ "- `" ^ x ^ "`") many)
   | Type_UnboundValue {fileInfo; unboundValue; suggestion} ->
     print_endline @@ printFile fileInfo;
     (match suggestion with
@@ -103,4 +95,15 @@ let print msg = match msg with
     (match suggestion with
     | None -> print_endline ("Field `" ^ recordField ^ "` can't be found in any declared types.")
     | Some hint -> print_endline ("Field `" ^ recordField ^ "` can't be found in any declared types. Did you mean `" ^ hint ^ "`?\n"))
+  | Warning_PatternNotExhaustive {fileInfo; unmatched; warningCode} ->
+    print_endline @@ printFile fileInfo;
+    Printf.printf "Warning %d: this match doesn't cover all possible values of the variant.\n" warningCode;
+    (match unmatched with
+    | [oneVariant] -> print_endline @@ "The case `" ^ oneVariant ^ "` is not matched"
+    | many ->
+        print_endline "These cases are not matched:";
+        List.iter (fun x -> print_endline @@ "- `" ^ x ^ "`") many)
+  | Warning_OptionalArgumentNotErased {fileInfo} ->
+    print_endline @@ printFile fileInfo;
+    print_endline ("this optional argument cannot be erased.");
   | _ -> print_endline "huh"
