@@ -1,5 +1,6 @@
 [36mtests/Warning_PatternNotExhaustive/Warning_PatternNotExhaustive_1.ml:5 12-17
-[0m3 |   | Goodbye
+[0m2 |   | Hello
+3 |   | Goodbye
 4 | 
 5 | let say a = [31mmatch[0m a with
                 ^^^^^

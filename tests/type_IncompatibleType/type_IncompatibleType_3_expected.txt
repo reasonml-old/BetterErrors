@@ -1,5 +1,6 @@
 [36mtests/type_IncompatibleType/type_IncompatibleType_3.ml:6 8-13
-[0m4 | 
+[0m3 | }
+4 | 
 5 | let takeMeAway = {
 6 |   bla = [31m[|1|][0m;
             ^^^^^

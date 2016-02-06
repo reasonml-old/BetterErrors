@@ -1,5 +1,10 @@
-couldn't parse error, original:
-File "tests/type_UnboundRecordField/type_UnboundRecordField_2.ml", line 8, characters 2-6:
-Error: Unbound record field helo
-Hint: Did you mean hello?
+[36mtests/type_UnboundRecordField/type_UnboundRecordField_2.ml:8 2-6
+[0m5 | 
+6 | let bla = {
+7 |   a = 5;
+8 |   [31mhelo[0m = 6;
+      ^^^^
+9 | }
+
+Field `helo` can't be found in any record type. Did you mean `hello`?
 

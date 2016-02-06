@@ -1,4 +1,9 @@
-couldn't parse error, original:
-File "tests/type_UnboundRecordField/type_UnboundRecordField_1.ml", line 7, characters 2-3:
-Error: Unbound record field b
+[36mtests/type_UnboundRecordField/type_UnboundRecordField_1.ml:7 2-3
+[0m4 | 
+5 | let bla = {
+6 |   a = 5;
+7 |   [31mb[0m = 6;
+      ^
+8 | }
 
+Field `b` can't be found in any record type.

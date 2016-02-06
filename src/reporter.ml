@@ -49,12 +49,15 @@ let print msg = match msg with
   | NoErrorNorWarning err ->
     print_endline err;
     ANSITerminal.printf [ANSITerminal.green] "%s\n" "✔ Seems fine!"
+  | Warning_CatchAll {fileInfo; warningCode; message} ->
+    print_endline @@ printFile fileInfo;
+    Printf.printf "Warning %d: %s\n" warningCode message
   | UnparsableButWithFileInfo {fileInfo; error} ->
     print_endline @@ printFile fileInfo;
     print_string error
   | Unparsable err ->
     print_endline err;
-    ANSITerminal.printf [ANSITerminal.red] "%s.\n" "✘ Couldn't parse error."
+    ANSITerminal.printf [ANSITerminal.red] "%s\n" "✘ There might be an error."
 
   (* normal cases now! *)
   | Type_MismatchTypeArguments {fileInfo; typeConstructor; expectedCount; actualCount} ->
@@ -93,8 +96,8 @@ let print msg = match msg with
   | Type_UnboundRecordField {fileInfo; recordField; suggestion} ->
     print_endline @@ printFile fileInfo;
     (match suggestion with
-    | None -> print_endline ("Field `" ^ recordField ^ "` can't be found in any declared types.")
-    | Some hint -> print_endline ("Field `" ^ recordField ^ "` can't be found in any declared types. Did you mean `" ^ hint ^ "`?\n"))
+    | None -> print_endline ("Field `" ^ recordField ^ "` can't be found in any record type.")
+    | Some hint -> print_endline ("Field `" ^ recordField ^ "` can't be found in any record type. Did you mean `" ^ hint ^ "`?\n"))
   | Warning_PatternNotExhaustive {fileInfo; unmatched; warningCode} ->
     print_endline @@ printFile fileInfo;
     Printf.printf "Warning %d: this match doesn't cover all possible values of the variant.\n" warningCode;
@@ -103,7 +106,8 @@ let print msg = match msg with
     | many ->
         print_endline "These cases are not matched:";
         List.iter (fun x -> print_endline @@ "- `" ^ x ^ "`") many)
-  | Warning_OptionalArgumentNotErased {fileInfo} ->
+  | Warning_OptionalArgumentNotErased {fileInfo; warningCode} ->
+    (* TODO: better msg *)
     print_endline @@ printFile fileInfo;
-    print_endline ("this optional argument cannot be erased.");
+    Printf.printf "Warning %d: This optional argument cannot be erased.\n" warningCode;
   | _ -> print_endline "huh"

@@ -37,7 +37,11 @@ type appliedTooMany = {
 type recordFieldNotInExpression = {constructor: string; expectedCount: int; observedCount: int}
 type recordFieldError = {constructor: string; expectedCount: int; observedCount: int}
 type inconsistentAssumptions = {constructor: string; expectedCount: int; observedCount: int}
-type catchAll = {constructor: string; expectedCount: int; observedCount: int}
+type catchAll = {
+  fileInfo: fileInfo;
+  warningCode: int;
+  message: string;
+}
 type unusedVariable = {constructor: string; expectedCount: int; observedCount: int}
 
 type fieldNotBelong = {
@@ -77,6 +81,7 @@ type unboundRecordField = {
 }
 type optionalArgumentNotErased = {
   fileInfo: fileInfo;
+  warningCode: int;
 }
 
 type message =
@@ -99,15 +104,13 @@ type message =
   | Type_NotAFunction of notAFunction
   | File_SyntaxError of syntaxError
   | Build_InconsistentAssumptions of inconsistentAssumptions
-  | Warning_CatchAll of catchAll
-  (* not in jordan's stuff *)
   | Warning_UnusedVariable of unusedVariable
   | Warning_PatternNotExhaustive of patternNotExhaustive
   | Warning_PatternUnused of unusedVariable
   | Warning_OptionalArgumentNotErased of optionalArgumentNotErased
   | File_IllegalCharacter of illegalCharacter
+  | Warning_CatchAll of catchAll
   | UnparsableButWithFileInfo of unparsableButWithFileInfo
   | Unparsable of string
   | NoErrorNorWarning of string
-  (* | General_CatchAll of string *)
   (* | Project_Unknown of string *)

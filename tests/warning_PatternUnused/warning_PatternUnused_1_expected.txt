@@ -1,4 +1,9 @@
-couldn't parse error, original:
-File "tests/warning_PatternUnused/warning_PatternUnused_1.ml", line 8, characters 2-3:
+[36mtests/warning_PatternUnused/warning_PatternUnused_1.ml:8 2-3
+[0m5 | let say a = match a with
+6 | | Hello -> ()
+7 | | Goodbye -> ()
+8 | | [31m_[0m -> ()
+      ^
+
 Warning 11: this match case is unused.
 

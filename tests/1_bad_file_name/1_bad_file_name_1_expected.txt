@@ -1,4 +1,5 @@
-couldn't parse error, original:
 File "tests/1_bad_file_name/1_bad_file_name_1.ml", line 1:
 Warning 24: bad source file name: "1_bad_file_name_1" is not a valid module name.
 
+[31m✘ There might be an error.
+[0m

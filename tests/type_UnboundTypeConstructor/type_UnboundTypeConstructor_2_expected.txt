@@ -1,5 +1,6 @@
 [36mtests/type_UnboundTypeConstructor/type_UnboundTypeConstructor_2.ml:5 13-21
-[0m3 | }
+[0m2 |   location: string
+3 | }
 4 | type greeting =
 5 |   | Hello of [31mwhereAmI[0m
                  ^^^^^^^^

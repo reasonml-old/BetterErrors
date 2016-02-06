@@ -1,5 +1,6 @@
 [36mtests/Warning_PatternNotExhaustive/Warning_PatternNotExhaustive_2.ml:6 12-17
-[0m4 |   | Hola of string
+[0m3 |   | Goodbye
+4 |   | Hola of string
 5 | 
 6 | let say a = [31mmatch[0m a with
                 ^^^^^

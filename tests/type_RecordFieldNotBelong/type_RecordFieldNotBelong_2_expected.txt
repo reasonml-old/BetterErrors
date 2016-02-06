@@ -1,5 +1,12 @@
-couldn't parse error, original:
-File "tests/type_RecordFieldNotBelong/type_RecordFieldNotBelong_2.ml", line 8, characters 2-4:
-Error: This record expression is expected to have type point
-       The field xs does not belong to type point
+[36mtests/type_RecordFieldNotBelong/type_RecordFieldNotBelong_2.ml:8 2-4
+[0m 5 | }
+ 6 | 
+ 7 | let myPoint: point = {
+ 8 |   [31mxs[0m = 0;
+       ^^
+ 9 |   ys = 10;
+10 |   dogs = "hi";
+11 | };
 
+This record expression is expected to have type point
+       The field xs does not belong to type point

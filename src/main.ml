@@ -218,7 +218,6 @@ let file_SyntaxError err errLines =
     }
 
 let build_InconsistentAssumptions err errLines = raise Not_found
-let warning_CatchAll err errLines = raise Not_found
 let warning_UnusedVariable err errLines = raise Not_found
 
 let warning_PatternNotExhaustive err errLines =
@@ -264,9 +263,9 @@ let warning_OptionalArgumentNotErased err errLines =
   let chars2 = int_of_string (get_match chars2R err) in
   (* Hardcoding 16 for now. We might one day switch to use the variant from
   https://github.com/ocaml/ocaml/blob/901c67559469acc58935e1cc0ced253469a8c77a/utils/warnings.ml#L20 *)
-  let optionalErasureWarningR = {|Warning 16: this optional argument cannot be erased\.|} in
-  (* Using get_match_n because there's nothing to capture from the error message. *)
-  let _ = get_match_n 0 optionalErasureWarningR err in
+  (* TODO: extract the name of the argument *)
+  let allR = {|Warning 16: this optional argument cannot be erased\.|} in
+  let _ = get_match_n 0 allR err in
     Warning_OptionalArgumentNotErased {
       fileInfo = {
         content = Batteries.List.of_enum (BatFile.lines_of filename);
@@ -274,6 +273,7 @@ let warning_OptionalArgumentNotErased err errLines =
         line = line;
         cols = (chars1, chars2);
       };
+      warningCode = 16;
     }
 (* need: list of legal characters *)
 let file_IllegalCharacter err errLines =
@@ -294,11 +294,32 @@ let file_IllegalCharacter err errLines =
       character = character;
     }
 
+let warning_CatchAll err errLines =
+  let filename = get_match filenameR err in
+  let line = int_of_string (get_match lineR err) in
+  let chars1 = int_of_string (get_match chars1R err) in
+  let chars2 = int_of_string (get_match chars2R err) in
+
+  let allR = {|Warning (\d+): ([\s\S]+)|} in
+  let warningCode = int_of_string (get_match_n 1 allR err) in
+  let message = get_match_n 2 allR err in
+  Warning_CatchAll {
+    fileInfo = {
+      content = Batteries.List.of_enum (BatFile.lines_of filename);
+      name = filename;
+      line = line;
+      cols = (chars1, chars2);
+    };
+    warningCode = warningCode;
+    message = message;
+  }
+
 let unparsableButWithFileInfo err errLines =
   let filename = get_match filenameR err in
   let line = int_of_string (get_match lineR err) in
   let chars1 = int_of_string (get_match chars1R err) in
   let chars2 = int_of_string (get_match chars2R err) in
+
   let errorR = {|Error: ([\s\S]+)|} in
   let error = get_match errorR err in
   UnparsableButWithFileInfo {
@@ -332,13 +353,13 @@ let parsers = [
   type_NotAFunction;
   file_SyntaxError;
   build_InconsistentAssumptions;
-  warning_CatchAll;
   warning_UnusedVariable;
   warning_PatternNotExhaustive;
   warning_PatternUnused;
   warning_OptionalArgumentNotErased;
   file_IllegalCharacter;
-  (* these 2 should stay at last position. They're catch-alls *)
+  (* these 3 should stay at last position. They're catch-alls *)
+  warning_CatchAll;
   unparsableButWithFileInfo;
   (* TODO: this _might_ never be reached if we can confirm that every wrong
   output (the right ones are already handled by noErrorNorWarning above) *)
