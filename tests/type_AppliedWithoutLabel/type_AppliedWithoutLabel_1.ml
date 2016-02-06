@@ -1,4 +1,4 @@
-(* let () = print_endline "asd" "dsa" *)
-let asd ?a ?b = "asd"
+let f ~a ~b c = ()
 
-let () = print_endline (asd ())
+let () =
+  f 1 2

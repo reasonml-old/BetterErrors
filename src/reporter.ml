@@ -21,14 +21,17 @@ let _printFile ?(sep=" | ") ~highlight:{line; cols = (chars1, chars2)} content =
   let startIndex = max 0 (line - 4) in
   let endIndex = min (List.length content - 1) (line + 2) in
   let lineNumWidth = numberOfDigits (List.length content) in
-  let highlightLength = chars2 - chars1 in
   let result = ref "" in
   for i = startIndex to endIndex do
     if i = line - 1 then
       let currLine = BatList.at content i in
-      result := !result ^ (Printf.sprintf "%s" (pad (string_of_int (i + 1)) lineNumWidth)) ^ sep ^
-        (* TODO: see warning_PatternNotExhaustive for error concerning sub *)
-        (BatString.sub currLine 0 chars1) ^ (ANSITerminal.sprintf [ANSITerminal.red] "%s" (BatString.sub currLine chars1 highlightLength)) ^ (BatString.sub currLine chars2 ((BatString.length currLine) - chars2)) ^ "\n";
+      result := !result ^ (Printf.sprintf "%s" (pad (string_of_int (i + 1)) lineNumWidth))
+        ^ sep ^ (BatString.slice ~last:chars1 currLine) ^
+        (ANSITerminal.sprintf [ANSITerminal.red] "%s" (BatString.slice ~first:chars1 ~last:chars2 currLine))
+        ^ (BatString.slice ~first:chars2 currLine) ^ "\n";
+      (* sometimes chars2 can exceed the line's length, see
+      warning_PatternNotExhaustive in main for more explanation *)
+      let highlightLength = (min (BatString.length currLine) chars2) - chars1 in
       result := !result ^ (String.make (chars1 + lineNumWidth + BatString.length sep) ' ') ^
         (String.make highlightLength '^') ^ "\n"
     else

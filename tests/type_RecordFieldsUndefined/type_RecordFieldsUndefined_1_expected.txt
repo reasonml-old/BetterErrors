@@ -1,4 +1,10 @@
-couldn't parse error, original:
-File "tests/type_RecordFieldsUndefined/type_RecordFieldsUndefined_1.ml", line 6, characters 10-22:
-Error: Some record fields are undefined: b
+[36mtests/type_RecordFieldsUndefined/type_RecordFieldsUndefined_1.ml:6 10-22
+[0m3 |   b: string;
+4 | }
+5 | 
+6 | let bla = [31m{[0m
+              ^
+7 |   a = 5;
+8 | }
 
+Some record fields are undefined: b
