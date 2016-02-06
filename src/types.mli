@@ -82,6 +82,7 @@ type unboundRecordField = {
 type optionalArgumentNotErased = {
   fileInfo: fileInfo;
   warningCode: int;
+  argumentName: string;
 }
 
 type message =

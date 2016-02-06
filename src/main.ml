@@ -256,6 +256,9 @@ let warning_PatternNotExhaustive err errLines =
   }
 
 let warning_PatternUnused err errLines = raise Not_found
+
+(* need: offending optional argument name from AST *)
+(* need: offending function name *)
 let warning_OptionalArgumentNotErased err errLines =
   let filename = get_match filenameR err in
   let line = int_of_string (get_match lineR err) in
@@ -263,8 +266,9 @@ let warning_OptionalArgumentNotErased err errLines =
   let chars2 = int_of_string (get_match chars2R err) in
   (* Hardcoding 16 for now. We might one day switch to use the variant from
   https://github.com/ocaml/ocaml/blob/901c67559469acc58935e1cc0ced253469a8c77a/utils/warnings.ml#L20 *)
-  (* TODO: extract the name of the argument *)
   let allR = {|Warning 16: this optional argument cannot be erased\.|} in
+  let fileLines = Batteries.List.of_enum (BatFile.lines_of filename) in
+  let fileLine = BatList.at fileLines (line - 1) in
   let _ = get_match_n 0 allR err in
     Warning_OptionalArgumentNotErased {
       fileInfo = {
@@ -274,7 +278,9 @@ let warning_OptionalArgumentNotErased err errLines =
         cols = (chars1, chars2);
       };
       warningCode = 16;
+      argumentName = BatString.slice ~first:chars1 ~last:chars2 fileLine;
     }
+
 (* need: list of legal characters *)
 let file_IllegalCharacter err errLines =
   let filename = get_match filenameR err in

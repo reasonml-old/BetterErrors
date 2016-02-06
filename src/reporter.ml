@@ -25,14 +25,14 @@ let _printFile ?(sep=" | ") ~highlight:{line; cols = (chars1, chars2)} content =
   let result = ref "" in
   for i = startIndex to endIndex do
     if i = line - 1 then
-      let currLine = List.nth content i in
+      let currLine = BatList.at content i in
       result := !result ^ (Printf.sprintf "%s" (pad (string_of_int (i + 1)) lineNumWidth)) ^ sep ^
         (* TODO: see warning_PatternNotExhaustive for error concerning sub *)
         (BatString.sub currLine 0 chars1) ^ (ANSITerminal.sprintf [ANSITerminal.red] "%s" (BatString.sub currLine chars1 highlightLength)) ^ (BatString.sub currLine chars2 ((BatString.length currLine) - chars2)) ^ "\n";
       result := !result ^ (String.make (chars1 + lineNumWidth + BatString.length sep) ' ') ^
         (String.make highlightLength '^') ^ "\n"
     else
-      result := !result ^ (pad (string_of_int (i + 1)) lineNumWidth) ^ sep ^ (List.nth content i) ^ "\n"
+      result := !result ^ (pad (string_of_int (i + 1)) lineNumWidth) ^ sep ^ (BatList.at content i) ^ "\n"
   done;
   !result
 
@@ -106,8 +106,8 @@ let print msg = match msg with
     | many ->
         print_endline "These cases are not matched:";
         List.iter (fun x -> print_endline @@ "- `" ^ x ^ "`") many)
-  | Warning_OptionalArgumentNotErased {fileInfo; warningCode} ->
-    (* TODO: better msg *)
+  | Warning_OptionalArgumentNotErased {fileInfo; warningCode; argumentName} ->
     print_endline @@ printFile fileInfo;
-    Printf.printf "Warning %d: This optional argument cannot be erased.\n" warningCode;
+    Printf.printf "Warning %d: %s is an optional argument at last position; calling the function by omitting %s might be confused with currying.\n" warningCode argumentName argumentName;
+    print_endline "The rule: an optional argument is erased as soon as the 1st positional (i.e. neither labeled nor optional) argument defined after it is passed in."
   | _ -> print_endline "huh"
