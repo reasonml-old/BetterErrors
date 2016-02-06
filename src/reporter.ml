@@ -104,7 +104,7 @@ let print msg = match msg with
   | Type_UnboundModule {fileInfo; unboundModule} ->
     print_endline @@ printFile fileInfo;
     print_endline ("Module `" ^ unboundModule ^ "` not found in included libraries.");
-    let pckName = String.lowercase unboundModule in
+    let pckName = BatString.lowercase unboundModule in
     print_endline (
       "Hint: your build rules might be missing a link. If you're using: \n" ^
       " - Oasis: make sure you have `"^ pckName ^"` under `BuildDepends` in your _oasis file.\n" ^
