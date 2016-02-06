@@ -20,7 +20,13 @@ type unboundValue = {
 }
 type signatureMismatch = {constructor: string; expectedCount: int; observedCount: int}
 type signatureItemMissing = {constructor: string; expectedCount: int; observedCount: int}
-type unboundModule = {constructor: string; expectedCount: int; observedCount: int}
+
+type unboundModule = {
+  fileInfo: fileInfo;
+  unboundModule: string;
+  suggestion: string option;
+}
+
 type unboundConstructor = {constructor: string; expectedCount: int; observedCount: int}
 
 type unboundTypeConstructor = {

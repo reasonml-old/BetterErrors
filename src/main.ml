@@ -75,7 +75,26 @@ let type_UnboundValue err errLines =
 
 let type_SignatureMismatch err errLines = raise Not_found
 let type_SignatureItemMissing err errLines = raise Not_found
-let type_UnboundModule err errLines = raise Not_found
+
+let type_UnboundModule err errLines =
+  let filename = get_match filenameR err in
+  let line = int_of_string (get_match lineR err) in
+  let chars1 = int_of_string (get_match chars1R err) in
+  let chars2 = int_of_string (get_match chars2R err) in
+  let unboundModuleR = {|Error: Unbound module ([\w\.]*)|} in
+  let unboundModule = get_match unboundModuleR err in
+  let suggestionR = {|Error: Unbound module [\w\.]*[\s\S]Hint: Did you mean (.+)\?|} in
+  let suggestion = get_match_maybe suggestionR err in
+  Type_UnboundModule {
+    fileInfo = {
+      content = Batteries.List.of_enum (BatFile.lines_of filename);
+      name = filename;
+      line = line;
+      cols = (chars1, chars2);
+    };
+    unboundModule = unboundModule;
+    suggestion = suggestion;
+  }
 
 (* need: if there's a hint, show which record type it is *)
 let type_UnboundRecordField err errLines =
