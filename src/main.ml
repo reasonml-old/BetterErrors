@@ -77,6 +77,7 @@ let type_SignatureMismatch err errLines = raise Not_found
 let type_SignatureItemMissing err errLines = raise Not_found
 let type_UnboundModule err errLines = raise Not_found
 
+(* need: if there's a hint, show which record type it is *)
 let type_UnboundRecordField err errLines =
   let filename = get_match filenameR err in
   let line = int_of_string (get_match lineR err) in
