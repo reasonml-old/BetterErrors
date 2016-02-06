@@ -101,6 +101,15 @@ let print msg = match msg with
     (match suggestion with
     | None -> print_endline ("Field `" ^ recordField ^ "` can't be found in any record type.")
     | Some hint -> print_endline ("Field `" ^ recordField ^ "` can't be found in any record type. Did you mean `" ^ hint ^ "`?\n"))
+  | Type_UnboundModule {fileInfo; unboundModule} ->
+    print_endline @@ printFile fileInfo;
+    print_endline ("Module `" ^ unboundModule ^ "` not found in included libraries.");
+    let pckName = BatString.lowercase unboundModule in
+    print_endline (
+      "Hint: your build rules might be missing a link. If you're using: \n" ^
+      " - Oasis: make sure you have `"^ pckName ^"` under `BuildDepends` in your _oasis file.\n" ^
+      " - ocamlbuild: make sure you have `-pkgs "^ pckName ^"` in your build command.\n" ^
+      " - ocamlc | ocamlopt: make sure you have `-I +"^ pckName ^"` in your build command before the source files.")
   | Warning_PatternNotExhaustive {fileInfo; unmatched; warningCode} ->
     print_endline @@ printFile fileInfo;
     Printf.printf "Warning %d: this match doesn't cover all possible values of the variant.\n" warningCode;
