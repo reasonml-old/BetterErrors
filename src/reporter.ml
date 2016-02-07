@@ -81,6 +81,10 @@ let print msg = match msg with
   | File_SyntaxError {fileInfo} ->
     print_endline @@ printFile fileInfo;
     print_endline "The syntax is wrong.";
+    let {content; name; line; cols = (chars1, chars2)} = fileInfo in
+    if chars2 - chars1 = 1 && (BatList.at content (line - 1)).[chars1] = ';' then
+      print_endline "Semicolon can be tricky!"
+    else ();
     print_endline "Note: the location indicated might not be accurate."
   | File_IllegalCharacter {fileInfo; character} ->
     print_endline @@ printFile fileInfo;
