@@ -77,13 +77,16 @@ let print msg = match msg with
     print_endline ("This function has type " ^ functionType);
     Printf.printf "It accepts only %d arguments. You gave more. " expectedArgCount;
     print_endline "Maybe you forgot a `;` somewhere?"
-  | File_SyntaxError {fileInfo} ->
+  | File_SyntaxError {fileInfo; offendingString; hint} ->
     print_endline @@ printFile fileInfo;
-    print_endline "The syntax is wrong.";
-    let {content; name; line; cols = (chars1, chars2)} = fileInfo in
-    if chars2 - chars1 = 1 && (BatList.at content (line - 1)).[chars1] = ';' then
-      print_endline "Semicolon can be tricky!"
-    else ();
+    print_endline @@ (match hint with
+      | Some a -> "The syntax is wrong: " ^ a
+      | None -> "The syntax is wrong.");
+    (match offendingString with
+      | ";" -> print_endline "Semicolon is an infix symbol used *between* expressions that return `unit` (aka \"nothing\")."
+      | "else" -> print_endline @@ "Did you happen to have put a semicolon on the line before else?"
+        ^ " Also, `then` accepts a single expression. If you've put many, wrap them in parentheses."
+      | _ -> ());
     print_endline "Note: the location indicated might not be accurate."
   | File_IllegalCharacter {fileInfo; character} ->
     print_endline @@ printFile fileInfo;
@@ -123,6 +126,10 @@ let print msg = match msg with
         List.iter (fun x -> print_endline @@ "- `" ^ x ^ "`") many)
   | Warning_OptionalArgumentNotErased {fileInfo; warningCode; argumentName} ->
     print_endline @@ printFile fileInfo;
-    Printf.printf "Warning %d: %s is an optional argument at last position; calling the function by omitting %s might be confused with currying.\n" warningCode argumentName argumentName;
+    Printf.printf
+      "Warning %d: %s is an optional argument at last position; calling the function by omitting %s might be confused with currying.\n"
+      warningCode
+      argumentName
+      argumentName;
     print_endline "The rule: an optional argument is erased as soon as the 1st positional (i.e. neither labeled nor optional) argument defined after it is passed in."
   | _ -> print_endline "huh"

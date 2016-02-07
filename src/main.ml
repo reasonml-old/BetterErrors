@@ -220,21 +220,31 @@ let file_SyntaxError err errLines =
   let chars1 = int_of_string (get_match chars1R err) in
   let chars2 = int_of_string (get_match chars2R err) in
 
-  let fieldR = {|Error: Syntax error|} in
+  let allR = {|Error: Syntax error|} in
   let fileLines = Batteries.List.of_enum (BatFile.lines_of filename) in
    (* some syntax errors will make the output point at the last line + 1, char
    0-0, to indicate e.g. "there's something missing at the end here". Ofc that
-   isn't a valid location to point to in a reporter *)
+   isn't a valid location to point to in a reporter. See syntax error test 3 *)
   let passedBoundary = List.length fileLines = line - 1 in
-    (* raise the same error than if we failed to match *)
-    if not (Pcre.pmatch ~pat:fieldR err) then raise Not_found
-    else File_SyntaxError {
+  (* raise the same error than if we failed to match *)
+  if not (Pcre.pmatch ~pat:allR err) then raise Not_found
+  else
+    let correctedLineNum = if passedBoundary then line - 1 else line in
+    let correctedChars2 = if passedBoundary then chars2 + 1 else chars2 in
+    let hintR = {|Error: Syntax error: (.+)|} in
+    let hint = get_match_maybe hintR err in
+    File_SyntaxError {
       fileInfo = {
         content = Batteries.List.of_enum (BatFile.lines_of filename);
         name = filename;
-        line = if passedBoundary then line - 1 else line;
-        cols = (chars1, if passedBoundary then chars2 + 1 else chars2);
+        line = correctedLineNum;
+        cols = (chars1, correctedChars2);
       };
+      hint = hint;
+      offendingString = BatString.slice
+        ~first:chars1
+        ~last:correctedChars2
+        (BatList.at fileLines (correctedLineNum - 1));
     }
 
 let build_InconsistentAssumptions err errLines = raise Not_found

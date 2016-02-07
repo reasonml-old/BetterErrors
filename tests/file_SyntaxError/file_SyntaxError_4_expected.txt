@@ -5,5 +5,5 @@
 5 | type output = file list[31;4m;[0m
 
 The syntax is wrong.
-Semicolon can be tricky!
+Semicolon is an infix symbol used *between* expressions that return `unit` (aka "nothing").
 Note: the location indicated might not be accurate.

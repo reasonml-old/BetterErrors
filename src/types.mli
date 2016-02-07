@@ -66,6 +66,8 @@ type notAFunction = {
 }
 type syntaxError = {
   fileInfo: fileInfo;
+  offendingString: string;
+  hint: string option;
 }
 type illegalCharacter = {
   fileInfo: fileInfo;

@@ -1,5 +1,5 @@
 [36mtests/file_SyntaxError/file_SyntaxError_3.ml:1 0-1
 [0m1 | [31;4ml[0met a = (1, 2
 
-The syntax is wrong.
+The syntax is wrong: ')' expected
 Note: the location indicated might not be accurate.
