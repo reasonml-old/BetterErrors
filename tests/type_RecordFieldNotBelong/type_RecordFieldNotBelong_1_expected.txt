@@ -2,8 +2,7 @@
 [0m6 | type lol =
 7 |   | Something of asd
 8 | 
-9 | let bla (Something {a; [31mb[0m}) = 1
-                           ^
+9 | let bla (Something {a; [31;4mb[0m}) = 1
 
 This record pattern is expected to have type asd
        The field b does not belong to type asd

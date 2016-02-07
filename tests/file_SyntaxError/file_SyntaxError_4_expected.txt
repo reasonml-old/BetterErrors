@@ -2,8 +2,7 @@
 [0m2 |   path: string;
 3 |   messages: message list;
 4 | }
-5 | type output = file list[31m;[0m
-                           ^
+5 | type output = file list[31;4m;[0m
 
 The syntax is wrong.
 Semicolon can be tricky!

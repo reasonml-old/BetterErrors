@@ -2,8 +2,7 @@
 [0m5 | 
 6 | let bla = {
 7 |   a = 5;
-8 |   [31mhelo[0m = 6;
-      ^^^^
+8 |   [31;4mhelo[0m = 6;
 9 | }
 
 Field `helo` can't be found in any record type. Did you mean `hello`?

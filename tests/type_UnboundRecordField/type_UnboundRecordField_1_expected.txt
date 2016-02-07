@@ -2,8 +2,7 @@
 [0m4 | 
 5 | let bla = {
 6 |   a = 5;
-7 |   [31mb[0m = 6;
-      ^
+7 |   [31;4mb[0m = 6;
 8 | }
 
 Field `b` can't be found in any record type.

@@ -2,8 +2,7 @@
 [0m3 | }
 4 | 
 5 | let takeMeAway = {
-6 |   bla = [31m[|1|][0m;
-            ^^^^^
+6 |   bla = [31;4m[|1|][0m;
 7 | }
 
 This is 'a array, wanted string list instead.

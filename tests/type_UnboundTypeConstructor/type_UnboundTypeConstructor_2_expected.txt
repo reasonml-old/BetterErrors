@@ -2,8 +2,7 @@
 [0m2 |   location: string
 3 | }
 4 | type greeting =
-5 |   | Hello of [31mwhereAmI[0m
-                 ^^^^^^^^
+5 |   | Hello of [31;4mwhereAmI[0m
 6 |   | Goodbye
 
 The type constructor whereAmI can't be found.

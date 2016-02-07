@@ -2,8 +2,7 @@
 [0m3 |   | Goodbye
 4 |   | Hola of string
 5 | 
-6 | let say a = [31mmatch[0m a with
-                ^^^^^
+6 | let say a = [31;4mmatch[0m a with
 7 | | Hello -> ()
 
 Warning 8: this match doesn't cover all possible values of the variant.
