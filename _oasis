@@ -38,12 +38,9 @@ Executable table
   CompiledObject: byte
   BuildDepends: Pcre, Batteries, ANSITerminal
 
-# Another comment, this builds a library called rea
-# Library rea
-#   Path: src
-#   # oasis will figure out the dependencies,
-#   # Just list the modules you want public,
-#   # Note that there's no .ml, just give the name
-#   Modules: Rea
-#   CompiledObject: byte
-#   # BuildDepends: some_package
+Executable nuclidereporter
+  Path: src
+  MainIs: NuclideReporter.ml
+  BuildTools: ocamlbuild
+  CompiledObject: byte
+  BuildDepends: Pcre, Batteries, ANSITerminal
