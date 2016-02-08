@@ -134,7 +134,7 @@ let printAssumingErrorsAndWarnings l = l |> BatList.iter (fun {fileInfo; errors;
   )
 )
 
-let print content = match content with
+let print (content: result) = match content with
   (* handle the special cases first *)
   | NoErrorNorWarning err ->
     print_endline err;
