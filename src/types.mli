@@ -1,20 +1,9 @@
-(* type termKind = Expression | Pattern *)
-(* type conflictPair = {inferred: string list; expected: string list} *)
-type fileInfo = {
-  name: string;
-  content: string list;
-  line: int;
-  cols: int * int;
-}
-
 type mismatchTypeArguments = {
-  fileInfo: fileInfo;
   typeConstructor: string;
   expectedCount: int;
   actualCount: int;
 }
 type unboundValue = {
-  fileInfo: fileInfo;
   unboundValue: string;
   suggestion: string option;
 }
@@ -22,7 +11,6 @@ type signatureMismatch = {constructor: string; expectedCount: int; observedCount
 type signatureItemMissing = {constructor: string; expectedCount: int; observedCount: int}
 
 type unboundModule = {
-  fileInfo: fileInfo;
   unboundModule: string;
   suggestion: string option;
 }
@@ -30,12 +18,10 @@ type unboundModule = {
 type unboundConstructor = {constructor: string; expectedCount: int; observedCount: int}
 
 type unboundTypeConstructor = {
-  fileInfo: fileInfo;
   namespacedConstructor: string;
   suggestion: string option;
 }
 type appliedTooMany = {
-  fileInfo: fileInfo;
   functionType: string;
   expectedArgCount: int;
 }
@@ -44,56 +30,60 @@ type recordFieldNotInExpression = {constructor: string; expectedCount: int; obse
 type recordFieldError = {constructor: string; expectedCount: int; observedCount: int}
 type inconsistentAssumptions = {constructor: string; expectedCount: int; observedCount: int}
 type catchAll = {
-  fileInfo: fileInfo;
   warningCode: int;
   message: string;
 }
 type unusedVariable = {constructor: string; expectedCount: int; observedCount: int}
 
 type fieldNotBelong = {
-  fileInfo: fileInfo;
   actual: string;
   expected: string;
 }
 type incompatibleType = {
-  fileInfo: fileInfo;
   actual: string;
   expected: string;
 }
 type notAFunction = {
-  fileInfo: fileInfo;
   actual: string;
 }
 type syntaxError = {
-  fileInfo: fileInfo;
   offendingString: string;
   hint: string option;
 }
 type illegalCharacter = {
-  fileInfo: fileInfo;
   character: string;
 }
 type patternNotExhaustive = {
-  fileInfo: fileInfo;
   unmatched: string list;
   warningCode: int;
 }
 type unparsableButWithFileInfo = {
-  fileInfo: fileInfo;
   error: string;
 }
 type unboundRecordField = {
-  fileInfo: fileInfo;
   recordField: string;
   suggestion: string option;
 }
 type optionalArgumentNotErased = {
-  fileInfo: fileInfo;
   warningCode: int;
   argumentName: string;
 }
 
-type message =
+(* -------------------------- *)
+
+type warningType =
+  | Warning_UnusedVariable of unusedVariable
+  | Warning_PatternNotExhaustive of patternNotExhaustive
+  | Warning_PatternUnused of unusedVariable
+  | Warning_OptionalArgumentNotErased of optionalArgumentNotErased
+  | Warning_CatchAll of string
+
+type warning = {
+  code: int;
+  warningType: warningType;
+}
+
+type error =
   | Type_MismatchTypeArguments of mismatchTypeArguments
   | Type_UnboundValue of unboundValue
   | Type_SignatureMismatch of signatureMismatch
@@ -113,13 +103,24 @@ type message =
   | Type_NotAFunction of notAFunction
   | File_SyntaxError of syntaxError
   | Build_InconsistentAssumptions of inconsistentAssumptions
-  | Warning_UnusedVariable of unusedVariable
-  | Warning_PatternNotExhaustive of patternNotExhaustive
-  | Warning_PatternUnused of unusedVariable
-  | Warning_OptionalArgumentNotErased of optionalArgumentNotErased
   | File_IllegalCharacter of illegalCharacter
-  | Warning_CatchAll of catchAll
-  | UnparsableButWithFileInfo of unparsableButWithFileInfo
-  | Unparsable of string
+  | Error_CatchAll of string
+
+type fileInfo = {
+  (* TODO: check filePath def in PR *)
+  path: string;
+  cachedContent: string list;
+}
+type 'a withRange = {
+  range: Atom.Range.t;
+  parsedContent: 'a;
+}
+type fileAndErrorsAndWarnings = {
+  fileInfo: fileInfo;
+  errors: (error withRange) list;
+  warnings: (warning withRange) list;
+}
+type result =
   | NoErrorNorWarning of string
-  (* | Project_Unknown of string *)
+  | Unparsable of string
+  | ErrorsAndWarnings of fileAndErrorsAndWarnings list
