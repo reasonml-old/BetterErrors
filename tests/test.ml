@@ -3,6 +3,7 @@ Sys.command calls below happen in the wrong directory *)
 
 let folders = [
   (* (directory, number of tests) *)
+  ("noError", 1);
   ("1_bad_file_name", 1);
   ("file_IllegalCharacter", 1);
   ("file_SyntaxError", 5);
@@ -15,7 +16,7 @@ let folders = [
   ("type_RecordFieldsUndefined", 1);
   ("type_UnboundRecordField", 2);
   ("type_UnboundTypeConstructor", 2);
-  ("type_UnboundValue", 2);
+  ("type_UnboundValue", 4);
   ("warning_OptionalArgumentNotErased", 1);
   ("Warning_PatternNotExhaustive", 2);
   ("warning_PatternUnused", 1);
