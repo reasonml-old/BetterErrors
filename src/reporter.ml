@@ -106,7 +106,8 @@ let printAssumingErrorsAndWarnings l = l |> BatList.iter (fun {fileInfo; errors;
         "Hint: your build rules might be missing a link. If you're using: \n" ^
         " - Oasis: make sure you have `"^ pckName ^"` under `BuildDepends` in your _oasis file.\n" ^
         " - ocamlbuild: make sure you have `-pkgs "^ pckName ^"` in your build command.\n" ^
-        " - ocamlc | ocamlopt: make sure you have `-I +"^ pckName ^"` in your build command before the source files.")
+        " - ocamlc | ocamlopt: make sure you have `-I +"^ pckName ^"` in your build command before the source files.\n" ^
+        " - ocamlfind: make sure you have `-package "^ pckName ^" -linkpkg` in your build command.\n")
     |  _ -> print_endline "huh"
   );
   warnings |> BatList.iter (fun {range; parsedContent = {code; warningType}} -> match warningType with
