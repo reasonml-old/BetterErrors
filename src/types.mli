@@ -110,7 +110,7 @@ type error =
 
 type fileInfo = {
   (* TODO: check filePath def in PR *)
-  path: string;
+  filePath: string;
   cachedContent: string list;
 }
 type 'a withRange = {

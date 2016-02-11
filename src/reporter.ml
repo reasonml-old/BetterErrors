@@ -53,12 +53,12 @@ let _printFile ?(sep=" | ") ~highlight:((startRow, startColumn), (endRow, endCol
   done;
   !result
 
-let printFile {cachedContent; path} range =
+let printFile {cachedContent; filePath} range =
   let ((startRow, startColumn), (endRow, endColumn)) = range in
   (ANSITerminal.sprintf
     [ANSITerminal.cyan]
     "%s:%d:%d-%d:%d\n"
-    path
+    filePath
     (startRow + 1)
     startColumn
     (endRow + 1)

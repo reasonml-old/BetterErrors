@@ -305,7 +305,7 @@ let extractFromFileMatch fileMatch: (fileInfo * Atom.Range.t * string) =
         | _ -> (None, None)
       in
       (
-        {path = fileName; cachedContent = cachedContent},
+        {filePath = fileName; cachedContent = cachedContent},
         (normalizeCompilerLineColsToRange
           ~fileLines:cachedContent
           ~lineRaw:lineNum

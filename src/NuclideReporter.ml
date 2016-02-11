@@ -3,7 +3,7 @@ open Atom
 
 let reporterName = "Merlin"
 
-let makeFullPath fileInfo = (BatSys.getcwd ()) ^ "/" ^ fileInfo.path
+let makeFullPath fileInfo = (BatSys.getcwd ()) ^ "/" ^ fileInfo.filePath
 
 let makeFileDiagnosticMessage typee errorMessage ?tip fileInfo range =
   let fullErrorMessage = errorMessage ^ (match tip with
