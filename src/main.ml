@@ -281,28 +281,31 @@ expected, since you get easy column count through 3 - 0 *)
 
 (* we'll use 0-indexed. It's a reporter (printer)'s job to normalize to
 1-indexed if it desires so *)
-let compilerLineColsToRange ~fileLines ~lineRaw ~col1Raw ~col2Raw =
-  (* TODO: accept strings to constraint usage to beginning *)
-  let currLineNum = ref lineRaw in
-  let totalCharsRemaining = ref (col2Raw - col1Raw) in
-  let currCol = ref col1Raw in
+let normalizeCompilerLineColsToRange ~fileLines ~lineRaw ~col1Raw ~col2Raw =
+(* accept strings to constraint usage to parse directly from raw data *)
+  let startRow = (int_of_string lineRaw) - 1 in
+  (* some error msgs don't have column numbers; we normal them to 0 here *)
+  let col1 = BatOption.map_default int_of_string 0 col1Raw in
+  let col2 = BatOption.map_default int_of_string 0 col2Raw in
+  let currRow = ref startRow in
+  let totalCharsRemaining = ref (col2 - col1) in
+  let currCol = ref col1 in
   (* crawling back to imperative programming begging for forgiveness *)
   while !totalCharsRemaining > 0 do
-    let currLine = BatList.at fileLines (!currLineNum - 1) in
-    (* no need for an extra - 1 here bc of now col2Raw is given; see comments
-    above *)
+    let currLine = BatList.at fileLines !currRow in
+    (* no need for an extra - 1 here bc of now col1 is given; see comments above *)
     let remainingCharsCountOnLine = (BatString.length currLine) - !currCol in
     (* TODO: -1 here? +1 here? *)
     totalCharsRemaining := !totalCharsRemaining - remainingCharsCountOnLine;
     if !totalCharsRemaining > 0 then (
-      currLineNum := !currLineNum + 1;
+      currRow := !currRow + 1;
       currCol := 0
     ) else
       (* break *)
-      currCol := remainingCharsCountOnLine
+      currCol := !currCol + remainingCharsCountOnLine
   done;
   (* (startRow, startColumn), (endRow, endColumn) *)
-  ((lineRaw, col1Raw), (!currLineNum, !currCol))
+  ((startRow, col1), (!currRow, !currCol))
 
 (* has the side-effect of reading the file *)
 let extractFromFileMatch fileMatch: (fileInfo * Atom.Range.t * string) =
@@ -311,15 +314,14 @@ let extractFromFileMatch fileMatch: (fileInfo * Atom.Range.t * string) =
     | [Delim _; Group (_, fileName); Group (_, lineNum); col1; col2; Text text] ->
       let cachedContent = Batteries.List.of_enum (BatFile.lines_of fileName) in
       let (col1Raw, col2Raw) = match (col1, col2) with
-        | (Group (_, c1), Group (_, c2)) -> (int_of_string c1, int_of_string c2)
-        (* some error msgs don't have column numbers; we normal them to 0 here *)
-        | _ -> (0, 0)
+        | (Group (_, c1), Group (_, c2)) -> (Some c1, Some c2)
+        | _ -> (None, None)
       in
       (
         {path = fileName; cachedContent = cachedContent},
-        (compilerLineColsToRange
+        (normalizeCompilerLineColsToRange
           ~fileLines:cachedContent
-          ~lineRaw:(int_of_string lineNum)
+          ~lineRaw:lineNum
           ~col1Raw:col1Raw
           ~col2Raw:col2Raw
         ),
@@ -520,7 +522,7 @@ let () =
   Reporter.print @@ doThis badBuildOutput2;
   print_endline "=======4===========";
   Reporter.print @@ doThis badBuildOutput1;
-  print_endline "=======5==========="
+  (* print_endline "=======5===========" *)
 
 (* entry point, for convenience purposes for now. Theoretically the parser and
 the reporters are decoupled *)
