@@ -3,8 +3,12 @@ type align =
   | Right
   | Center
 
+let ansiR = {|\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]|}
+let getLength s = BatString.length (Pcre.replace ~pat:ansiR s)
+
 let pad ~align ~totalWidth content =
-  let freeSpace = totalWidth - (BatString.length content) in
+  let freeSpace = totalWidth - (getLength content) in
+
   match align with
   | Left -> content ^ (BatString.make freeSpace ' ')
   | Right -> (BatString.make freeSpace ' ') ^ content
@@ -21,8 +25,7 @@ let drawHorizontalLine ~style:(left, mid, right, horizontal) ~row ~maxes =
     |> BatList.interleave ~first:left ~last:(right ^ "\n") mid
     |> BatString.concat ""
 
-let column l i = BatList.map (fun row -> BatString.length @@ BatList.nth row i) l
-
+let column l i = BatList.map (fun row -> getLength @@ BatList.at row i) l
 (* -let onlyVertical =    ("┌", "┬", "┐", "├", "┼", "┤", "└", "┴", "┘", "", "│") *)
 (* -let onlyHorizontal =  (" ", "─", " ", " ", "─", " ", " ", "─", " ", "─", " ")
 -let compact =         ("", "", "", "", "", "", "", "", "", "", "")
@@ -118,7 +121,7 @@ let table ?(align=Left) ?(style=simple) ?(padding=1) lists =
     (drawHorizontalLine ~style:(mLeft, mMid, mRight, mBar) ~row: anyRow ~maxes)
   |> BatString.concat ""
 
-let () = print_endline @@ table [["1"; "213ad"; "3";]; ["4"; "5"; "6"]]
+(* let () = print_endline @@ table [["1"; "213ad"; "3";]; ["4"; "5"; "6"]]
 let () = print_endline @@ table ~style:double ~align:Right [["1"; "213ad"; "3";]; ["4"; "5"; "6"]]
 let () = print_endline @@ table ~style:dotted ~align:Center [["1"; "213ad"; "3";]; ["4"; "5"; "6"]]
 let () = print_endline @@ table ~style:compact [["1"; "213ad"; "3";]; ["4"; "5"; "6"]]
@@ -127,4 +130,4 @@ let () = print_endline @@ table ~style:onlyVertical [["1"; "213ad"; "3";]; ["4";
 let () = print_endline @@ table ~style:onlyHorizontal ~align:Right [["1"; "213ad"; "3";]; ["4"; "5"; "6"]]
 let () = print_endline @@ table ~style:onlyInner [["1"; "type bread ="]; ["2"; "  | Coconut of string"]; ["3"; "let morning = Coconut"]]
 let () = print_endline @@ table ~style:onlyOuter [["1"; "type bread ="]; ["2"; "  | Coconut of string"]; ["3"; "let morning = Coconut"]]
-let () = print_endline @@ table ~style:testCode [["1"; "type bread ="]; ["2"; "  | Coconut of string"]; ["3"; "let morning = Coconut"]]
+let () = print_endline @@ table ~style:testCode [["1"; "type bread ="]; ["2"; "  | Coconut of string"]; ["3"; "let morning = Coconut"]] *)
