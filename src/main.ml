@@ -263,36 +263,54 @@ expected, since you get easy column count through 3 - 0 *)
 (* we'll use 0-indexed. It's a reporter (printer)'s job to normalize to
 1-indexed if it desires so *)
 let normalizeCompilerLineColsToRange ~fileLines ~lineRaw ~col1Raw ~col2Raw =
-(* accept strings to constraint usage to parse directly from raw data *)
+  (* accept strings to constraint usage to parse directly from raw data *)
   let line = (int_of_string lineRaw) in
-  let startRow = if line = 1 + BatList.length fileLines then
-    (* sometimes the compiler points to AFTER the end of the line for e.g.
-    syntax error *)
-    line - 1 - 1 (* convert line to index, then -1 bc of said reason *)
-  else line - 1 in
-  (* some error msgs don't have column numbers; we normal them to 0 here *)
-  let col1 = BatOption.map_default int_of_string 0 col1Raw in
-  let col2 = BatOption.map_default int_of_string 0 col2Raw in
-  let currRow = ref startRow in
-  let totalCharsRemaining = ref (col2 - col1) in
-  let currCol = ref col1 in
-  (* crawling back to imperative programming begging for forgiveness *)
-  let break = ref false in
-  while not !break do
-    let currLine = BatList.at fileLines !currRow in
-    (* no need for an extra - 1 here bc of now col1 is given; see comments
-    before function *)
-    let remainingCharsCountOnLine = (BatString.length currLine) - !currCol in
-    if remainingCharsCountOnLine < !totalCharsRemaining then (
-      currRow := !currRow + 1;
-      currCol := 0;
-      totalCharsRemaining := !totalCharsRemaining - remainingCharsCountOnLine
-    ) else
-      break := true;
-      currCol := !currCol + !totalCharsRemaining
-  done;
-  (* (startRow, startColumn), (endRow, endColumn) *)
-  ((startRow, col1), (!currRow, !currCol))
+  let fileLength = BatList.length fileLines in
+  let isOCamlBeingBadAndPointingToALineBeyondFileLength = line > fileLength in
+  let (col1, col2) = if isOCamlBeingBadAndPointingToALineBeyondFileLength then
+    let lastDamnReachableSpotInTheFile =
+      BatString.length @@ BatList.at fileLines (fileLength - 1)
+    in (lastDamnReachableSpotInTheFile - 1, lastDamnReachableSpotInTheFile)
+  else
+    match (col1Raw, col2Raw) with
+    | (Some a, Some b) -> (int_of_string a, int_of_string b)
+    (* some error msgs don't have column numbers; we normal them to 0 here *)
+    | _ -> (0, 0)
+  in
+  let startRow = if isOCamlBeingBadAndPointingToALineBeyondFileLength then
+    fileLength - 1
+  else
+    line - 1
+  in
+  let currentLine = BatList.at fileLines startRow in
+  let numberOfCharsBetweenStartAndEndColumn = col2 - col1 in
+  let numberOfCharsLeftToCoverOnStartingRow =
+    (* +1 bc ocaml looooves to count new line as a char below when the error
+    spans multiple lines*)
+    (BatString.length currentLine) - col1 + 1
+  in
+  if numberOfCharsBetweenStartAndEndColumn <= numberOfCharsLeftToCoverOnStartingRow then
+    ((startRow, col1), (startRow, col2))
+  else
+    let howManyCharsLeftToCoverOnSubsequentLines =
+      ref (numberOfCharsBetweenStartAndEndColumn - numberOfCharsLeftToCoverOnStartingRow)
+    in
+    let suddenlyFunctionalProgrammingOutOfNowhere =
+      fileLines
+      |> BatList.drop (startRow + 1)
+      |> BatList.map BatString.length
+      |> BatList.take_while (fun numberOfCharsOnThisLine ->
+        if !howManyCharsLeftToCoverOnSubsequentLines > numberOfCharsOnThisLine then
+          (howManyCharsLeftToCoverOnSubsequentLines :=
+            !howManyCharsLeftToCoverOnSubsequentLines - numberOfCharsOnThisLine - 1;
+          true)
+        else false)
+    in
+    let howManyMoreRowsCoveredSinceStartRow =
+      1 + BatList.length suddenlyFunctionalProgrammingOutOfNowhere
+    in
+    ((startRow, col1),
+    (startRow + howManyMoreRowsCoveredSinceStartRow, !howManyCharsLeftToCoverOnSubsequentLines))
 
 (* has the side-effect of reading the file *)
 let extractFromFileMatch fileMatch: (fileInfo * Atom.Range.t * string) =
