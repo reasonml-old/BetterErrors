@@ -20,8 +20,8 @@ let split sep str = Pcre.split ~pat:sep str
 (* TODO: don't make these raise error *)
 
 (* TODO: differing portion data structure a-la diff table *)
-let type_MismatchTypeArguments err _ =
-  let allR = {|Error: The constructor ([\w\.]*) *expects[\s]*(\d+) *argument\(s\),\s*but is applied here to (\d+) argument\(s\)|} in
+let type_MismatchTypeArguments err _ _ =
+  let allR = {|The constructor ([\w\.]*) *expects[\s]*(\d+) *argument\(s\),\s*but is applied here to (\d+) argument\(s\)|} in
   let typeConstructor = get_match_n 1 allR err in
   let expectedCount = int_of_string @@ get_match_n 2 allR err in
   let actualCount = int_of_string @@ get_match_n 3 allR err in
@@ -31,11 +31,11 @@ let type_MismatchTypeArguments err _ =
     actualCount = actualCount;
   }
 
-let type_UnboundValue err _ =
-  let unboundValueR = {|Error: Unbound value ([\w\.]*)|} in
+let type_UnboundValue err _ _ =
+  let unboundValueR = {|Unbound value ([\w\.]*)|} in
   let unboundValue = get_match unboundValueR err in
   (* TODO: there might be more than one suggestion *)
-  let suggestionR = {|Error: Unbound value [\w\.]*[\s\S]Hint: Did you mean (.+)\?|} in
+  let suggestionR = {|Unbound value [\w\.]*[\s\S]Hint: Did you mean (.+)\?|} in
   let suggestion = get_match_maybe suggestionR err in
   Type_UnboundValue {
     unboundValue = unboundValue;
@@ -45,10 +45,10 @@ let type_UnboundValue err _ =
 let type_SignatureMismatch err fileInfo = raise Not_found
 let type_SignatureItemMissing err fileInfo = raise Not_found
 
-let type_UnboundModule err _ =
-  let unboundModuleR = {|Error: Unbound module ([\w\.]*)|} in
+let type_UnboundModule err _ _ =
+  let unboundModuleR = {|Unbound module ([\w\.]*)|} in
   let unboundModule = get_match unboundModuleR err in
-  let suggestionR = {|Error: Unbound module [\w\.]*[\s\S]Hint: Did you mean (.+)\?|} in
+  let suggestionR = {|Unbound module [\w\.]*[\s\S]Hint: Did you mean (.+)\?|} in
   let suggestion = get_match_maybe suggestionR err in
   Type_UnboundModule {
     unboundModule = unboundModule;
@@ -56,8 +56,8 @@ let type_UnboundModule err _ =
   }
 
 (* need: if there's a hint, show which record type it is *)
-let type_UnboundRecordField err _ =
-  let recordFieldR = {|Error: Unbound record field (.+)|} in
+let type_UnboundRecordField err _ _ =
+  let recordFieldR = {|Unbound record field (.+)|} in
   let recordField = get_match recordFieldR err in
   let suggestionR = {|Hint: Did you mean (.+)\?|} in
   let suggestion = get_match_maybe suggestionR err in
@@ -68,8 +68,8 @@ let type_UnboundRecordField err _ =
 
 let type_UnboundConstructor err fileInfo = raise Not_found
 
-let type_UnboundTypeConstructor err _ =
-  let constructorR = {|Error: Unbound type constructor (.+)|} in
+let type_UnboundTypeConstructor err _ _ =
+  let constructorR = {|Unbound type constructor (.+)|} in
   let constructor = get_match constructorR err in
   let suggestionR = {|Hint: Did you mean (.+)\?|} in
   let suggestion = get_match_maybe suggestionR err in
@@ -80,7 +80,7 @@ let type_UnboundTypeConstructor err _ =
 
 (* need: number of arguments actually applied to it, and what they are *)
 (* need: number of args the function asks, and what types they are *)
-let type_AppliedTooMany err _ =
+let type_AppliedTooMany err _ _ =
   let functionTypeR = {|This function has type (.+)\n +It is applied to too many arguments; maybe you forgot a `;'.|} in
   let functionType = get_match functionTypeR err in
   (* the func type 'a -> (int -> 'b) -> string has 2 arguments *)
@@ -93,15 +93,15 @@ let type_AppliedTooMany err _ =
       expectedArgCount = expectedArgCount;
     }
 
-let type_RecordFieldNotInExpression err fileInfo = raise Not_found
-let type_RecordFieldError err fileInfo = raise Not_found
-let type_FieldNotBelong err fileInfo = raise Not_found
+let type_RecordFieldNotInExpression err fileInfo range = raise Not_found
+let type_RecordFieldError err fileInfo range = raise Not_found
+let type_FieldNotBelong err fileInfo range = raise Not_found
 
 (* need: where the original expected comes from  *)
-let type_IncompatibleType err _ =
+let type_IncompatibleType err _ range =
   (* the type actual and expected might be on their own line *)
-  let actualR = {|Error: This expression has type([\s\S]*?)but an expression was expected of type|} in
-  let expectedR = {|Error: This expression has type[\s\S]*?but an expression was expected of type([\s\S]*?)$|} in
+  let actualR = {|This expression has type([\s\S]*?)but an expression was expected of type|} in
+  let expectedR = {|This expression has type[\s\S]*?but an expression was expected of type([\s\S]*?)$|} in
   let actual = get_match actualR err |> BatString.trim in
   let expected = get_match expectedR err |> BatString.trim in
     Type_IncompatibleType {
@@ -109,7 +109,7 @@ let type_IncompatibleType err _ =
       expected = expected;
     }
 
-let type_NotAFunction err _ =
+let type_NotAFunction err _ range =
   let actualR = {|This expression has type (.+)\n +This is not a function; it cannot be applied.|} in
   let actual = get_match actualR err in
     Type_NotAFunction {
@@ -118,126 +118,71 @@ let type_NotAFunction err _ =
 
 (* TODO: apparently syntax error can be followed by more indications *)
 (* need: way, way more information, I can't even *)
-let file_SyntaxError err fileInfo =
-  let filename = get_match filenameR err in
-  let line = int_of_string (get_match lineR err) in
-  let chars1 = int_of_string (get_match chars1R err) in
-  let chars2 = int_of_string (get_match chars2R err) in
-
-  let allR = {|Error: Syntax error|} in
-  let fileLines = BatList.of_enum (BatFile.lines_of filename) in
-   (* some syntax errors will make the output point at the last line + 1, char
-   0-0, to indicate e.g. "there's something missing at the end here". Ofc that
-   isn't a valid range to point to in a reporter. See syntax error test 3 *)
-  let passedBoundary = BatList.length fileLines = line - 1 in
+let file_SyntaxError err fileInfo range =
+  let allR = {|Syntax error|} in
   (* raise the same error than if we failed to match *)
-  if not (Pcre.pmatch ~pat:allR err) then raise Not_found
+  if not (Pcre.pmatch ~pat:allR err) then
+    raise Not_found
   else
-    let correctedLineNum = if passedBoundary then line - 1 else line in
-    let correctedChars2 = if passedBoundary then chars2 + 1 else chars2 in
-    let hintR = {|Error: Syntax error: (.+)|} in
+    let hintR = {|Syntax error: (.+)|} in
     let hint = get_match_maybe hintR err in
+    (* assuming on the same row *)
+    let ((startRow, startColumn), (_, endColumn)) = range in
     File_SyntaxError {
-      (* fileInfo = {
-        content = BatList.of_enum (BatFile.lines_of filename);
-        name = filename;
-        line = correctedLineNum;
-        cols = (chars1, correctedChars2);
-      }; *)
       hint = hint;
       offendingString = BatString.slice
-        ~first:chars1
-        ~last:correctedChars2
-        (BatList.at fileLines (correctedLineNum - 1));
+        ~first:startColumn
+        ~last:endColumn
+        (BatList.at fileInfo.cachedContent startRow);
     }
 
-let build_InconsistentAssumptions err fileInfo = raise Not_found
-let warning_UnusedVariable err fileInfo = raise Not_found
+let build_InconsistentAssumptions err fileInfo range = raise Not_found
+let warning_UnusedVariable code err fileInfo range = raise Not_found
 
 (* need: what the variant is. If it's e.g. a list, instead of saying "doesn't
 cover all the cases of the variant" we could say "doesn't cover all the possible
 length of the list" *)
-let warning_PatternNotExhaustive err _ =
-  let unmatchedR = {|Warning 8: this pattern-matching is not exhaustive.\nHere is an example of a value that is not matched:\n(.+)|} in
+let warning_PatternNotExhaustive code err _ _ =
+  let unmatchedR = {|this pattern-matching is not exhaustive.\nHere is an example of a value that is not matched:\n([\s\S]+)|} in
   let unmatchedRaw = get_match unmatchedR err in
   let unmatched = if (BatString.get unmatchedRaw 0) = '(' then
     (* format was (Variant1|Variant2|Variant3). We strip the surrounding parens *)
     unmatchedRaw
     |> BatString.lchop
     |> BatString.rchop
-    (* TODO: the list might have line breaks *)
-    |> split {|\||}
+    |> split {|\|[\s]*|}
   else
     [unmatchedRaw]
   in
   Warning_PatternNotExhaustive {
     unmatched = unmatched;
-    warningCode = 8;
   }
 
-let warning_PatternUnused err fileInfo = raise Not_found
+let warning_PatternUnused code err fileInfo range = raise Not_found
 
 (* need: offending optional argument name from AST *)
 (* need: offending function name *)
-let warning_OptionalArgumentNotErased err _ =
-  let filename = get_match filenameR err in
-  let line = int_of_string (get_match lineR err) in
-  let chars1 = int_of_string (get_match chars1R err) in
-  let chars2 = int_of_string (get_match chars2R err) in
+let warning_OptionalArgumentNotErased code err fileInfo range =
+  (* assume error on one line *)
+  let ((startRow, startColumn), (_, endColumn)) = range in
   (* Hardcoding 16 for now. We might one day switch to use the variant from
   https://github.com/ocaml/ocaml/blob/901c67559469acc58935e1cc0ced253469a8c77a/utils/warnings.ml#L20 *)
-  let allR = {|Warning 16: this optional argument cannot be erased\.|} in
-  let fileLines = BatList.of_enum (BatFile.lines_of filename) in
-  let fileLine = BatList.at fileLines (line - 1) in
+  let allR = {|this optional argument cannot be erased\.|} in
+  let fileLine = BatList.at fileInfo.cachedContent startRow in
   let _ = get_match_n 0 allR err in
-    Warning_OptionalArgumentNotErased {
-      warningCode = 16;
-      argumentName = BatString.slice ~first:chars1 ~last:chars2 fileLine;
-    }
+  Warning_OptionalArgumentNotErased {
+    argumentName = BatString.slice ~first:startColumn ~last:endColumn fileLine;
+  }
 
 (* need: list of legal characters *)
-let file_IllegalCharacter err _ =
-  let characterR = {|Error: Illegal character \((.+)\)|} in
+let file_IllegalCharacter err _ _ =
+  let characterR = {|Illegal character \((.+)\)|} in
   let character = get_match characterR err in
     File_IllegalCharacter {
       character = character;
     }
 
-let warning_CatchAll err _ =
-  (* let allR = {|Warning (\d+): ([\s\S]+)|} in *)
-  (* let warningCode = int_of_string (get_match_n 1 allR err) in *)
-  (* let message = get_match_n 2 allR err in *)
-  Warning_CatchAll "hi"
-  (* Warning_CatchAll {
-    fileInfo = {
-      content = BatList.of_enum (BatFile.lines_of filename);
-      name = filename;
-      line = line;
-      cols = (chars1, chars2);
-    };
-    warningCode = warningCode;
-    message = message;
-  } *)
-
-(* let unparsableButWithFileInfo err fileInfo =
-  let filename = get_match filenameR err in
-  let line = int_of_string (get_match lineR err) in
-  let chars1 = int_of_string (get_match chars1R err) in
-  let chars2 = int_of_string (get_match chars2R err) in
-
-  let errorR = {|Error: ([\s\S]+)|} in
-  let error = get_match errorR err in
-  UnparsableButWithFileInfo {
-    fileInfo = {
-      content = BatList.of_enum (BatFile.lines_of filename);
-      name = filename;
-      line = line;
-      cols = (chars1, chars2);
-    };
-    error = error;
-  } *)
-
-let unparsable err fileInfo = Unparsable err
+let unparsable err fileInfo range = Unparsable err
 
 let hasErrorOrWarningR = Pcre.regexp
   ~flags:[Pcre.(`MULTILINE)]
@@ -414,9 +359,9 @@ let doThis (err): result =
       in
       let errorOrWarningR = Pcre.regexp
         ~flags:[Pcre.(`MULTILINE)]
-        {|^(?:(Error)|(Warning) \d+): |}
+        {|^(?:(?:Error)|(?:Warning) (\d+)): |}
       in
-      let errorParsers: (string -> fileInfo -> error) list = [
+      let errorParsers = [
         type_MismatchTypeArguments;
         type_UnboundValue;
         type_SignatureMismatch;
@@ -436,7 +381,8 @@ let doThis (err): result =
         file_IllegalCharacter;
       ]
       in
-      let warningParsers: (string -> fileInfo -> warningType) list = [
+      (* TODO: better logic using these codes *)
+      let warningParsers = [
         warning_UnusedVariable;
         warning_PatternNotExhaustive;
         warning_PatternUnused;
@@ -448,15 +394,18 @@ let doThis (err): result =
         let errorsAndWarnings =
           Pcre.full_split ~rex:errorOrWarningR text
           (* we match 4 items, so the whole list will always be a multiple of 4 *)
-          |> splitInto ~chunckSize:4
+          |> splitInto ~chunckSize:3
         in
+        (* taking advantage of the distinct shape of error/warning to separate
+        them *)
         let errors = errorsAndWarnings |> Pcre.(BatList.filter_map (function
-          | [Delim err; Group _; NoGroup; Text text] -> Some (err ^ text)
+          | [Delim _; NoGroup; Text text] -> Some text
           | _ -> None
         ))
         in
         let warnings = errorsAndWarnings |> Pcre.(BatList.filter_map (function
-          | [Delim warning; NoGroup; Group _; Text text] -> Some (warning ^ text)
+          | [Delim _; Group (_, code); Text text] ->
+              Some (int_of_string code, text)
           | _ -> None
         ))
         in
@@ -466,10 +415,10 @@ let doThis (err): result =
               let result =
                 try
                   BatList.find_map (fun errorParser ->
-                    try Some (errorParser errorRaw fileInfo)
+                    try Some (errorParser errorRaw fileInfo range)
                     with _ -> None)
                   errorParsers
-                with Not_found -> Error_CatchAll "hurr"
+                with Not_found -> Error_CatchAll errorRaw
               in
               {
                 range = range;
@@ -479,17 +428,16 @@ let doThis (err): result =
         in
         let warns =
           warnings
-          |> BatList.map (fun warningRaw ->
+          |> BatList.map (fun (code, warningRaw) ->
             let result = {
-              (* TODO: extract this... *)
-              code = 10;
+              code = code;
               warningType =
                 try
                   BatList.find_map (fun warningParser ->
-                    try Some (warningParser warningRaw fileInfo)
+                    try Some (warningParser code warningRaw fileInfo range)
                     with _ -> None)
                   warningParsers
-                with Not_found -> Warning_CatchAll "hurr"
+                with Not_found -> Warning_CatchAll warningRaw
             }
             in {
               range = range;
@@ -502,7 +450,7 @@ let doThis (err): result =
       ErrorsAndWarnings filesAndErrorsAndWarnings
     )
 
-let () =
+(* let () =
   Reporter.print @@ doThis syntaxErr;
   print_endline "=======1===========";
   Reporter.print @@ doThis badFileErr;
@@ -512,15 +460,12 @@ let () =
   Reporter.print @@ doThis badBuildOutput2;
   print_endline "=======4===========";
   Reporter.print @@ doThis badBuildOutput1;
-  print_endline "=======5==========="
+  print_endline "=======5===========" *)
 
 (* entry point, for convenience purposes for now. Theoretically the parser and
 the reporters are decoupled *)
-(* let () =
+let () =
   try
     let err = BatPervasives.input_all stdin in
-    let errLines = split "\n" err in
-      let matched = BatList.find_map (fun f ->
-        try Some (f err errLines) with _ -> None
-      ) parsers in Reporter.print matched
-  with BatIO.No_more_input -> () *)
+    Reporter.print @@ doThis err;
+  with BatIO.No_more_input -> ()

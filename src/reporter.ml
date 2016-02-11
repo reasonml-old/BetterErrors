@@ -140,19 +140,19 @@ let printAssumingErrorsAndWarnings l = l |> BatList.iter (fun {fileInfo; errors;
     | Warning_CatchAll message ->
       print_endline @@ printFile fileInfo range;
       Printf.printf "Warning %d: %s\n" code message
-    | Warning_PatternNotExhaustive {unmatched; warningCode} ->
+    | Warning_PatternNotExhaustive {unmatched} ->
       print_endline @@ printFile fileInfo range;
-      Printf.printf "Warning %d: this match doesn't cover all possible values of the variant.\n" warningCode;
+      Printf.printf "Warning %d: this match doesn't cover all possible values of the variant.\n" code;
       (match unmatched with
       | [oneVariant] -> print_endline @@ "The case `" ^ oneVariant ^ "` is not matched"
       | many ->
           print_endline "These cases are not matched:";
           BatList.iter (fun x -> print_endline @@ "- `" ^ x ^ "`") many)
-    | Warning_OptionalArgumentNotErased {warningCode; argumentName} ->
+    | Warning_OptionalArgumentNotErased {argumentName} ->
       print_endline @@ printFile fileInfo range;
       Printf.printf
         "Warning %d: %s is an optional argument at last position; calling the function by omitting %s might be confused with currying.\n"
-        warningCode
+        code
         argumentName
         argumentName;
       print_endline "The rule: an optional argument is erased as soon as the 1st positional (i.e. neither labeled nor optional) argument defined after it is passed in."

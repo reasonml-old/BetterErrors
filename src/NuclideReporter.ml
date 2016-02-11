@@ -87,16 +87,16 @@ let printAssumingErrorsAndWarnings l = l |> BatList.map (fun {fileInfo; errors; 
     | Warning_CatchAll message ->
       let errorMessage = Printf.sprintf "Warning: %s" message in
       makeFileDiagnosticMessage NuclideDiagnostic.Warning errorMessage fileInfo range
-    | Warning_PatternNotExhaustive {unmatched; warningCode} ->
-      let errorMessage = Printf.sprintf "Warning %d: this match doesn't cover all possible values of the variant.\n" warningCode in
+    | Warning_PatternNotExhaustive {unmatched} ->
+      let errorMessage = Printf.sprintf "Warning %d: this match doesn't cover all possible values of the variant.\n" code in
       let tip = (match unmatched with
         | [oneVariant] -> Printf.sprintf "The case `%s` is not matched" oneVariant
         | many ->
           "These cases are not matched:\n" ^
           (BatList.fold_left (fun acc x -> acc ^ "- `"^ x ^"`\n") "" many)) in
       makeFileDiagnosticMessage NuclideDiagnostic.Warning errorMessage ~tip fileInfo range
-    | Warning_OptionalArgumentNotErased {warningCode; argumentName} ->
-      let errorMessage = Printf.sprintf "Warning %d: %s is an optional argument at last position; calling the function by omitting %s might be confused with currying.\n" warningCode argumentName argumentName in
+    | Warning_OptionalArgumentNotErased {argumentName} ->
+      let errorMessage = Printf.sprintf "Warning %d: %s is an optional argument at last position; calling the function by omitting %s might be confused with currying.\n" code argumentName argumentName in
       let tip = "The rule: an optional argument is erased as soon as the 1st positional (i.e. neither labeled nor optional) argument defined after it is passed in." in
       makeFileDiagnosticMessage NuclideDiagnostic.Warning errorMessage ~tip fileInfo range
     | _ -> makeFileDiagnosticMessage NuclideDiagnostic.Warning "No message for this type of warning." fileInfo range
