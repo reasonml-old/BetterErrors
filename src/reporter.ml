@@ -59,9 +59,9 @@ let printFile {cachedContent; path} range =
     [ANSITerminal.cyan]
     "%s:%d:%d-%d:%d\n"
     path
-    startRow
+    (startRow + 1)
     startColumn
-    endRow
+    (endRow + 1)
     endColumn
   ) ^ _printFile ~sep: " | " ~highlight:range cachedContent
 

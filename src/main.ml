@@ -157,39 +157,20 @@ let warning_UnusedVariable err fileInfo = raise Not_found
 (* need: what the variant is. If it's e.g. a list, instead of saying "doesn't
 cover all the cases of the variant" we could say "doesn't cover all the possible
 length of the list" *)
-let warning_PatternNotExhaustive err fileInfo =
-  (* let filename = get_match filenameR err in
-  let line = int_of_string (get_match lineR err) in
-  let chars1 = int_of_string (get_match chars1R err) in *)
-
-  (* let chars2 = int_of_string (get_match chars2R err) in *)
-
+let warning_PatternNotExhaustive err _ =
   let unmatchedR = {|Warning 8: this pattern-matching is not exhaustive.\nHere is an example of a value that is not matched:\n(.+)|} in
   let unmatchedRaw = get_match unmatchedR err in
-  (* ocaml has a bug/feature where it'll show that the range of the error for
-  the variant is from the first letter of "match bla with ..." to the end of the
-  whole pattern block, **as if the code was written on a single line**. This
-  might be because their file line reporting got too rigid and can't show you
-  line range. But for us it's pretty useless so we limit it to just highlight
-  the word match *)
   let unmatched = if (BatString.get unmatchedRaw 0) = '(' then
     (* format was (Variant1|Variant2|Variant3). We strip the surrounding parens *)
     unmatchedRaw
     |> BatString.lchop
     |> BatString.rchop
+    (* TODO: the list might have line breaks *)
     |> split {|\||}
   else
     [unmatchedRaw]
   in
-
   Warning_PatternNotExhaustive {
-    (* fileInfo = {
-      content = BatList.of_enum (BatFile.lines_of filename);
-      name = filename;
-      line = line;
-      (* TODO: change this. Isn't necessarily the word match that's highlighted *)
-      cols = (chars1, chars1 + 5);
-    }; *)
     unmatched = unmatched;
     warningCode = 8;
   }
@@ -283,7 +264,12 @@ expected, since you get easy column count through 3 - 0 *)
 1-indexed if it desires so *)
 let normalizeCompilerLineColsToRange ~fileLines ~lineRaw ~col1Raw ~col2Raw =
 (* accept strings to constraint usage to parse directly from raw data *)
-  let startRow = (int_of_string lineRaw) - 1 in
+  let line = (int_of_string lineRaw) in
+  let startRow = if line = 1 + BatList.length fileLines then
+    (* sometimes the compiler points to AFTER the end of the line for e.g.
+    syntax error *)
+    line - 1 - 1 (* convert line to index, then -1 bc of said reason *)
+  else line - 1 in
   (* some error msgs don't have column numbers; we normal them to 0 here *)
   let col1 = BatOption.map_default int_of_string 0 col1Raw in
   let col2 = BatOption.map_default int_of_string 0 col2Raw in
@@ -291,18 +277,19 @@ let normalizeCompilerLineColsToRange ~fileLines ~lineRaw ~col1Raw ~col2Raw =
   let totalCharsRemaining = ref (col2 - col1) in
   let currCol = ref col1 in
   (* crawling back to imperative programming begging for forgiveness *)
-  while !totalCharsRemaining > 0 do
+  let break = ref false in
+  while not !break do
     let currLine = BatList.at fileLines !currRow in
-    (* no need for an extra - 1 here bc of now col1 is given; see comments above *)
+    (* no need for an extra - 1 here bc of now col1 is given; see comments
+    before function *)
     let remainingCharsCountOnLine = (BatString.length currLine) - !currCol in
-    (* TODO: -1 here? +1 here? *)
-    totalCharsRemaining := !totalCharsRemaining - remainingCharsCountOnLine;
-    if !totalCharsRemaining > 0 then (
+    if remainingCharsCountOnLine < !totalCharsRemaining then (
       currRow := !currRow + 1;
-      currCol := 0
+      currCol := 0;
+      totalCharsRemaining := !totalCharsRemaining - remainingCharsCountOnLine
     ) else
-      (* break *)
-      currCol := !currCol + remainingCharsCountOnLine
+      break := true;
+      currCol := !currCol + !totalCharsRemaining
   done;
   (* (startRow, startColumn), (endRow, endColumn) *)
   ((startRow, col1), (!currRow, !currCol))
@@ -329,15 +316,7 @@ let extractFromFileMatch fileMatch: (fileInfo * Atom.Range.t * string) =
         our regex logic, maybe *)
         BatString.trim text
       )
-    | _ ->
-      BatList.iter (fun x ->
-        match x with
-        | Delim a -> print_endline @@ "Delim " ^ a
-        | Group (_, a) -> print_endline @@ "Group " ^ a
-        | Text a -> print_endline @@ "Text " ^ a
-        | NoGroup -> print_endline @@ "NoGroup"
-      ) fileMatch;
-      raise (invalid_arg "Couldn't extract error")
+    | _ -> raise (invalid_arg "Couldn't extract error")
   )
 
 let syntaxErr = {|File "tests/file_SyntaxError/file_SyntaxError_3.ml", line 2, characters 0-0:
@@ -444,8 +423,6 @@ let doThis (err): result =
         warning_PatternNotExhaustive;
         warning_PatternUnused;
         warning_OptionalArgumentNotErased;
-        (* TODO: don't put a catchall here. already commented out for now *)
-        (* warning_CatchAll; *)
       ]
       in
       let filesAndErrorsAndWarnings: fileAndErrorsAndWarnings list =
