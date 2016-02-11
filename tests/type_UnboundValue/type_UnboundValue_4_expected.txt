@@ -1,0 +1,7 @@
+[36mtests/type_UnboundValue/type_UnboundValue_4.ml:4 19-29
+[0m1 | let poshanassy = 1
+2 | let poshanessy = 2
+3 | 
+4 | let () = print_int [31;4mposhanossy[0m
+
+`poshanossy` can't be found. Did you mean `poshanessy or poshanassy`?

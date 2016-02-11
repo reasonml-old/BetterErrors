@@ -1,11 +1,13 @@
-[36mtests/Warning_PatternNotExhaustive/Warning_PatternNotExhaustive_2.ml:6 12-17
-[0m3 |   | Goodbye
-4 |   | Hola of string
-5 | 
-6 | let say a = [31;4mmatch[0m a with
-7 | | Hello -> ()
+[36mtests/Warning_PatternNotExhaustive/Warning_PatternNotExhaustive_2.ml:8:12-9:13
+[0m5 |   | Nihao of int
+6 |   | LongAssGreetingInSomeSuperObscureLanguageIWannaHaveALineBreakHere
+7 | 
+8 | let say a = [31;4mmatch a with[0m
+9 | [31;4m| Hello -> ()[0m
 
 Warning 8: this match doesn't cover all possible values of the variant.
 These cases are not matched:
 - `Goodbye`
 - `Hola _`
+- `Nihao _`
+- `LongAssGreetingInSomeSuperObscureLanguageIWannaHaveALineBreakHere`

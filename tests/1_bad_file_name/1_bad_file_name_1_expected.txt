@@ -1,5 +1,4 @@
-File "tests/1_bad_file_name/1_bad_file_name_1.ml", line 1:
-Warning 24: bad source file name: "1_bad_file_name_1" is not a valid module name.
+[36mtests/1_bad_file_name/1_bad_file_name_1.ml:1 0-0
+[0m1 | [31;4m[0mlet a = 5
 
-[31m✘ There might be an error.
-[0m
+Warning 24: bad source file name: "1_bad_file_name_1" is not a valid module name.
