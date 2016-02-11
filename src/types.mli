@@ -57,7 +57,6 @@ type illegalCharacter = {
 }
 type patternNotExhaustive = {
   unmatched: string list;
-  warningCode: int;
 }
 type unparsableButWithFileInfo = {
   error: string;
@@ -67,7 +66,6 @@ type unboundRecordField = {
   suggestion: string option;
 }
 type optionalArgumentNotErased = {
-  warningCode: int;
   argumentName: string;
 }
 
@@ -109,7 +107,6 @@ type error =
   | Error_CatchAll of string
 
 type fileInfo = {
-  (* TODO: check filePath def in PR *)
   filePath: string;
   cachedContent: string list;
 }
