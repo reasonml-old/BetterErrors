@@ -19,10 +19,10 @@ let pad ?(ch=' ') content n =
 
 let red = ANSITerminal.sprintf [ANSITerminal.red; ANSITerminal.Underlined] "%s"
 
-let highlight ?first ?last str =
-  (BatString.slice ?last:first str)
-    ^ (red @@ BatString.slice ?first ?last str)
-    ^ (BatString.slice ?first:last str)
+let highlight ?(first=0) ?(last=99999) str =
+  (BatString.slice ~last:first str)
+    ^ (red @@ BatString.slice ~first ~last str)
+    ^ (BatString.slice ~first:last str)
 
 (* row and col 0-indexed; endColumn is 1 past the actual end. See
 Main.compilerLineColsToRange *)
@@ -37,16 +37,16 @@ let _printFile ?(sep=" | ") ~highlight:((startRow, startColumn), (endRow, endCol
     let currLine = BatList.at content i in
       if i >= startRow && i <= endRow then
         if startRow = endRow then
-          result := !result ^ (Printf.sprintf "%s" (pad (string_of_int (i + 1)) lineNumWidth))
+          result := !result ^ (pad (string_of_int (i + 1)) lineNumWidth)
             ^ sep ^ (highlight ~first:startColumn ~last:endColumn currLine) ^ "\n"
         else if i = startRow then
-          result := !result ^ (Printf.sprintf "%s" (pad (string_of_int (i + 1)) lineNumWidth))
+          result := !result ^ (pad (string_of_int (i + 1)) lineNumWidth)
             ^ sep ^ (highlight ~first:startColumn currLine) ^ "\n"
         else if i = endRow then
-          result := !result ^ (Printf.sprintf "%s" (pad (string_of_int (i + 1)) lineNumWidth))
+          result := !result ^ (pad (string_of_int (i + 1)) lineNumWidth)
             ^ sep ^ (highlight ~last:endColumn currLine) ^ "\n"
         else
-          result := !result ^ (Printf.sprintf "%s" (pad (string_of_int (i + 1)) lineNumWidth))
+          result := !result ^ (pad (string_of_int (i + 1)) lineNumWidth)
             ^ sep ^ (highlight currLine) ^ "\n"
       else
         result := !result ^ (pad (string_of_int (i + 1)) lineNumWidth) ^ sep ^ currLine ^ "\n"
@@ -55,21 +55,30 @@ let _printFile ?(sep=" | ") ~highlight:((startRow, startColumn), (endRow, endCol
 
 let printFile {cachedContent; filePath} range =
   let ((startRow, startColumn), (endRow, endColumn)) = range in
-  (ANSITerminal.sprintf
-    [ANSITerminal.cyan]
-    "%s:%d:%d-%d:%d\n"
-    filePath
-    (startRow + 1)
-    startColumn
-    (endRow + 1)
-    endColumn
-  ) ^ _printFile ~sep: " | " ~highlight:range cachedContent
+  let fileInfo = if startRow = endRow then
+      ANSITerminal.sprintf
+        [ANSITerminal.cyan]
+        "%s:%d %d-%d\n"
+        filePath
+        (startRow + 1)
+        startColumn
+        endColumn
+    else
+      ANSITerminal.sprintf
+        [ANSITerminal.cyan]
+        "%s:%d:%d-%d:%d\n"
+        filePath
+        (startRow + 1)
+        startColumn
+        (endRow + 1)
+        endColumn
+  in fileInfo ^ _printFile ~sep: " | " ~highlight:range cachedContent
 
 let printAssumingErrorsAndWarnings l = l |> BatList.iter (fun {fileInfo; errors; warnings} ->
   errors |> BatList.iter (fun {range; parsedContent} -> match parsedContent with
     | Error_CatchAll error ->
       print_endline @@ printFile fileInfo range;
-      print_string error
+      print_endline error
     | Type_MismatchTypeArguments {typeConstructor; expectedCount; actualCount} ->
       print_endline @@ printFile fileInfo range;
       Printf.printf "This needs to be applied to %d argument(s), we found %d.\n" expectedCount actualCount
