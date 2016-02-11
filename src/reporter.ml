@@ -18,6 +18,7 @@ let pad ?(ch=' ') content n =
   (BatString.make (n - (BatString.length content)) ch) ^ content
 
 let red = ANSITerminal.sprintf [ANSITerminal.red; ANSITerminal.Underlined] "%s"
+let green = ANSITerminal.sprintf [ANSITerminal.green] "%s"
 
 let highlight ?first ?last str =
   (BatString.slice ?last:first str)
@@ -75,7 +76,17 @@ let printAssumingErrorsAndWarnings l = l |> BatList.iter (fun {fileInfo; errors;
       Printf.printf "This needs to be applied to %d argument(s), we found %d.\n" expectedCount actualCount
     | Type_IncompatibleType {actual; expected} ->
       print_endline @@ printFile fileInfo range;
-      print_endline ("This is " ^ actual ^ ", wanted " ^ expected ^ " instead.")
+      print_endline @@
+        Table.table
+        ~align:Table.Left
+        ~style:{
+          Table.top = ("", "", "", "");
+          Table.middle = ("", "", "", "");
+          Table.bottom = ("", "", "", "");
+          Table.vertical = ("", "  ", "");
+        }
+        ~padding:0
+        [[(red "This is:"); actual]; [(green "Wanted:"); expected]]
     | Type_NotAFunction {actual} ->
       print_endline @@ printFile fileInfo range;
       print_endline ("This is " ^ actual ^ ". You seem to have called it as a function.");
