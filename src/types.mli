@@ -1,3 +1,5 @@
+(* records that are only used by their variant tag of similar name below. We
+need inline record type declarations... *)
 type mismatchTypeArguments = {
   typeConstructor: string;
   expectedCount: int;

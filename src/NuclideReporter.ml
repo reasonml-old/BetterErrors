@@ -93,7 +93,7 @@ let printAssumingErrorsAndWarnings l = l |> BatList.map (fun {fileInfo; errors; 
         | [oneVariant] -> Printf.sprintf "The case `%s` is not matched" oneVariant
         | many ->
           "These cases are not matched:\n" ^
-          (List.fold_left (fun acc x -> acc ^ "- `"^ x ^"`\n") "" many)) in
+          (BatList.fold_left (fun acc x -> acc ^ "- `"^ x ^"`\n") "" many)) in
       makeFileDiagnosticMessage NuclideDiagnostic.Warning errorMessage ~tip fileInfo range
     | Warning_OptionalArgumentNotErased {warningCode; argumentName} ->
       let errorMessage = Printf.sprintf "Warning %d: %s is an optional argument at last position; calling the function by omitting %s might be confused with currying.\n" warningCode argumentName argumentName in

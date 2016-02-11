@@ -24,15 +24,14 @@ let highlight ?first ?last str =
     ^ (red @@ BatString.slice ?first ?last str)
     ^ (BatString.slice ?first:last str)
 
-
 (* row and col 0-indexed; endColumn is 1 past the actual end. See
 Main.compilerLineColsToRange *)
 let _printFile ?(sep=" | ") ~highlight:((startRow, startColumn), (endRow, endColumn)) content =
   let displayedStartRow = max 0 (startRow - 3) in
   (* we display no more than 3 lines after startRow. Some endRow are rly far
   away *)
-  let displayedEndRow = min (List.length content - 1) (startRow + 3) in
-  let lineNumWidth = numberOfDigits (List.length content) in
+  let displayedEndRow = min (BatList.length content - 1) (startRow + 3) in
+  let lineNumWidth = numberOfDigits (BatList.length content) in
   let result = ref "" in
   for i = displayedStartRow to displayedEndRow do
     let currLine = BatList.at content i in
@@ -139,7 +138,7 @@ let printAssumingErrorsAndWarnings l = l |> BatList.iter (fun {fileInfo; errors;
       | [oneVariant] -> print_endline @@ "The case `" ^ oneVariant ^ "` is not matched"
       | many ->
           print_endline "These cases are not matched:";
-          List.iter (fun x -> print_endline @@ "- `" ^ x ^ "`") many)
+          BatList.iter (fun x -> print_endline @@ "- `" ^ x ^ "`") many)
     | Warning_OptionalArgumentNotErased {warningCode; argumentName} ->
       print_endline @@ printFile fileInfo range;
       Printf.printf

@@ -87,7 +87,7 @@ let type_AppliedTooMany err _ =
   (* strip out false positive -> from nested function types passed as param *)
   let nestedFunctionTypeR = {|\(.+\)|} in
   let cleaned = Pcre.replace ~pat:nestedFunctionTypeR ~templ:"bla" functionType in
-  let expectedArgCount = List.length (split "->" cleaned) - 1 in
+  let expectedArgCount = BatList.length (split "->" cleaned) - 1 in
     Type_AppliedTooMany {
       functionType = functionType;
       expectedArgCount = expectedArgCount;
@@ -125,11 +125,11 @@ let file_SyntaxError err fileInfo =
   let chars2 = int_of_string (get_match chars2R err) in
 
   let allR = {|Error: Syntax error|} in
-  let fileLines = Batteries.List.of_enum (BatFile.lines_of filename) in
+  let fileLines = BatList.of_enum (BatFile.lines_of filename) in
    (* some syntax errors will make the output point at the last line + 1, char
    0-0, to indicate e.g. "there's something missing at the end here". Ofc that
    isn't a valid range to point to in a reporter. See syntax error test 3 *)
-  let passedBoundary = List.length fileLines = line - 1 in
+  let passedBoundary = BatList.length fileLines = line - 1 in
   (* raise the same error than if we failed to match *)
   if not (Pcre.pmatch ~pat:allR err) then raise Not_found
   else
@@ -139,7 +139,7 @@ let file_SyntaxError err fileInfo =
     let hint = get_match_maybe hintR err in
     File_SyntaxError {
       (* fileInfo = {
-        content = Batteries.List.of_enum (BatFile.lines_of filename);
+        content = BatList.of_enum (BatFile.lines_of filename);
         name = filename;
         line = correctedLineNum;
         cols = (chars1, correctedChars2);
@@ -184,7 +184,7 @@ let warning_PatternNotExhaustive err fileInfo =
 
   Warning_PatternNotExhaustive {
     (* fileInfo = {
-      content = Batteries.List.of_enum (BatFile.lines_of filename);
+      content = BatList.of_enum (BatFile.lines_of filename);
       name = filename;
       line = line;
       (* TODO: change this. Isn't necessarily the word match that's highlighted *)
@@ -206,7 +206,7 @@ let warning_OptionalArgumentNotErased err _ =
   (* Hardcoding 16 for now. We might one day switch to use the variant from
   https://github.com/ocaml/ocaml/blob/901c67559469acc58935e1cc0ced253469a8c77a/utils/warnings.ml#L20 *)
   let allR = {|Warning 16: this optional argument cannot be erased\.|} in
-  let fileLines = Batteries.List.of_enum (BatFile.lines_of filename) in
+  let fileLines = BatList.of_enum (BatFile.lines_of filename) in
   let fileLine = BatList.at fileLines (line - 1) in
   let _ = get_match_n 0 allR err in
     Warning_OptionalArgumentNotErased {
@@ -229,7 +229,7 @@ let warning_CatchAll err _ =
   Warning_CatchAll "hi"
   (* Warning_CatchAll {
     fileInfo = {
-      content = Batteries.List.of_enum (BatFile.lines_of filename);
+      content = BatList.of_enum (BatFile.lines_of filename);
       name = filename;
       line = line;
       cols = (chars1, chars2);
@@ -248,7 +248,7 @@ let warning_CatchAll err _ =
   let error = get_match errorR err in
   UnparsableButWithFileInfo {
     fileInfo = {
-      content = Batteries.List.of_enum (BatFile.lines_of filename);
+      content = BatList.of_enum (BatFile.lines_of filename);
       name = filename;
       line = line;
       cols = (chars1, chars2);
@@ -312,7 +312,7 @@ let extractFromFileMatch fileMatch: (fileInfo * Atom.Range.t * string) =
   Pcre.(
     match fileMatch with
     | [Delim _; Group (_, fileName); Group (_, lineNum); col1; col2; Text text] ->
-      let cachedContent = Batteries.List.of_enum (BatFile.lines_of fileName) in
+      let cachedContent = BatList.of_enum (BatFile.lines_of fileName) in
       let (col1Raw, col2Raw) = match (col1, col2) with
         | (Group (_, c1), Group (_, c2)) -> (Some c1, Some c2)
         | _ -> (None, None)
@@ -325,6 +325,8 @@ let extractFromFileMatch fileMatch: (fileInfo * Atom.Range.t * string) =
           ~col1Raw:col1Raw
           ~col2Raw:col2Raw
         ),
+        (* important, otherwise leaves random blank lines that defies some of
+        our regex logic, maybe *)
         BatString.trim text
       )
     | _ ->
@@ -378,139 +380,132 @@ Hint: Did you mean fileMatc?
 Command exited with code 2.
 |}
 
+let printFullSplitResult = BatList.iteri (fun i x ->
+  print_int i;
+  print_endline "";
+  Pcre.(
+    match x with
+    | Delim a -> print_endline @@ "Delim " ^ a
+    | Group (_, a) -> print_endline @@ "Group " ^ a
+    | Text a -> print_endline @@ "Text " ^ a
+    | NoGroup -> print_endline @@ "NoGroup"
+  )
+)
+
 let doThis (err): result =
-  (* try
-    let err = BatPervasives.input_all stdin in *)
-    (* TODO: this isn't good enough bc other compilation failure might pass e.g.
-    artifact *)
-    let fileR = Pcre.regexp
-      ~flags:[Pcre.(`MULTILINE)]
-      {|^File "([\s\S]+?)", line (\d+)(?:, characters (\d+)-(\d+))?:$|}
+  let fileR = Pcre.regexp
+    ~flags:[Pcre.(`MULTILINE)]
+    {|^File "([\s\S]+?)", line (\d+)(?:, characters (\d+)-(\d+))?:$|}
+  in
+  if not (Pcre.pmatch ~rex:hasErrorOrWarningR err) then NoErrorNorWarning err
+  else
+    let errorContent = BatString.trim err
+      |> Pcre.full_split ~rex:fileR
+      (* First few rows might be random output info *)
+      |> BatList.drop_while (function Pcre.Text _ -> true | _ -> false)
     in
-    if not (Pcre.pmatch ~rex:hasErrorOrWarningR err) then NoErrorNorWarning err
-    else
-      let errorContent = BatString.trim err
+    if BatList.length errorContent = 0 then Unparsable err
+    else (
+      let files =
+        BatString.trim err
         |> Pcre.full_split ~rex:fileR
         (* First few rows might be random output info *)
         |> BatList.drop_while (function Pcre.Text _ -> true | _ -> false)
+        (* we match 6 items, so the whole list will always be a multiple of 6 *)
+        |> splitInto ~chunckSize:6
+        |> BatList.map extractFromFileMatch
       in
-      if BatList.length errorContent = 0 then Unparsable err
-      else (
-        (* print_int @@ BatList.length errorContent;
-        BatList.iteri (fun i x ->
-          print_int i;
-          print_endline "";
-          Pcre.(
-            match x with
-            | Delim a -> print_endline @@ "Delim " ^ a
-            | Group (_, a) -> print_endline @@ "Group " ^ a
-            | Text a -> print_endline @@ "Text " ^ a
-            | NoGroup -> print_endline @@ "NoGroup"
-          )
-        ) errorContent; *)
-
-        let files =
-          BatString.trim err
-          |> Pcre.full_split ~rex:fileR
-          |> BatList.drop_while (function Pcre.Text _ -> true | _ -> false)
-          (* we match 6 items, so the whole list will always be a multiple of 6 *)
-          |> splitInto ~chunckSize:6
-          (* TODO: this might be wrong, bc it assumes "FIle:" appears at first
-          row. First few rows might be random output info *)
-          |> BatList.map extractFromFileMatch
+      let errorOrWarningR = Pcre.regexp
+        ~flags:[Pcre.(`MULTILINE)]
+        {|^(?:(Error)|(Warning) \d+): |}
+      in
+      let errorParsers: (string -> fileInfo -> error) list = [
+        type_MismatchTypeArguments;
+        type_UnboundValue;
+        type_SignatureMismatch;
+        type_SignatureItemMissing;
+        type_UnboundModule;
+        type_UnboundRecordField;
+        type_UnboundConstructor;
+        type_UnboundTypeConstructor;
+        type_AppliedTooMany;
+        type_RecordFieldNotInExpression;
+        type_RecordFieldError;
+        type_FieldNotBelong;
+        type_IncompatibleType;
+        type_NotAFunction;
+        file_SyntaxError;
+        build_InconsistentAssumptions;
+        file_IllegalCharacter;
+      ]
+      in
+      let warningParsers: (string -> fileInfo -> warningType) list = [
+        warning_UnusedVariable;
+        warning_PatternNotExhaustive;
+        warning_PatternUnused;
+        warning_OptionalArgumentNotErased;
+        (* TODO: don't put a catchall here. already commented out for now *)
+        (* warning_CatchAll; *)
+      ]
+      in
+      let filesAndErrorsAndWarnings: fileAndErrorsAndWarnings list =
+      files |> BatList.map (fun (fileInfo, range, text) ->
+        let errorsAndWarnings =
+          Pcre.full_split ~rex:errorOrWarningR text
+          (* we match 4 items, so the whole list will always be a multiple of 4 *)
+          |> splitInto ~chunckSize:4
         in
-        let errorOrWarningR = Pcre.regexp
-          ~flags:[Pcre.(`MULTILINE)]
-          {|^(?:(Error)|(Warning) \d+): |}
+        let errors = errorsAndWarnings |> Pcre.(BatList.filter_map (function
+          | [Delim err; Group _; NoGroup; Text text] -> Some (err ^ text)
+          | _ -> None
+        ))
         in
-        let errorParsers: (string -> fileInfo -> error) list = [
-          type_MismatchTypeArguments;
-          type_UnboundValue;
-          type_SignatureMismatch;
-          type_SignatureItemMissing;
-          type_UnboundModule;
-          type_UnboundRecordField;
-          type_UnboundConstructor;
-          type_UnboundTypeConstructor;
-          type_AppliedTooMany;
-          type_RecordFieldNotInExpression;
-          type_RecordFieldError;
-          type_FieldNotBelong;
-          type_IncompatibleType;
-          type_NotAFunction;
-          file_SyntaxError;
-          build_InconsistentAssumptions;
-          file_IllegalCharacter;
-        ]
+        let warnings = errorsAndWarnings |> Pcre.(BatList.filter_map (function
+          | [Delim warning; NoGroup; Group _; Text text] -> Some (warning ^ text)
+          | _ -> None
+        ))
         in
-        let warningParsers: (string -> fileInfo -> warningType) list = [
-          warning_UnusedVariable;
-          warning_PatternNotExhaustive;
-          warning_PatternUnused;
-          warning_OptionalArgumentNotErased;
-          (* TODO: don't put a catchall here. already commented out for now *)
-          (* warning_CatchAll; *)
-        ]
-        in
-        let filesAndErrorsAndWarnings: fileAndErrorsAndWarnings list =
-        files |> BatList.map (fun (fileInfo, range, text) ->
-          let errorsAndWarnings =
-            Pcre.full_split ~rex:errorOrWarningR text
-            (* we match 4 items, so the whole list will always be a multiple of 4 *)
-            |> splitInto ~chunckSize:4
-          in
-          let errors = errorsAndWarnings |> Pcre.(BatList.filter_map (function
-            | [Delim err; Group _; NoGroup; Text text] -> Some (err ^ text)
-            | _ -> None
-          ))
-          in
-          let warnings = errorsAndWarnings |> Pcre.(BatList.filter_map (function
-            | [Delim warning; NoGroup; Group _; Text text] -> Some (warning ^ text)
-            | _ -> None
-          ))
-          in
-          let errs =
-            errors
-            |> BatList.map (fun errorRaw ->
-                let result =
-                  try
-                    BatList.find_map (fun errorParser ->
-                      try Some (errorParser errorRaw fileInfo)
-                      with _ -> None)
-                    errorParsers
-                  with Not_found -> Error_CatchAll "hurr"
-                in
-                {
-                  range = range;
-                  parsedContent = result;
-                }
-            )
-          in
-          let warns =
-            warnings
-            |> BatList.map (fun warningRaw ->
-              let result = {
-                (* TODO: extract this... *)
-                code = 10;
-                warningType =
-                  try
-                    BatList.find_map (fun warningParser ->
-                      try Some (warningParser warningRaw fileInfo)
-                      with _ -> None)
-                    warningParsers
-                  with Not_found -> Warning_CatchAll "hurr"
-              }
-              in {
+        let errs =
+          errors
+          |> BatList.map (fun errorRaw ->
+              let result =
+                try
+                  BatList.find_map (fun errorParser ->
+                    try Some (errorParser errorRaw fileInfo)
+                    with _ -> None)
+                  errorParsers
+                with Not_found -> Error_CatchAll "hurr"
+              in
+              {
                 range = range;
                 parsedContent = result;
               }
-            )
-          in {fileInfo = fileInfo; errors = errs; warnings = warns}
-        )
+          )
         in
-        ErrorsAndWarnings filesAndErrorsAndWarnings
+        let warns =
+          warnings
+          |> BatList.map (fun warningRaw ->
+            let result = {
+              (* TODO: extract this... *)
+              code = 10;
+              warningType =
+                try
+                  BatList.find_map (fun warningParser ->
+                    try Some (warningParser warningRaw fileInfo)
+                    with _ -> None)
+                  warningParsers
+                with Not_found -> Warning_CatchAll "hurr"
+            }
+            in {
+              range = range;
+              parsedContent = result;
+            }
+          )
+        in {fileInfo = fileInfo; errors = errs; warnings = warns}
       )
-  (* with BatIO.No_more_input -> () *)
+      in
+      ErrorsAndWarnings filesAndErrorsAndWarnings
+    )
 
 let () =
   Reporter.print @@ doThis syntaxErr;
@@ -522,7 +517,7 @@ let () =
   Reporter.print @@ doThis badBuildOutput2;
   print_endline "=======4===========";
   Reporter.print @@ doThis badBuildOutput1;
-  (* print_endline "=======5===========" *)
+  print_endline "=======5==========="
 
 (* entry point, for convenience purposes for now. Theoretically the parser and
 the reporters are decoupled *)
