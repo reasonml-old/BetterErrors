@@ -5,4 +5,5 @@
 6 |   bla = [31;4m[|1|][0m;
 7 | }
 
-This is 'a array, wanted string list instead.
+[31;4mThis is:[0m  'a array   
+[32mWanted:[0m   string list

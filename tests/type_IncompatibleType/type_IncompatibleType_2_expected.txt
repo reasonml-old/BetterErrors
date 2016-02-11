@@ -1,4 +1,5 @@
 [36mtests/type_IncompatibleType/type_IncompatibleType_2.ml:1 4-8
 [0m1 | if ![31;4mtrue[0m then "asd" else "a"
 
-This is bool, wanted 'a ref instead.
+[31;4mThis is:[0m  bool  
+[32mWanted:[0m   'a ref

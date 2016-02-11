@@ -85,7 +85,7 @@ let printAssumingErrorsAndWarnings l = l |> BatList.iter (fun {fileInfo; errors;
       Printf.printf "This needs to be applied to %d argument(s), we found %d.\n" expectedCount actualCount
     | Type_IncompatibleType {actual; expected} ->
       print_endline @@ printFile fileInfo range;
-      print_endline @@
+      print_string @@
         Table.table
         ~align:Table.Left
         ~style:{
