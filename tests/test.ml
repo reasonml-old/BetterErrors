@@ -9,7 +9,7 @@ let folders = [
   ("file_SyntaxError", 5);
   ("type_AppliedTooMany", 1);
   ("type_AppliedWithoutLabel", 1);
-  ("type_IncompatibleType", 3);
+  ("type_IncompatibleType", 4);
   ("type_MismatchTypeArguments", 1);
   ("type_NotAFunction", 1);
   ("type_RecordFieldNotBelong", 2);

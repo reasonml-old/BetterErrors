@@ -4,6 +4,20 @@ open Helpers
 (* agnostic extractors, turning err string into proper data structures *)
 (* TODO: don't make these raise error *)
 
+(* need: where the original expected comes from  *)
+let type_IncompatibleType err _ range =
+  (* the type actual and expected might be on their own line *)
+  (* stolen from jordan, not using all the options yet *)
+  let allR =
+    {|This expression has type\s*(.+?)\s*but an expression was expected of type\s*(.+)|}
+  in
+  let actual = get_match_n 1 allR err in
+  let expected = get_match_n 2 allR err in
+  Type_IncompatibleType {
+    actual = BatString.trim actual;
+    expected = BatString.trim expected;
+  }
+
 (* TODO: differing portion data structure a-la diff table *)
 let type_MismatchTypeArguments err _ _ =
   let allR = {|The constructor ([\w\.]*) *expects[\s]*(\d+) *argument\(s\),\s*but is applied here to (\d+) argument\(s\)|} in
@@ -86,18 +100,6 @@ let type_AppliedTooMany err _ _ =
 let type_RecordFieldNotInExpression err fileInfo range = raise Not_found
 let type_RecordFieldError err fileInfo range = raise Not_found
 let type_FieldNotBelong err fileInfo range = raise Not_found
-
-(* need: where the original expected comes from  *)
-let type_IncompatibleType err _ range =
-  (* the type actual and expected might be on their own line *)
-  let actualR = {|This expression has type([\s\S]*?)but an expression was expected of type|} in
-  let expectedR = {|This expression has type[\s\S]*?but an expression was expected of type([\s\S]*?)$|} in
-  let actual = get_match actualR err |> BatString.trim in
-  let expected = get_match expectedR err |> BatString.trim in
-  Type_IncompatibleType {
-    actual = actual;
-    expected = expected;
-  }
 
 let type_NotAFunction err _ range =
   let actualR = {|This expression has type (.+)\n +This is not a function; it cannot be applied.|} in
