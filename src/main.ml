@@ -1,14 +1,5 @@
 open Types
-
-let hasErrorOrWarningR = Pcre.regexp
-  ~flags:[Pcre.(`MULTILINE)]
-  (* the all-caps ERROR is left by oasis when compilation fails bc of artifacts
-  left in project folders *)
-  {|^(Error|ERROR|Warning \d+): |}
-
-let rec splitInto ~chunckSize (l: 'a list): 'a list list =
-  if BatList.length l <= chunckSize || chunckSize = 0 then [l]
-  else (BatList.take chunckSize l) :: (splitInto ~chunckSize (BatList.drop chunckSize l))
+open Helpers
 
 (* the compiler output might point to an error that spans across many lines;
 however, instead of indicating from (startRow, startColumn) to (endRow,
@@ -111,14 +102,25 @@ let printFullSplitResult = BatList.iteri (fun i x ->
   )
 )
 
+let fileR = Pcre.regexp
+  ~flags:[Pcre.(`MULTILINE)]
+  {|^File "([\s\S]+?)", line (\d+)(?:, characters (\d+)-(\d+))?:$|}
+
+let errorOrWarningR = Pcre.regexp
+  ~flags:[Pcre.(`MULTILINE)]
+  {|^(?:(?:Error)|(?:Warning) (\d+)): |}
+
+let hasErrorOrWarningR = Pcre.regexp
+  ~flags:[Pcre.(`MULTILINE)]
+  (* the all-caps ERROR is left by oasis when compilation fails bc of artifacts
+  left in project folders *)
+  {|^(Error|ERROR|Warning \d+): |}
+
 let doThis (err): result =
-  let fileR = Pcre.regexp
-    ~flags:[Pcre.(`MULTILINE)]
-    {|^File "([\s\S]+?)", line (\d+)(?:, characters (\d+)-(\d+))?:$|}
-  in
   if not (Pcre.pmatch ~rex:hasErrorOrWarningR err) then NoErrorNorWarning err
   else
-    let errorContent = BatString.trim err
+    let errorContent =
+      BatString.trim err
       |> Pcre.full_split ~rex:fileR
       (* First few rows might be random output info *)
       |> BatList.drop_while (function Pcre.Text _ -> true | _ -> false)
@@ -133,10 +135,6 @@ let doThis (err): result =
         (* we match 6 items, so the whole list will always be a multiple of 6 *)
         |> splitInto ~chunckSize:6
         |> BatList.map extractFromFileMatch
-      in
-      let errorOrWarningR = Pcre.regexp
-        ~flags:[Pcre.(`MULTILINE)]
-        {|^(?:(?:Error)|(?:Warning) (\d+)): |}
       in
       let filesAndErrorsAndWarnings: fileAndErrorsAndWarnings list =
       files |> BatList.map (fun (fileInfo, range, text) ->

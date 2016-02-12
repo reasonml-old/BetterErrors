@@ -75,6 +75,11 @@ let printFile {cachedContent; filePath} range =
         endColumn
   in fileInfo ^ _printFile ~sep: " | " ~highlight:range cachedContent
 
+let listify suggestions =
+  (suggestions
+  |> BatList.map (fun sug -> "- `" ^ sug ^ "`")
+  |> BatString.concat "\n") ^ "\n"
+
 let printAssumingErrorsAndWarnings l = l |> BatList.iter (fun {fileInfo; errors; warnings} ->
   errors |> BatList.iter (fun {range; parsedContent} -> match parsedContent with
     | Error_CatchAll error ->
@@ -125,11 +130,13 @@ let printAssumingErrorsAndWarnings l = l |> BatList.iter (fun {fileInfo; errors;
       (match suggestion with
       | None -> ()
       | Some h -> print_endline ("Hint: did you mean `" ^ h ^ "`?"))
-    | Type_UnboundValue {unboundValue; suggestion} ->
+    | Type_UnboundValue {unboundValue; suggestions} ->
       print_endline @@ printFile fileInfo range;
-      (match suggestion with
+      (match suggestions with
       | None -> print_endline ("`" ^ unboundValue ^ "` can't be found. Could it be a typo?")
-      | Some hint -> Printf.printf "`%s` can't be found. Did you mean `%s`?\n" unboundValue hint)
+      | Some [hint] -> Printf.printf "`%s` can't be found. Did you mean `%s`?\n" unboundValue hint
+      | Some [hint1; hint2] -> Printf.printf "`%s` can't be found. Did you mean `%s` or `%s`?\n" unboundValue hint1 hint2
+      | Some hints -> Printf.printf "`%s` can't be found. Did you mean one of these?\n%s" unboundValue (listify hints))
     | Type_UnboundRecordField {recordField; suggestion} ->
       print_endline @@ printFile fileInfo range;
       (match suggestion with

@@ -7,7 +7,7 @@ type mismatchTypeArguments = {
 }
 type unboundValue = {
   unboundValue: string;
-  suggestion: string option;
+  suggestions: string list option;
 }
 type signatureMismatch = {constructor: string; expectedCount: int; observedCount: int}
 type signatureItemMissing = {constructor: string; expectedCount: int; observedCount: int}

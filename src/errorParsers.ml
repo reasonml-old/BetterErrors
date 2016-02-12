@@ -1,15 +1,5 @@
 open Types
-
-(* helpers for getting the first (presumably only) match in a string *)
-let get_match_n n pat str = Pcre.get_substring (Pcre.exec ~pat:pat str) n
-let get_match = get_match_n 1
-let get_match_maybe pat str =
-  try Some (Pcre.get_substring (Pcre.exec ~pat:pat str) 1)
-  with Not_found -> None
-(* helper for turning Not_found exception into an optional *)
-let exec ~pat str = try Some (Pcre.exec ~pat str) with Not_found -> None
-
-let split sep str = Pcre.split ~pat:sep str
+open Helpers
 
 (* agnostic extractors, turning err string into proper data structures *)
 (* TODO: don't make these raise error *)
@@ -33,10 +23,13 @@ let type_UnboundValue err _ _ =
   let unboundValue = get_match unboundValueR err in
   (* TODO: there might be more than one suggestion *)
   let suggestionR = {|Unbound value [\w\.]*[\s\S]Hint: Did you mean (.+)\?|} in
-  let suggestion = get_match_maybe suggestionR err in
+  let suggestions =
+    get_match_maybe suggestionR err
+    |> BatOption.map (Pcre.split ~pat:{|, | or |})
+  in
   Type_UnboundValue {
     unboundValue = unboundValue;
-    suggestion = suggestion;
+    suggestions = suggestions;
   }
 
 let type_SignatureMismatch err fileInfo = raise Not_found

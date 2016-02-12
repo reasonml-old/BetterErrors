@@ -21,6 +21,11 @@ let makeFileDiagnosticMessage typee errorMessage ?tip fileInfo range =
       trace = None;
     }
 
+let listify suggestions =
+  (suggestions
+  |> BatList.map (fun sug -> "- `" ^ sug ^ "`")
+  |> BatString.concat "\n") ^ "\n"
+
 let printAssumingErrorsAndWarnings l = l |> BatList.map (fun {fileInfo; errors; warnings} ->
   let newErrors = errors |> BatList.map (fun {range; parsedContent} -> match parsedContent with
     | Type_MismatchTypeArguments {typeConstructor; expectedCount; actualCount} ->
@@ -59,11 +64,13 @@ let printAssumingErrorsAndWarnings l = l |> BatList.map (fun {fileInfo; errors; 
         | None -> makeFileDiagnosticMessage NuclideDiagnostic.Error errorMessage fileInfo range
         | Some h -> makeFileDiagnosticMessage NuclideDiagnostic.Error errorMessage ~tip:(Printf.sprintf "Hint: did you mean `%s`?" h) fileInfo range
       end
-    | Type_UnboundValue {unboundValue; suggestion} ->
-      let errorMessage = begin match suggestion with
-        | None -> Printf.sprintf "`%s` can't be found. Could it be a typo?" unboundValue
-        | Some h -> Printf.sprintf "`%s` can't be found. Did you mean `%s`?" unboundValue h
-      end in
+    | Type_UnboundValue {unboundValue; suggestions} ->
+      let errorMessage = match suggestions with
+        | None -> "`" ^ unboundValue ^ "` can't be found. Could it be a typo?"
+        | Some [hint] -> Printf.sprintf "`%s` can't be found. Did you mean `%s`?\n" unboundValue hint
+        | Some [hint1; hint2] -> Printf.sprintf "`%s` can't be found. Did you mean `%s` or `%s`?\n" unboundValue hint1 hint2
+        | Some hints -> Printf.sprintf "`%s` can't be found. Did you mean one of these?\n%s" unboundValue (listify hints)
+      in
       makeFileDiagnosticMessage NuclideDiagnostic.Error errorMessage fileInfo range
     | Type_UnboundRecordField {recordField; suggestion} ->
       let errorMessage = begin match suggestion with
