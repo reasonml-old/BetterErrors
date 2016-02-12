@@ -18,11 +18,12 @@ let pad ?(ch=' ') content n =
   (BatString.make (n - (BatString.length content)) ch) ^ content
 
 let red = ANSITerminal.sprintf [ANSITerminal.red; ANSITerminal.Underlined] "%s"
+let redUnderlined = ANSITerminal.sprintf [ANSITerminal.red; ANSITerminal.Underlined] "%s"
 let green = ANSITerminal.sprintf [ANSITerminal.green] "%s"
 
 let highlight ?(first=0) ?(last=99999) str =
   (BatString.slice ~last:first str)
-    ^ (red @@ BatString.slice ~first ~last str)
+    ^ (redUnderlined @@ BatString.slice ~first ~last str)
     ^ (BatString.slice ~first:last str)
 
 (* row and col 0-indexed; endColumn is 1 past the actual end. See
@@ -76,114 +77,109 @@ let printFile {cachedContent; filePath} range =
   in fileInfo ^ _printFile ~sep: " | " ~highlight:range cachedContent
 
 let listify suggestions =
-  (suggestions
+  suggestions
   |> BatList.map (fun sug -> "- `" ^ sug ^ "`")
-  |> BatString.concat "\n") ^ "\n"
+  |> BatString.concat "\n"
 
-let printAssumingErrorsAndWarnings l = l |> BatList.iter (fun {fileInfo; errors; warnings} ->
-  errors |> BatList.iter (fun {range; parsedContent} -> match parsedContent with
-    | Error_CatchAll error ->
-      print_endline @@ printFile fileInfo range;
-      print_endline error
+let mapcat sep f l = BatString.concat sep (BatList.map f l)
+
+let sp = Printf.sprintf
+
+let decryptAssumingErrorsAndWarnings = mapcat "\n" (fun {fileInfo; errors; warnings} ->
+  (errors |> mapcat "\n" (fun {range; parsedContent} ->
+    let text = match parsedContent with
+    | Error_CatchAll error -> error
     | Type_MismatchTypeArguments {typeConstructor; expectedCount; actualCount} ->
-      print_endline @@ printFile fileInfo range;
-      Printf.printf "This needs to be applied to %d argument(s), we found %d.\n" expectedCount actualCount
+      sp "This needs to be applied to %d argument(s), we found %d." expectedCount actualCount
     | Type_IncompatibleType {actual; expected} ->
-      print_endline @@ printFile fileInfo range;
-      print_string @@
-        Table.table
-        ~align:Table.Left
-        ~style:{
-          Table.top = ("", "", "", "");
-          Table.middle = ("", "", "", "");
-          Table.bottom = ("", "", "", "");
-          Table.vertical = ("", "  ", "");
-        }
-        ~padding:0
-        [[(red "This is:"); actual]; [(green "Wanted:"); expected]]
+      Table.table
+      ~align:Table.Left
+      ~style:{
+        Table.top = ("", "", "", "");
+        Table.middle = ("", "", "", "");
+        Table.bottom = ("", "", "", "");
+        Table.vertical = ("", "  ", "");
+      }
+      ~padding:0
+      [[red "This is:"; actual]; [green "Wanted:"; expected]]
     | Type_NotAFunction {actual} ->
-      print_endline @@ printFile fileInfo range;
-      print_endline ("This is " ^ actual ^ ". You seem to have called it as a function.");
-      print_endline "Careful with the spaces and the parentheses, and whatever's in-between!"
+      "This is " ^ actual ^ ". You seem to have called it as a function.\n"
+        ^ "Careful with the spaces and the parentheses, and whatever's in-between!"
     | Type_AppliedTooMany {functionType; expectedArgCount} ->
-      print_endline @@ printFile fileInfo range;
-      print_endline ("This function has type " ^ functionType);
-      Printf.printf "It accepts only %d arguments. You gave more. " expectedArgCount;
-      print_endline "Maybe you forgot a `;` somewhere?"
+      sp
+        "This function has type %s\nIt accepts only %d arguments. You gave more. Maybe you forgot a `;` somewhere?"
+        functionType
+        expectedArgCount
     | File_SyntaxError {offendingString; hint} ->
-      print_endline @@ printFile fileInfo range;
-      print_endline @@ (match hint with
-        | Some a -> "The syntax is wrong: " ^ a
-        | None -> "The syntax is wrong.");
+      (match hint with
+      | Some a -> "The syntax is wrong: " ^ a
+      | None -> "The syntax is wrong.")
+      ^ "\n" ^
       (match offendingString with
-        | ";" -> print_endline "Semicolon is an infix symbol used *between* expressions that return `unit` (aka \"nothing\")."
-        | "else" -> print_endline @@ "Did you happen to have put a semicolon on the line before else?"
-          ^ " Also, `then` accepts a single expression. If you've put many, wrap them in parentheses."
-        | _ -> ());
-      print_endline "Note: the location indicated might not be accurate."
+      | ";" -> "Semicolon is an infix symbol used *between* expressions that return `unit` (aka \"nothing\").\n"
+      | "else" -> "Did you happen to have put a semicolon on the line before else?"
+        ^ " Also, `then` accepts a single expression. If you've put many, wrap them in parentheses.\n"
+      | _ -> ""
+      ) ^ "Note: the location indicated might not be accurate."
     | File_IllegalCharacter {character} ->
-      print_endline @@ printFile fileInfo range;
-      Printf.printf "The character `%s` is illegal. EVERY CHARACTER THAT'S NOT AMERICAN IS ILLEGAL!\n" character
+      sp "The character `%s` is illegal. EVERY CHARACTER THAT'S NOT AMERICAN IS ILLEGAL!" character
     | Type_UnboundTypeConstructor {namespacedConstructor; suggestion} ->
-      print_endline @@ printFile fileInfo range;
-      print_endline ("The type constructor " ^ namespacedConstructor ^ " can't be found.");
+      (sp "The type constructor %s can't be found." namespacedConstructor)
+      ^
       (match suggestion with
-      | None -> ()
-      | Some h -> print_endline ("Hint: did you mean `" ^ h ^ "`?"))
+      | None -> ""
+      | Some h -> sp "\nHint: did you mean `%s`?" h)
     | Type_UnboundValue {unboundValue; suggestions} ->
-      print_endline @@ printFile fileInfo range;
       (match suggestions with
-      | None -> print_endline ("`" ^ unboundValue ^ "` can't be found. Could it be a typo?")
-      | Some [hint] -> Printf.printf "`%s` can't be found. Did you mean `%s`?\n" unboundValue hint
-      | Some [hint1; hint2] -> Printf.printf "`%s` can't be found. Did you mean `%s` or `%s`?\n" unboundValue hint1 hint2
-      | Some hints -> Printf.printf "`%s` can't be found. Did you mean one of these?\n%s" unboundValue (listify hints))
+      | None -> sp "`%s` can't be found. Could it be a typo?" unboundValue
+      | Some [hint] -> sp "`%s` can't be found. Did you mean `%s`?" unboundValue hint
+      | Some [hint1; hint2] -> sp "`%s` can't be found. Did you mean `%s` or `%s`?" unboundValue hint1 hint2
+      | Some hints -> sp "`%s` can't be found. Did you mean one of these?\n%s" unboundValue (listify hints))
     | Type_UnboundRecordField {recordField; suggestion} ->
-      print_endline @@ printFile fileInfo range;
       (match suggestion with
-      | None -> print_endline ("Field `" ^ recordField ^ "` can't be found in any record type.")
-      | Some hint -> print_endline ("Field `" ^ recordField ^ "` can't be found in any record type. Did you mean `" ^ hint ^ "`?\n"))
+      | None -> sp "Field `%s` can't be found in any record type." recordField
+      | Some hint -> sp "Field `%s` can't be found in any record type. Did you mean `%s`?" recordField hint)
     | Type_UnboundModule {unboundModule} ->
-      print_endline @@ printFile fileInfo range;
-      print_endline ("Module `" ^ unboundModule ^ "` not found in included libraries.");
-      let pckName = BatString.lowercase unboundModule in
-      print_endline (
-        "Hint: your build rules might be missing a link. If you're using: \n" ^
-        " - Oasis: make sure you have `"^ pckName ^"` under `BuildDepends` in your _oasis file.\n" ^
-        " - ocamlbuild: make sure you have `-pkgs "^ pckName ^"` in your build command.\n" ^
-        " - ocamlc | ocamlopt: make sure you have `-I +"^ pckName ^"` in your build command before the source files.\n" ^
-        " - ocamlfind: make sure you have `-package "^ pckName ^" -linkpkg` in your build command.\n")
-    |  _ -> print_endline "huh"
-  );
-  warnings |> BatList.iter (fun {range; parsedContent = {code; warningType}} -> match warningType with
+      (sp "Module `%s` not found in included libraries.\n" unboundModule)
+      ^
+      (let pckName = BatString.lowercase unboundModule in
+      "Hint: your build rules might be missing a link. If you're using: \n" ^
+      " - Oasis: make sure you have `"^ pckName ^"` under `BuildDepends` in your _oasis file.\n" ^
+      " - ocamlbuild: make sure you have `-pkgs "^ pckName ^"` in your build command.\n" ^
+      " - ocamlc | ocamlopt: make sure you have `-I +"^ pckName ^"` in your build command before the source files.\n" ^
+      " - ocamlfind: make sure you have `-package "^ pckName ^" -linkpkg` in your build command.")
+    |  _ -> "huh"
+    in
+    (printFile fileInfo range) ^ "\n" ^ text
+  ))
+  ^
+  (warnings |> mapcat "\n" (fun {range; parsedContent = {code; warningType}} ->
+    let text = match warningType with
     | Warning_CatchAll message ->
-      print_endline @@ printFile fileInfo range;
-      Printf.printf "Warning %d: %s\n" code message
+      sp "Warning %d: %s" code message
     | Warning_PatternNotExhaustive {unmatched} ->
-      print_endline @@ printFile fileInfo range;
-      Printf.printf "Warning %d: this match doesn't cover all possible values of the variant.\n" code;
+      sp "Warning %d: this match doesn't cover all possible values of the variant.\n" code
+      ^
       (match unmatched with
-      | [oneVariant] -> print_endline @@ "The case `" ^ oneVariant ^ "` is not matched"
-      | many ->
-          print_endline "These cases are not matched:";
-          BatList.iter (fun x -> print_endline @@ "- `" ^ x ^ "`") many)
+      | [oneVariant] -> sp "The case `%s` is not matched" oneVariant
+      | many -> sp "These cases are not matched:\n%s" (mapcat "\n" (sp "- `%s`") many))
     | Warning_OptionalArgumentNotErased {argumentName} ->
-      print_endline @@ printFile fileInfo range;
-      Printf.printf
+      (sp
         "Warning %d: %s is an optional argument at last position; calling the function by omitting %s might be confused with currying.\n"
         code
         argumentName
-        argumentName;
-      print_endline "The rule: an optional argument is erased as soon as the 1st positional (i.e. neither labeled nor optional) argument defined after it is passed in."
-    |  _ -> print_endline "huh"
+        argumentName)
+        ^ "The rule: an optional argument is erased as soon as the 1st positional (i.e. neither labeled nor optional) argument defined after it is passed in."
+    |  _ -> "huh"
+    in
+    (printFile fileInfo range) ^ "\n" ^ text)
   )
 )
 
-let print (content: result) = match content with
+let decryptCompilerMessages (content: result) = match content with
   (* handle the special cases first *)
-  | NoErrorNorWarning err ->
-    print_endline err;
-    ANSITerminal.printf [ANSITerminal.green] "%s\n" "✔ Seems fine!"
-  | Unparsable err ->
-    print_endline err;
-    ANSITerminal.printf [ANSITerminal.red] "%s\n" "✘ There might be an error."
-  | ErrorsAndWarnings asd -> printAssumingErrorsAndWarnings asd
+  | NoErrorNorWarning err -> err ^ green "\n✔ Seems fine!"
+  | Unparsable err -> err ^ red "\n✘ There might be an error."
+  | ErrorsAndWarnings err -> decryptAssumingErrorsAndWarnings err
+
+let print content = print_endline @@ decryptCompilerMessages content

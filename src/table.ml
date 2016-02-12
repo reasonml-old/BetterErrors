@@ -120,6 +120,7 @@ let table ?(align=Left) ?(style=simple) ?(padding=1) lists =
     ~last: (drawHorizontalLine ~style:(bLeft, bMid, bRight, bBar) ~row: anyRow ~maxes)
     (drawHorizontalLine ~style:(mLeft, mMid, mRight, mBar) ~row: anyRow ~maxes)
   |> BatString.concat ""
+  |> BatString.rchop
 
 (* let () = print_endline @@ table [["1"; "213ad"; "3";]; ["4"; "5"; "6"]]
 let () = print_endline @@ table ~style:double ~align:Right [["1"; "213ad"; "3";]; ["4"; "5"; "6"]]

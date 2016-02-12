@@ -6,4 +6,3 @@
 9 | }
 
 Field `helo` can't be found in any record type. Did you mean `hello`?
-

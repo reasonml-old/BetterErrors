@@ -1,3 +1,2 @@
-
-[32m✔ Seems fine!
-[0m
+[32m
+✔ Seems fine![0m
