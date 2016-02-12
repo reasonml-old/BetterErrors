@@ -20,7 +20,7 @@ Executable rea
   BuildTools: ocamlbuild
   # install: true
   CompiledObject: byte
-  BuildDepends: Pcre, Batteries, ANSITerminal
+  BuildDepends: pcre, batteries, ANSITerminal
 
 Executable test
   Path: tests
@@ -28,7 +28,7 @@ Executable test
   BuildTools: ocamlbuild
   # install: true
   CompiledObject: byte
-  BuildDepends: Batteries
+  BuildDepends: batteries
 
 Executable table
   Path: src
@@ -36,11 +36,11 @@ Executable table
   BuildTools: ocamlbuild
   # install: true
   CompiledObject: byte
-  BuildDepends: Pcre, Batteries, ANSITerminal
+  BuildDepends: pcre, batteries, ANSITerminal
 
 Executable nuclidereporter
   Path: src
   MainIs: NuclideReporter.ml
   BuildTools: ocamlbuild
   CompiledObject: byte
-  BuildDepends: Pcre, Batteries, ANSITerminal
+  BuildDepends: pcre, batteries, ANSITerminal
