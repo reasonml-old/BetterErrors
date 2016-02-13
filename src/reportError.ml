@@ -25,7 +25,7 @@ let report parsedContent =
     [[redUnderlined "This is:"; actual]; [green "Wanted:"; expected]]
   | Type_NotAFunction {actual} ->
     "This is " ^ actual ^ ". You seem to have called it as a function.\n"
-      ^ "Careful with the spaces and the parentheses, and whatever's in-between!"
+      ^ "Careful with spaces, semicolons, parentheses, and whatever in-between!"
   | Type_AppliedTooMany {functionType; expectedArgCount} ->
     sp
       "This function has type %s\nIt accepts only %d arguments. You gave more. Maybe you forgot a `;` somewhere?"

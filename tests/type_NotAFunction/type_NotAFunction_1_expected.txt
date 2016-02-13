@@ -3,4 +3,4 @@
 2 |   [31;4m5[0m ()
 
 [31mError[0m: This is int. You seem to have called it as a function.
-Careful with the spaces and the parentheses, and whatever's in-between!
+Careful with spaces, semicolons, parentheses, and whatever in-between!
