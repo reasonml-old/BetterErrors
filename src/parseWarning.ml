@@ -4,7 +4,7 @@ open Helpers
 (* agnostic extractors, turning err string into proper data structures *)
 (* TODO: don't make these raise error *)
 
-let warning_UnusedVariable code err fileInfo range = raise Not_found
+let warning_UnusedVariable code err cachedContent range = raise Not_found
 
 (* need: what the variant is. If it's e.g. a list, instead of saying "doesn't
 cover all the cases of the variant" we could say "doesn't cover all the possible
@@ -25,16 +25,16 @@ let warning_PatternNotExhaustive code err _ _ =
     unmatched = unmatched;
   }
 
-let warning_PatternUnused code err fileInfo range = raise Not_found
+let warning_PatternUnused code err cachedContent range = raise Not_found
 
 (* need: offending optional argument name from AST *)
 (* need: offending function name *)
-let warning_OptionalArgumentNotErased code err fileInfo range =
+let warning_OptionalArgumentNotErased code err cachedContent range =
   let ((startRow, startColumn), (endRow, endColumn)) = range in
   (* Hardcoding 16 for now. We might one day switch to use the variant from
   https://github.com/ocaml/ocaml/blob/901c67559469acc58935e1cc0ced253469a8c77a/utils/warnings.ml#L20 *)
   let allR = {|this optional argument cannot be erased\.|} in
-  let fileLine = BatList.at fileInfo.cachedContent startRow in
+  let fileLine = BatList.at cachedContent startRow in
   let _ = get_match_n 0 allR err in
   let argumentNameRaw = BatString.slice
     ~first:startColumn
@@ -54,3 +54,11 @@ let parsers = [
   warning_PatternUnused;
   warning_OptionalArgumentNotErased;
 ]
+
+let parse code warningBody cachedContent range =
+  try
+    BatList.find_map (fun parse ->
+      try Some (parse code warningBody cachedContent range)
+      with _ -> None)
+    parsers
+  with Not_found -> Warning_CatchAll warningBody

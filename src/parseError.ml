@@ -46,8 +46,8 @@ let type_UnboundValue err _ _ =
     suggestions = suggestions;
   }
 
-let type_SignatureMismatch err fileInfo = raise Not_found
-let type_SignatureItemMissing err fileInfo = raise Not_found
+let type_SignatureMismatch err cachedContent = raise Not_found
+let type_SignatureItemMissing err cachedContent = raise Not_found
 
 let type_UnboundModule err _ _ =
   let unboundModuleR = {|Unbound module ([\w\.]*)|} in
@@ -70,7 +70,7 @@ let type_UnboundRecordField err _ _ =
       suggestion = suggestion
     }
 
-let type_UnboundConstructor err fileInfo = raise Not_found
+let type_UnboundConstructor err cachedContent = raise Not_found
 
 let type_UnboundTypeConstructor err _ _ =
   let constructorR = {|Unbound type constructor (.+)|} in
@@ -97,9 +97,9 @@ let type_AppliedTooMany err _ _ =
       expectedArgCount = expectedArgCount;
     }
 
-let type_RecordFieldNotInExpression err fileInfo range = raise Not_found
-let type_RecordFieldError err fileInfo range = raise Not_found
-let type_FieldNotBelong err fileInfo range = raise Not_found
+let type_RecordFieldNotInExpression err cachedContent range = raise Not_found
+let type_RecordFieldError err cachedContent range = raise Not_found
+let type_FieldNotBelong err cachedContent range = raise Not_found
 
 let type_NotAFunction err _ range =
   let actualR = {|This expression has type (.+)\n +This is not a function; it cannot be applied.|} in
@@ -110,7 +110,7 @@ let type_NotAFunction err _ range =
 
 (* TODO: apparently syntax error can be followed by more indications *)
 (* need: way, way more information, I can't even *)
-let file_SyntaxError err fileInfo range =
+let file_SyntaxError err cachedContent range =
   let allR = {|Syntax error|} in
   (* raise the same error than if we failed to match *)
   if not (Pcre.pmatch ~pat:allR err) then
@@ -125,10 +125,10 @@ let file_SyntaxError err fileInfo range =
       offendingString = BatString.slice
         ~first:startColumn
         ~last:endColumn
-        (BatList.at fileInfo.cachedContent startRow);
+        (BatList.at cachedContent startRow);
     }
 
-let build_InconsistentAssumptions err fileInfo range = raise Not_found
+let build_InconsistentAssumptions err cachedContent range = raise Not_found
 
 (* need: list of legal characters *)
 let file_IllegalCharacter err _ _ =
@@ -158,3 +158,11 @@ let parsers = [
   build_InconsistentAssumptions;
   file_IllegalCharacter;
 ]
+
+let parse errorBody cachedContent range =
+try
+  BatList.find_map (fun parse ->
+    try Some (parse errorBody cachedContent range)
+    with _ -> None)
+  parsers
+with Not_found -> Error_CatchAll errorBody

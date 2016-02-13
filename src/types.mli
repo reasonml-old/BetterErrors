@@ -78,11 +78,6 @@ type warningType =
   | Warning_OptionalArgumentNotErased of optionalArgumentNotErased
   | Warning_CatchAll of string
 
-type warning = {
-  code: int;
-  warningType: warningType;
-}
-
 type error =
   | Type_MismatchTypeArguments of mismatchTypeArguments
   | Type_UnboundValue of unboundValue
@@ -106,20 +101,20 @@ type error =
   | File_IllegalCharacter of illegalCharacter
   | Error_CatchAll of string
 
-type fileInfo = {
+type warning = {
+  code: int;
+  warningType: warningType;
+}
+type 'a withFileInfo = {
   filePath: string;
   cachedContent: string list;
-}
-type 'a withRange = {
   range: Atom.Range.t;
   parsedContent: 'a;
 }
-type fileAndErrorsAndWarnings = {
-  fileInfo: fileInfo;
-  errors: (error withRange) list;
-  warnings: (warning withRange) list;
-}
+type errorOrWarning =
+  | Error of error withFileInfo
+  | Warning of warning withFileInfo
 type result =
   | NoErrorNorWarning of string
   | Unparsable of string
-  | ErrorsAndWarnings of fileAndErrorsAndWarnings list
+  | ErrorsAndWarnings of errorOrWarning list

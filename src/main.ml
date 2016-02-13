@@ -65,29 +65,29 @@ let normalizeCompilerLineColsToRange ~fileLines ~lineRaw ~col1Raw ~col2Raw =
     (startRow + howManyMoreRowsCoveredSinceStartRow, !howManyCharsLeftToCoverOnSubsequentLines))
 
 (* has the side-effect of reading the file *)
-let extractFromFileMatch fileMatch: (fileInfo * Atom.Range.t * string) =
-  Pcre.(
-    match fileMatch with
-    | [Delim _; Group (_, fileName); Group (_, lineNum); col1; col2; Text text] ->
-      let cachedContent = BatList.of_enum (BatFile.lines_of fileName) in
-      let (col1Raw, col2Raw) = match (col1, col2) with
-        | (Group (_, c1), Group (_, c2)) -> (Some c1, Some c2)
-        | _ -> (None, None)
-      in
-      (
-        {filePath = fileName; cachedContent = cachedContent},
-        (normalizeCompilerLineColsToRange
-          ~fileLines:cachedContent
-          ~lineRaw:lineNum
-          ~col1Raw:col1Raw
-          ~col2Raw:col2Raw
-        ),
-        (* important, otherwise leaves random blank lines that defies some of
-        our regex logic, maybe *)
-        BatString.trim text
-      )
-    | _ -> raise (invalid_arg "Couldn't extract error")
-  )
+let extractFromFileMatch fileMatch = Pcre.(
+  match fileMatch with
+  | [Delim _; Group (_, filePath); Group (_, lineNum); col1; col2; Text body] ->
+    let cachedContent = BatList.of_enum (BatFile.lines_of filePath) in
+    let (col1Raw, col2Raw) = match (col1, col2) with
+      | (Group (_, c1), Group (_, c2)) -> (Some c1, Some c2)
+      | _ -> (None, None)
+    in
+    (
+      filePath,
+      cachedContent,
+      (normalizeCompilerLineColsToRange
+        ~fileLines:cachedContent
+        ~lineRaw:lineNum
+        ~col1Raw:col1Raw
+        ~col2Raw:col2Raw
+      ),
+      (* important, otherwise leaves random blank lines that defies some of
+      our regex logic, maybe *)
+      BatString.trim body
+    )
+  | _ -> raise (invalid_arg "Couldn't extract error")
+)
 
 (* debug helper *)
 let printFullSplitResult = BatList.iteri (fun i x ->
@@ -106,101 +106,65 @@ let fileR = Pcre.regexp
   ~flags:[Pcre.(`MULTILINE)]
   {|^File "([\s\S]+?)", line (\d+)(?:, characters (\d+)-(\d+))?:$|}
 
-let errorOrWarningR = Pcre.regexp
-  ~flags:[Pcre.(`MULTILINE)]
-  {|^(?:(?:Error)|(?:Warning) (\d+)): |}
-
 let hasErrorOrWarningR = Pcre.regexp
   ~flags:[Pcre.(`MULTILINE)]
   (* the all-caps ERROR is left by oasis when compilation fails bc of artifacts
   left in project folders *)
   {|^(Error|ERROR|Warning \d+): |}
 
-let doThis (err): result =
+let parse (err): result =
+  let err = BatString.trim err in
   if not (Pcre.pmatch ~rex:hasErrorOrWarningR err) then NoErrorNorWarning err
   else
     let errorContent =
-      BatString.trim err
+      err
       |> Pcre.full_split ~rex:fileR
       (* First few rows might be random output info *)
       |> BatList.drop_while (function Pcre.Text _ -> true | _ -> false)
     in
     if BatList.length errorContent = 0 then Unparsable err
-    else (
-      let files =
-        BatString.trim err
-        |> Pcre.full_split ~rex:fileR
-        (* First few rows might be random output info *)
-        |> BatList.drop_while (function Pcre.Text _ -> true | _ -> false)
-        (* we match 6 items, so the whole list will always be a multiple of 6 *)
-        |> splitInto ~chunckSize:6
-        |> BatList.map extractFromFileMatch
-      in
-      let filesAndErrorsAndWarnings: fileAndErrorsAndWarnings list =
-      files |> BatList.map (fun (fileInfo, range, text) ->
-        let errorsAndWarnings =
-          Pcre.full_split ~rex:errorOrWarningR text
-          (* we match 4 items, so the whole list will always be a multiple of 4 *)
-          |> splitInto ~chunckSize:3
+    else
+      err
+      |> Pcre.full_split ~rex:fileR
+      (* First few rows might be random output info *)
+      |> BatList.drop_while (function Pcre.Text _ -> true | _ -> false)
+      (* we match 6 items, so the whole list will always be a multiple of 6 *)
+      |> splitInto ~chunckSize:6
+      |> BatList.map extractFromFileMatch
+      |> BatList.map (fun (filePath, cachedContent, range, body) ->
+        let errorCapture = get_match_maybe {|^Error: ([\s\S]+)|} body in
+        let warningCapture =
+          match execMaybe {|^Warning (\d+): ([\s\S]+)|} body with
+          | None -> (None, None)
+          | Some capture -> (getSubstringMaybe capture 1, getSubstringMaybe capture 2)
         in
-        (* taking advantage of the distinct shape of error/warning to separate
-        them *)
-        let errors = errorsAndWarnings |> Pcre.(BatList.filter_map (function
-          | [Delim _; NoGroup; Text text] -> Some text
-          | _ -> None
-        ))
-        in
-        let warnings = errorsAndWarnings |> Pcre.(BatList.filter_map (function
-          | [Delim _; Group (_, code); Text text] ->
-              Some (int_of_string code, text)
-          | _ -> None
-        ))
-        in
-        let errs =
-          errors
-          |> BatList.map (fun errorRaw ->
-              let result =
-                try
-                  BatList.find_map (fun errorParser ->
-                    try Some (errorParser errorRaw fileInfo range)
-                    with _ -> None)
-                  ErrorParsers.parsers
-                with Not_found -> Error_CatchAll errorRaw
-              in
-              {
-                range = range;
-                parsedContent = result;
-              }
-          )
-        in
-        let warns =
-          warnings
-          |> BatList.map (fun (code, warningRaw) ->
-            let result = {
-              code = code;
-              warningType =
-                try
-                  BatList.find_map (fun warningParser ->
-                    try Some (warningParser code warningRaw fileInfo range)
-                    with _ -> None)
-                  WarningParsers.parsers
-                with Not_found -> Warning_CatchAll warningRaw
-            }
-            in {
-              range = range;
-              parsedContent = result;
-            }
-          )
-        in {fileInfo = fileInfo; errors = errs; warnings = warns}
+        match (errorCapture, warningCapture) with
+        | (Some errorBody, (None, None)) ->
+          Some (Error {
+            filePath;
+            cachedContent;
+            range;
+            parsedContent = ParseError.parse errorBody cachedContent range;
+          })
+        | (None, (Some code, Some warningBody)) ->
+          Some (Warning {
+            filePath;
+            cachedContent;
+            range;
+            parsedContent = {
+              code = int_of_string code;
+              warningType = ParseWarning.parse code warningBody cachedContent range;
+            };
+          })
+        | _ -> None (* not an error, not a warning. False alarm? *)
       )
-      in
-      ErrorsAndWarnings filesAndErrorsAndWarnings
-    )
+      |> BatList.filter_map BatPervasives.identity
+      |> (fun x -> ErrorsAndWarnings x)
 
 (* entry point, for convenience purposes for now. Theoretically the parser and
 the reporters are decoupled *)
 let () =
   try
     let err = BatPervasives.input_all stdin in
-    Reporter.print @@ doThis err;
+    TerminalReporter.print @@ parse err;
   with BatIO.No_more_input -> ()
