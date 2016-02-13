@@ -30,15 +30,21 @@ let warning_PatternUnused code err fileInfo range = raise Not_found
 (* need: offending optional argument name from AST *)
 (* need: offending function name *)
 let warning_OptionalArgumentNotErased code err fileInfo range =
-  (* assume error on one line *)
-  let ((startRow, startColumn), (_, endColumn)) = range in
+  let ((startRow, startColumn), (endRow, endColumn)) = range in
   (* Hardcoding 16 for now. We might one day switch to use the variant from
   https://github.com/ocaml/ocaml/blob/901c67559469acc58935e1cc0ced253469a8c77a/utils/warnings.ml#L20 *)
   let allR = {|this optional argument cannot be erased\.|} in
   let fileLine = BatList.at fileInfo.cachedContent startRow in
   let _ = get_match_n 0 allR err in
+  let argumentNameRaw = BatString.slice
+    ~first:startColumn
+    ~last: (if startRow = endRow then endColumn else 99999)
+    fileLine
+  in
+  let argumentNameR = {|(:?\?\s*\()?([^=]+)|} in
+  let argumentName = get_match_n 2 argumentNameR argumentNameRaw in
   Warning_OptionalArgumentNotErased {
-    argumentName = BatString.slice ~first:startColumn ~last:endColumn fileLine;
+    argumentName = BatString.trim argumentName;
   }
 
 (* TODO: better logic using these codes *)

@@ -4,5 +4,5 @@
 3 | 
 4 | let () = print_endline (asd 1 ~bcD':1)
 
-Warning 16: bcD' is an optional argument at last position; calling the function by omitting bcD' might be confused with currying.
+Warning 16: `bcD'` is an optional argument at last position; calling the function by omitting bcD' might be confused with currying.
 The rule: an optional argument is erased as soon as the 1st positional (i.e. neither labeled nor optional) argument defined after it is passed in.

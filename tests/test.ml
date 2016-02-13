@@ -18,7 +18,7 @@ let folders = [
   ("type_UnboundRecordField", 2);
   ("type_UnboundTypeConstructor", 2);
   ("type_UnboundValue", 4);
-  ("warning_OptionalArgumentNotErased", 1);
+  ("warning_OptionalArgumentNotErased", 2);
   ("Warning_PatternNotExhaustive", 2);
   ("warning_PatternUnused", 1);
 ]

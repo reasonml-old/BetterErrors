@@ -165,7 +165,7 @@ let decryptAssumingErrorsAndWarnings = mapcat "\n" (fun {fileInfo; errors; warni
       | many -> sp "These cases are not matched:\n%s" (mapcat "\n" (sp "- `%s`") many))
     | Warning_OptionalArgumentNotErased {argumentName} ->
       (sp
-        "Warning %d: %s is an optional argument at last position; calling the function by omitting %s might be confused with currying.\n"
+        "Warning %d: `%s` is an optional argument at last position; calling the function by omitting %s might be confused with currying.\n"
         code
         argumentName
         argumentName)
