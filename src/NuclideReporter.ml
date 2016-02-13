@@ -1,7 +1,7 @@
 open Types
 open Atom
 
-let diagnosticMessage typee content filePath range =
+let diagnosticMessage typee content filePath range originalData =
   let open NuclideDiagnostic.Message in
   (* no project wide error/warning for now? *)
   FileDiagnosticMessage {
@@ -14,6 +14,7 @@ let diagnosticMessage typee content filePath range =
     html = None;
     range = Some range;
     trace = None;
+    originalData;
   }
 
 let toNuclideList errorsAndWarnings =
@@ -26,12 +27,14 @@ let toNuclideList errorsAndWarnings =
         decryptedContent
         filePath
         range
+        original
     | Types.Warning {filePath; range} ->
       diagnosticMessage
         Warning
         decryptedContent
         filePath
         range
+        original
   )
   (TerminalReporter.decryptAssumingErrorsAndWarnings errorsAndWarnings)
   errorsAndWarnings
@@ -40,7 +43,7 @@ let toNuclideList errorsAndWarnings =
 type nuclideResult =
   | NoErrorNorWarning of string
   | Unparsable of string
-  | ErrorsAndWarnings of NuclideDiagnostic.Message.t list
+  | ErrorsAndWarnings of Types.errorOrWarning NuclideDiagnostic.Message.t list
 
 let convert (content: result): nuclideResult =
   match content with

@@ -22,7 +22,7 @@ module NuclideDiagnostic = struct
   end
 
   module Message = struct
-    type fileDiagnosticMessage = {
+    type 'a fileDiagnosticMessage = {
       scope: [ `file]; (* See Trace *)
       providerName: string; (* See Trace *)
       typee: diagnosticType; (* Whether it's a warning or an error *)
@@ -31,8 +31,9 @@ module NuclideDiagnostic = struct
       html: string option; (* See Trace *)
       range: Range.t option; (* See Trace *)
       trace: Trace.t array option; (* Maybe one file only ever has one FileDiagnosticMessage and many traces *)
+      originalData: 'a;
     }
-    type projectDiagnosticMessage = {
+    type 'a projectDiagnosticMessage = {
       scope: [ `project]; (* See above *)
       providerName: string; (* See above *)
       typee: diagnosticType; (* See above *)
@@ -40,10 +41,10 @@ module NuclideDiagnostic = struct
       html: string option; (* See above *)
       range: Range.t option; (* See above *)
       trace: Trace.t array option; (* See above *)
+      originalData: 'a;
     }
-    type t =
-      | FileDiagnosticMessage of fileDiagnosticMessage
-      | ProjectDiagnosticMessage of projectDiagnosticMessage
-
+    type 'a t =
+      | FileDiagnosticMessage of 'a fileDiagnosticMessage
+      | ProjectDiagnosticMessage of 'a projectDiagnosticMessage
   end
 end
