@@ -4,7 +4,7 @@
 5 | 
 6 | let () = print_int [31;4mposhanossy[0m
 
-`poshanossy` can't be found. Did you mean one of these?
+[31mError[0m: `poshanossy` can't be found. Did you mean one of these?
 - `poshanessy`
 - `poshanyssy`
 - `poshanissy`

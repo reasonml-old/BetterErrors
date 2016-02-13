@@ -3,4 +3,4 @@
 2 | 
 3 | let eleven = f ~[31;4ma[0m 6
 
-`a` can't be found. Could it be a typo?
+[31mError[0m: `a` can't be found. Could it be a typo?

@@ -5,5 +5,5 @@
 5 |   | Hello of [31;4mwhereAmI[0m
 6 |   | Goodbye
 
-The type constructor whereAmI can't be found.
+[31mError[0m: The type constructor whereAmI can't be found.
 Hint: did you mean `whereAm`?

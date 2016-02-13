@@ -2,5 +2,5 @@
 [0m1 | let () =
 2 |   I'm glad [31;4myou're[0m looking at this file =)
 
-The syntax is wrong.
+[31mError[0m: The syntax is wrong.
 Note: the location indicated might not be accurate.

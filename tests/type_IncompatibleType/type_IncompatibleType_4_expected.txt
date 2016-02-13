@@ -2,9 +2,9 @@
 [0m3 |   type woShiRecordIHaveAReallyLongNameThatllMakeYouLineBreak = {nihao: int}
 4 | end
 5 | 
-6 | let asd: TopNotchModule.jeSuisString = ([31;4m{nihao = 1}[0m: TopNotchModule.woShiRecordIHaveAReallyLongNameThatllMakeYouLineBreak)
+6 | let asd: TopNotchModule.jeSuisString = ([33;4m{nihao = 1}[0m: TopNotchModule.woShiRecordIHaveAReallyLongNameThatllMakeYouLineBreak)
 
-Warning 40: this record of type TopNotchModule.woShiRecordIHaveAReallyLongNameThatllMakeYouLineBreak contains fields that are 
+[33mWarning[0m 40: this record of type TopNotchModule.woShiRecordIHaveAReallyLongNameThatllMakeYouLineBreak contains fields that are 
 not visible in the current scope: nihao.
 They will not be selected if the type becomes unknown.
 [36mtests/type_IncompatibleType/type_IncompatibleType_4.ml:6 40-51
@@ -13,5 +13,6 @@ They will not be selected if the type becomes unknown.
 5 | 
 6 | let asd: TopNotchModule.jeSuisString = ([31;4m{nihao = 1}[0m: TopNotchModule.woShiRecordIHaveAReallyLongNameThatllMakeYouLineBreak)
 
+[31mError[0m: The types don't match.
 [31;4mThis is:[0m  TopNotchModule.woShiRecordIHaveAReallyLongNameThatllMakeYouLineBreak
 [32mWanted:[0m   TopNotchModule.jeSuisString = string                                

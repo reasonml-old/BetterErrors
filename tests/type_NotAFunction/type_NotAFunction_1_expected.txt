@@ -2,5 +2,5 @@
 [0m1 | let a =
 2 |   [31;4m5[0m ()
 
-This is int. You seem to have called it as a function.
+[31mError[0m: This is int. You seem to have called it as a function.
 Careful with the spaces and the parentheses, and whatever's in-between!

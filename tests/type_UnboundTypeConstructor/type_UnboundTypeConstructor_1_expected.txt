@@ -3,4 +3,4 @@
 2 |   | Hello of [31;4mwhereAmI[0m
 3 |   | Goodbye
 
-The type constructor whereAmI can't be found.
+[31mError[0m: The type constructor whereAmI can't be found.

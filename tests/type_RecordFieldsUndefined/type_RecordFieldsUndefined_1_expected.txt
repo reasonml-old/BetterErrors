@@ -6,4 +6,4 @@
 7 | [31;4m  a = 5;[0m
 8 | [31;4m}[0m
 
-Some record fields are undefined: b
+[31mError[0m: Some record fields are undefined: b

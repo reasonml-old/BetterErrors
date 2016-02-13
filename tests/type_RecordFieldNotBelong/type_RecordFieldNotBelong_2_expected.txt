@@ -7,5 +7,5 @@
 10 |   dogs = "hi";
 11 | };
 
-This record expression is expected to have type point
+[31mError[0m: This record expression is expected to have type point
        The field xs does not belong to type point

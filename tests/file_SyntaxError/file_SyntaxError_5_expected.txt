@@ -5,6 +5,6 @@
 4 | [31;4melse[0m
 5 |   print_endline "that I cant even"
 
-The syntax is wrong.
+[31mError[0m: The syntax is wrong.
 Did you happen to have put a semicolon on the line before else? Also, `then` accepts a single expression. If you've put many, wrap them in parentheses.
 Note: the location indicated might not be accurate.

@@ -5,4 +5,4 @@
 4 |   this is a haiku
 5 |   kidding it's not
 
-The character `\\` is illegal. EVERY CHARACTER THAT'S NOT AMERICAN IS ILLEGAL!
+[31mError[0m: The character `\\` is illegal. EVERY CHARACTER THAT'S NOT AMERICAN IS ILLEGAL!

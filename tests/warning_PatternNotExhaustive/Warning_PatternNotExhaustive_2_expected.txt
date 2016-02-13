@@ -2,10 +2,10 @@
 [0m5 |   | Nihao of int
 6 |   | LongAssGreetingInSomeSuperObscureLanguageIWannaHaveALineBreakHere
 7 | 
-8 | let say a = [31;4mmatch a with[0m
-9 | [31;4m| Hello -> ()[0m
+8 | let say a = [33;4mmatch a with[0m
+9 | [33;4m| Hello -> ()[0m
 
-Warning 8: this match doesn't cover all possible values of the variant.
+[33mWarning[0m 8: this match doesn't cover all possible values of the variant.
 These cases are not matched:
 - `Goodbye`
 - `Hola _`

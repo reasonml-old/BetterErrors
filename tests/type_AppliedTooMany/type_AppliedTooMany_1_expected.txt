@@ -3,5 +3,5 @@
 2 | 
 3 | let () = print_endline ([31;4momNomNomArgs[0m 1 (fun x -> "a") 1)
 
-This function has type 'a -> (int -> 'b) -> string
+[31mError[0m: This function has type 'a -> (int -> 'b) -> string
 It accepts only 2 arguments. You gave more. Maybe you forgot a `;` somewhere?

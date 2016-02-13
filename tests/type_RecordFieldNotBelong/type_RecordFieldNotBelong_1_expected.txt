@@ -4,5 +4,5 @@
 8 | 
 9 | let bla (Something {a; [31;4mb[0m}) = 1
 
-This record pattern is expected to have type asd
+[31mError[0m: This record pattern is expected to have type asd
        The field b does not belong to type asd

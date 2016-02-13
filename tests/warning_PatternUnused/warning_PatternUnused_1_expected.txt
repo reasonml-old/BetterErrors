@@ -2,6 +2,6 @@
 [0m5 | let say a = match a with
 6 | | Hello -> ()
 7 | | Goodbye -> ()
-8 | | [31;4m_[0m -> ()
+8 | | [33;4m_[0m -> ()
 
-Warning 11: this match case is unused.
+[33mWarning[0m 11: this match case is unused.

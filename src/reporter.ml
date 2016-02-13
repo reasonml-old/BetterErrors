@@ -17,18 +17,22 @@ let numberOfDigits n =
 let pad ?(ch=' ') content n =
   (BatString.make (n - (BatString.length content)) ch) ^ content
 
-let red = ANSITerminal.sprintf [ANSITerminal.red; ANSITerminal.Underlined] "%s"
+let red = ANSITerminal.sprintf [ANSITerminal.red] "%s"
 let redUnderlined = ANSITerminal.sprintf [ANSITerminal.red; ANSITerminal.Underlined] "%s"
+let yellow = ANSITerminal.sprintf [ANSITerminal.yellow] "%s"
+let yellowUnderlined = ANSITerminal.sprintf [ANSITerminal.yellow; ANSITerminal.Underlined] "%s"
 let green = ANSITerminal.sprintf [ANSITerminal.green] "%s"
 
-let highlight ?(first=0) ?(last=99999) str =
+let highlight ~isWarning ?(first=0) ?(last=99999) str =
+  let color = if isWarning then yellowUnderlined else redUnderlined in
   (BatString.slice ~last:first str)
-    ^ (redUnderlined @@ BatString.slice ~first ~last str)
+    ^ (color @@ BatString.slice ~first ~last str)
     ^ (BatString.slice ~first:last str)
 
 (* row and col 0-indexed; endColumn is 1 past the actual end. See
 Main.compilerLineColsToRange *)
-let _printFile ?(sep=" | ") ~highlight:((startRow, startColumn), (endRow, endColumn)) content =
+let _printFile ~isWarning ~highlight:((startRow, startColumn), (endRow, endColumn)) content =
+  let sep = " | " in
   let displayedStartRow = max 0 (startRow - 3) in
   (* we display no more than 3 lines after startRow. Some endRow are rly far
   away *)
@@ -40,22 +44,22 @@ let _printFile ?(sep=" | ") ~highlight:((startRow, startColumn), (endRow, endCol
       if i >= startRow && i <= endRow then
         if startRow = endRow then
           result := !result ^ (pad (string_of_int (i + 1)) lineNumWidth)
-            ^ sep ^ (highlight ~first:startColumn ~last:endColumn currLine) ^ "\n"
+            ^ sep ^ (highlight ~isWarning ~first:startColumn ~last:endColumn currLine) ^ "\n"
         else if i = startRow then
           result := !result ^ (pad (string_of_int (i + 1)) lineNumWidth)
-            ^ sep ^ (highlight ~first:startColumn currLine) ^ "\n"
+            ^ sep ^ (highlight ~isWarning ~first:startColumn currLine) ^ "\n"
         else if i = endRow then
           result := !result ^ (pad (string_of_int (i + 1)) lineNumWidth)
-            ^ sep ^ (highlight ~last:endColumn currLine) ^ "\n"
+            ^ sep ^ (highlight ~isWarning ~last:endColumn currLine) ^ "\n"
         else
           result := !result ^ (pad (string_of_int (i + 1)) lineNumWidth)
-            ^ sep ^ (highlight currLine) ^ "\n"
+            ^ sep ^ (highlight ~isWarning currLine) ^ "\n"
       else
         result := !result ^ (pad (string_of_int (i + 1)) lineNumWidth) ^ sep ^ currLine ^ "\n"
   done;
   !result
 
-let printFile {cachedContent; filePath} range =
+let printFile ?(isWarning=false) {cachedContent; filePath} range =
   let ((startRow, startColumn), (endRow, endColumn)) = range in
   let fileInfo = if startRow = endRow then
       ANSITerminal.sprintf
@@ -74,7 +78,7 @@ let printFile {cachedContent; filePath} range =
         startColumn
         (endRow + 1)
         endColumn
-  in fileInfo ^ _printFile ~sep: " | " ~highlight:range cachedContent
+  in fileInfo ^ _printFile ~isWarning ~highlight:range cachedContent
 
 let listify suggestions =
   suggestions
@@ -92,6 +96,7 @@ let decryptAssumingErrorsAndWarnings = mapcat "\n" (fun {fileInfo; errors; warni
     | Type_MismatchTypeArguments {typeConstructor; expectedCount; actualCount} ->
       sp "This needs to be applied to %d argument(s), we found %d." expectedCount actualCount
     | Type_IncompatibleType {actual; expected} ->
+      "The types don't match.\n" ^
       Table.table
       ~align:Table.Left
       ~style:{
@@ -101,7 +106,7 @@ let decryptAssumingErrorsAndWarnings = mapcat "\n" (fun {fileInfo; errors; warni
         Table.vertical = ("", "  ", "");
       }
       ~padding:0
-      [[red "This is:"; actual]; [green "Wanted:"; expected]]
+      [[redUnderlined "This is:"; actual]; [green "Wanted:"; expected]]
     | Type_NotAFunction {actual} ->
       "This is " ^ actual ^ ". You seem to have called it as a function.\n"
         ^ "Careful with the spaces and the parentheses, and whatever's in-between!"
@@ -150,29 +155,27 @@ let decryptAssumingErrorsAndWarnings = mapcat "\n" (fun {fileInfo; errors; warni
       " - ocamlfind: make sure you have `-package "^ pckName ^" -linkpkg` in your build command.")
     |  _ -> "huh"
     in
-    (printFile fileInfo range) ^ "\n" ^ text
-  ))
+    sp "%s\n%s: %s" (printFile fileInfo range) (red "Error") text)
+  )
   ^
   (warnings |> mapcat "\n" (fun {range; parsedContent = {code; warningType}} ->
     let text = match warningType with
-    | Warning_CatchAll message ->
-      sp "Warning %d: %s" code message
+    | Warning_CatchAll message -> message
     | Warning_PatternNotExhaustive {unmatched} ->
-      sp "Warning %d: this match doesn't cover all possible values of the variant.\n" code
+      "this match doesn't cover all possible values of the variant.\n"
       ^
       (match unmatched with
       | [oneVariant] -> sp "The case `%s` is not matched" oneVariant
       | many -> sp "These cases are not matched:\n%s" (mapcat "\n" (sp "- `%s`") many))
     | Warning_OptionalArgumentNotErased {argumentName} ->
       (sp
-        "Warning %d: `%s` is an optional argument at last position; calling the function by omitting %s might be confused with currying.\n"
-        code
+        "`%s` is an optional argument at last position; calling the function by omitting %s might be confused with currying.\n"
         argumentName
         argumentName)
         ^ "The rule: an optional argument is erased as soon as the 1st positional (i.e. neither labeled nor optional) argument defined after it is passed in."
     |  _ -> "huh"
     in
-    (printFile fileInfo range) ^ "\n" ^ text)
+    sp "%s\n%s %d: %s" (printFile ~isWarning:true fileInfo range) (yellow "Warning") code text)
   )
 )
 

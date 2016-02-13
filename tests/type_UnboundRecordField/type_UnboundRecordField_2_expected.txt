@@ -5,4 +5,4 @@
 8 |   [31;4mhelo[0m = 6;
 9 | }
 
-Field `helo` can't be found in any record type. Did you mean `hello`?
+[31mError[0m: Field `helo` can't be found in any record type. Did you mean `hello`?
