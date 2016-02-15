@@ -13,15 +13,9 @@ let numberOfDigits n =
 let pad ?(ch=' ') content n =
   (BatString.make (n - (BatString.length content)) ch) ^ content
 
-let highlight ~isWarning ?(first=0) ?(last=99999) str =
-  let color = if isWarning then yellowUnderlined else redUnderlined in
-  (BatString.slice ~last:first str)
-    ^ (color @@ BatString.slice ~first ~last str)
-    ^ (BatString.slice ~first:last str)
-
 (* row and col 0-indexed; endColumn is 1 past the actual end. See
 Main.compilerLineColsToRange *)
-let _printFile ~isWarning ~highlight:((startRow, startColumn), (endRow, endColumn)) content =
+let _printFile ~highlightColor:color ~highlight:((startRow, startColumn), (endRow, endColumn)) content =
   let sep = " | " in
   let displayedStartRow = max 0 (startRow - 3) in
   (* we display no more than 3 lines after startRow. Some endRow are rly far
@@ -34,16 +28,16 @@ let _printFile ~isWarning ~highlight:((startRow, startColumn), (endRow, endColum
       if i >= startRow && i <= endRow then
         if startRow = endRow then
           result := !result ^ (pad (string_of_int (i + 1)) lineNumWidth)
-            ^ sep ^ (highlight ~isWarning ~first:startColumn ~last:endColumn currLine) ^ "\n"
+            ^ sep ^ (highlight ~color ~first:startColumn ~last:endColumn currLine) ^ "\n"
         else if i = startRow then
           result := !result ^ (pad (string_of_int (i + 1)) lineNumWidth)
-            ^ sep ^ (highlight ~isWarning ~first:startColumn currLine) ^ "\n"
+            ^ sep ^ (highlight ~color ~first:startColumn currLine) ^ "\n"
         else if i = endRow then
           result := !result ^ (pad (string_of_int (i + 1)) lineNumWidth)
-            ^ sep ^ (highlight ~isWarning ~last:endColumn currLine) ^ "\n"
+            ^ sep ^ (highlight ~color ~last:endColumn currLine) ^ "\n"
         else
           result := !result ^ (pad (string_of_int (i + 1)) lineNumWidth)
-            ^ sep ^ (highlight ~isWarning currLine) ^ "\n"
+            ^ sep ^ (highlight ~color currLine) ^ "\n"
       else
         result := !result ^ (pad (string_of_int (i + 1)) lineNumWidth) ^ sep ^ currLine ^ "\n"
   done;
@@ -68,7 +62,10 @@ let printFile ?(isWarning=false) {cachedContent; filePath; range} =
         startColumn
         (endRow + 1)
         endColumn
-  in filePathDisplay ^ _printFile ~isWarning ~highlight:range cachedContent
+  in filePathDisplay ^ _printFile
+    ~highlightColor:(if isWarning then yellowUnderlined else redUnderlined)
+    ~highlight:range
+    cachedContent
 
 let listify suggestions =
   suggestions

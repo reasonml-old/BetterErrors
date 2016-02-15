@@ -4,18 +4,61 @@ open Helpers
 (* agnostic extractors, turning err string into proper data structures *)
 (* TODO: don't make these raise error *)
 
+(* get the diffing portion of two incompatible types, columns are 0-indexed *)
+let stripCommonPrefix (l1, l2) =
+  let i = ref 0 in
+  while !i < BatList.length l1 && !i < BatList.length l2 && BatList.at l1 !i = BatList.at l2 !i do
+    i := !i + 1
+  done;
+  (BatList.drop !i l1, BatList.drop !i l2)
+
+let applyToBoth f (a, b) = (f a, f b)
+
+let typeDiff a b =
+  (* look ma, functional programming! *)
+  (BatString.nsplit a ~by:".", BatString.nsplit b ~by:".")
+  |> stripCommonPrefix
+  |> applyToBoth BatList.rev
+  |> stripCommonPrefix
+  |> applyToBoth BatList.rev
+  |> applyToBoth (BatString.concat ".")
+
+let splitEquivalentTypes raw =
+  try Some (BatString.split raw ~by:"=")
+  with Not_found -> None
+
 (* need: where the original expected comes from  *)
 let type_IncompatibleType err _ range =
   (* the type actual and expected might be on their own line *)
-  (* stolen from jordan, not using all the options yet *)
+  (* sometimes the error msg might equivalent types, e.g. "myType = string isn't
+  compatible to bla" *)
   let allR =
-    {|This expression has type\s*(.+?)\s*but an expression was expected of type\s*(.+)|}
+    (* This regex query is brought to you by debuggex.com. Get your free
+    real-time regex visualization today. *)
+    {|This expression has type([\s\S]+?)but an expression was expected of type\s*([\s\S]+?)(?=\s*(Type[\s\S]+?is not compatible with type[\s\S]+|$))|}
   in
-  let actual = get_match_n 1 allR err in
-  let expected = get_match_n 2 allR err in
+  let extraRaw = get_match_n_maybe 3 allR err in
+  let extra = match extraRaw with
+    | Some a -> if BatString.trim a = "" then None else Some (BatString.trim a)
+    | None -> None
+  in
+  let actualRaw = get_match_n 1 allR err in
+  let expectedRaw = get_match_n 2 allR err in
+  let (actual, actualEquivalentType) = match splitEquivalentTypes actualRaw with
+    | Some (a, b) -> (BatString.trim a, Some (BatString.trim b))
+    | None -> (BatString.trim actualRaw, None)
+  in
+  let (expected, expectedEquivalentType) = match splitEquivalentTypes expectedRaw with
+    | Some (a, b) -> (BatString.trim a, Some (BatString.trim b))
+    | None -> (BatString.trim expectedRaw, None)
+  in
   Type_IncompatibleType {
-    actual = BatString.trim actual;
-    expected = BatString.trim expected;
+    actual = actual;
+    expected = expected;
+    differingPortion = typeDiff actual expected;
+    actualEquivalentType;
+    expectedEquivalentType;
+    extra;
   }
 
 (* TODO: differing portion data structure a-la diff table *)

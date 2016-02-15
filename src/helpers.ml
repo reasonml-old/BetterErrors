@@ -6,6 +6,10 @@ let get_match_maybe pat str =
   try Some (Pcre.get_substring (Pcre.exec ~pat:pat str) 1)
   with Not_found -> None
 
+let get_match_n_maybe n pat str =
+  try Some (Pcre.get_substring (Pcre.exec ~pat:pat str) n)
+  with _ -> None
+
 let execMaybe pat str =
   try Some (Pcre.exec ~pat:pat str)
   with Not_found -> None
@@ -29,3 +33,8 @@ let green = ANSITerminal.sprintf [ANSITerminal.green] "%s"
 let mapcat sep f l = BatString.concat sep (BatList.map f l)
 
 let sp = Printf.sprintf
+
+let highlight ?(color=red) ?(first=0) ?(last=99999) str =
+  (BatString.slice ~last:first str)
+    ^ (color @@ BatString.slice ~first ~last str)
+    ^ (BatString.slice ~first:last str)

@@ -44,6 +44,10 @@ type fieldNotBelong = {
 type incompatibleType = {
   actual: string;
   expected: string;
+  differingPortion: string * string;
+  actualEquivalentType: string option;
+  expectedEquivalentType: string option;
+  extra: string option;
 }
 type notAFunction = {
   actual: string;

@@ -6,12 +6,17 @@ let listify suggestions =
   |> BatList.map (fun sug -> "- `" ^ sug ^ "`")
   |> BatString.concat "\n"
 
+let highlightPart ~color ~part str =
+  let indexOfPartInStr = BatString.find str part in
+  highlight ~color ~first:indexOfPartInStr ~last:(indexOfPartInStr + (BatString.length part)) str
+
 let report parsedContent =
   match parsedContent with
   | Error_CatchAll error -> error
   | Type_MismatchTypeArguments {typeConstructor; expectedCount; actualCount} ->
     sp "This needs to be applied to %d argument(s), we found %d." expectedCount actualCount
-  | Type_IncompatibleType {actual; expected} ->
+  | Type_IncompatibleType {actual; expected; differingPortion; actualEquivalentType; expectedEquivalentType; extra} ->
+    let (diffA, diffB) = differingPortion in
     "The types don't match.\n" ^
     Table.table
     ~align:Table.Left
@@ -22,7 +27,13 @@ let report parsedContent =
       Table.vertical = ("", "  ", "");
     }
     ~padding:0
-    [[redUnderlined "This is:"; actual]; [green "Wanted:"; expected]]
+    [
+      [redUnderlined "This is:"; (highlightPart ~color:red ~part:diffA actual)];
+      [green "Wanted:"; (highlightPart ~color:green ~part:diffB expected)]
+    ]
+    ^ (match extra with
+      | Some e -> "\nExtra info: " ^ e ^ (string_of_int @@ BatString.length e)
+      | None -> "")
   | Type_NotAFunction {actual} ->
     "This is " ^ actual ^ ". You seem to have called it as a function.\n"
       ^ "Careful with spaces, semicolons, parentheses, and whatever in-between!"

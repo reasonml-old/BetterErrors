@@ -2,5 +2,5 @@
 [0m1 | if ![31;4mtrue[0m then "asd" else "a"
 
 [31mError[0m: The types don't match.
-[31;4mThis is:[0m  bool  
-[32mWanted:[0m   'a ref
+[31;4mThis is:[0m  [31mbool[0m  
+[32mWanted:[0m   [32m'a ref[0m
