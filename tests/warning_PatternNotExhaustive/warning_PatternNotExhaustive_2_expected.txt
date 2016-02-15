@@ -1,4 +1,4 @@
-[36mtests/Warning_PatternNotExhaustive/Warning_PatternNotExhaustive_2.ml:8:12-9:13
+[36mtests/warning_PatternNotExhaustive/warning_PatternNotExhaustive_2.ml:8:12-9:13
 [0m5 |   | Nihao of int
 6 |   | LongAssGreetingInSomeSuperObscureLanguageIWannaHaveALineBreakHere
 7 | 
