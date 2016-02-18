@@ -1,4 +1,4 @@
-[36mtests/Warning_PatternNotExhaustive/Warning_PatternNotExhaustive_1.ml:5:12-6:13
+[36mtests/warning_PatternNotExhaustive/warning_PatternNotExhaustive_1.ml:5:12-6:13
 [0m2 |   | Hello
 3 |   | Goodbye
 4 | 
