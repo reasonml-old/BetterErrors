@@ -38,6 +38,14 @@ Executable table
   CompiledObject: byte
   BuildDepends: pcre, batteries, ANSITerminal
 
+Executable table2
+  Path: src
+  MainIs: table2.ml
+  BuildTools: ocamlbuild
+  # install: true
+  CompiledObject: byte
+  BuildDepends: pcre, batteries, ANSITerminal
+
 Executable nuclidereporter
   Path: src
   MainIs: NuclideReporter.ml
