@@ -14,7 +14,7 @@ Description:
   Some cool description
 
 # This is a comment and this below creates an binary program
-Executable rea
+Executable huh
   Path: src
   MainIs: main.ml
   BuildTools: ocamlbuild

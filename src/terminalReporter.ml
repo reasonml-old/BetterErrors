@@ -67,11 +67,6 @@ let printFile ?(isWarning=false) {cachedContent; filePath; range} =
     ~highlight:range
     cachedContent
 
-let listify suggestions =
-  suggestions
-  |> BatList.map (fun sug -> "- `" ^ sug ^ "`")
-  |> BatString.concat "\n"
-
 let decryptAssumingErrorsAndWarnings = BatList.map (fun errorOrWarning ->
   match errorOrWarning with
   | Error {parsedContent} -> ReportError.report parsedContent

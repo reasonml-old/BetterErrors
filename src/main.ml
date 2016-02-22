@@ -69,8 +69,12 @@ let extractFromFileMatch fileMatch = Pcre.(
   match fileMatch with
   | [Delim _; Group (_, filePath); Group (_, lineNum); col1; col2; Text body] ->
     let cachedContent = BatList.of_enum (BatFile.lines_of filePath) in
+    (* sometimes there's only line, but no characters *)
     let (col1Raw, col2Raw) = match (col1, col2) with
-      | (Group (_, c1), Group (_, c2)) -> (Some c1, Some c2)
+      | (Group (_, c1), Group (_, c2)) ->
+        (* bug: https://github.com/mmottl/pcre-ocaml/issues/5 *)
+        if BatString.trim c1 = "" || BatString.trim c2 = "" then (None, None)
+        else (Some c1, Some c2)
       | _ -> (None, None)
     in
     (
