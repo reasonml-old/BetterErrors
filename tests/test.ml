@@ -9,7 +9,7 @@ let folders = [
   ("file_SyntaxError", 5);
   ("type_AppliedTooMany", 1);
   ("type_AppliedWithoutLabel", 1);
-  ("type_IncompatibleType", 5);
+  ("type_IncompatibleType", 7);
   ("type_MismatchTypeArguments", 1);
   ("type_NotAFunction", 1);
   ("type_RecordFieldNotBelong", 2);
@@ -33,7 +33,7 @@ let () =
       let expectedOutputName = Filename.concat testsDirname (Printf.sprintf "%s_%d_expected.txt" dirname i) in
       let actualOutputName = Filename.concat testsDirname (Printf.sprintf "%s_%d_actual.txt" dirname i) in
         (* expecting compiling errors in stderr; pipe to a file *)
-        ignore @@ Sys.command @@ Printf.sprintf "ocamlc %s 2>&1 | ./main.byte > %s" filename actualOutputName;
+        ignore @@ Sys.command @@ Printf.sprintf "ocamlc %s 2>&1 | ./betterErrorsShell.byte > %s" filename actualOutputName;
         (* open the produced error output *)
         BatFile.with_file_in expectedOutputName (fun inp ->
           let expected = BatIO.read_all inp in

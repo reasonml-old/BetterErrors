@@ -1,54 +1,35 @@
 OASISFormat:  0.4
 OCamlVersion: >= 4.02.3
-Name:         Reason
+Name:         BetterErrors
 Version:      0.1
 Maintainers:  chenglou
-Homepage:     http://my_coolsite.com
-Synopsis:     Some short description
-Authors:      Cool@me.com
+Homepage:     https://github.com/chenglou/ocaml-better-errors
+Synopsis:     Better compiler error output.
+Authors:      chenglou
 License:      MIT
 Plugins:      META (0.4), DevFiles (0.4)
 AlphaFeatures: ocamlbuild_more_args
 
 Description:
-  Some cool description
+  Make OCaml Errors Great Again.
 
-# This is a comment and this below creates an binary program
 Executable huh
   Path: src
-  MainIs: main.ml
+  MainIs: betterErrorsShell.ml
   BuildTools: ocamlbuild
   # install: true
-  CompiledObject: byte
   BuildDepends: pcre, batteries, ANSITerminal
 
 Executable test
   Path: tests
   MainIs: test.ml
   BuildTools: ocamlbuild
-  # install: true
   CompiledObject: byte
   BuildDepends: batteries
 
-Executable table
+Library BetterErrors
   Path: src
-  MainIs: table.ml
   BuildTools: ocamlbuild
-  # install: true
-  CompiledObject: byte
-  BuildDepends: pcre, batteries, ANSITerminal
-
-Executable table2
-  Path: src
-  MainIs: table2.ml
-  BuildTools: ocamlbuild
-  # install: true
-  CompiledObject: byte
-  BuildDepends: pcre, batteries, ANSITerminal
-
-Executable nuclidereporter
-  Path: src
-  MainIs: NuclideReporter.ml
-  BuildTools: ocamlbuild
-  CompiledObject: byte
+  Modules: BetterErrorsMain, BetterErrorsParseError, BetterErrorsTypes
+  InternalModules: Helpers, TerminalReporter, ReportError, NuclideReporter, ParseWarning, ReportWarning, Table, Table2, Atom, BetterErrorsShell
   BuildDepends: pcre, batteries, ANSITerminal

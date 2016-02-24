@@ -1,4 +1,4 @@
-open Types
+open BetterErrorsTypes
 open Atom
 
 let diagnosticMessage typee content filePath range originalData =
@@ -21,14 +21,14 @@ let toNuclideList errorsAndWarnings =
   BatList.map2 (fun decryptedContent original ->
     let open NuclideDiagnostic in
     match original with
-    | Types.Error {filePath; range} ->
+    | BetterErrorsTypes.Error {filePath; range} ->
       diagnosticMessage
         Error
         decryptedContent
         filePath
         range
         original
-    | Types.Warning {filePath; range} ->
+    | BetterErrorsTypes.Warning {filePath; range} ->
       diagnosticMessage
         Warning
         decryptedContent
@@ -39,15 +39,15 @@ let toNuclideList errorsAndWarnings =
   (TerminalReporter.decryptAssumingErrorsAndWarnings errorsAndWarnings)
   errorsAndWarnings
 
-(* FOR JORDAN. This is similar to Types.results and the rest *)
+(* FOR JORDAN. This is similar to BetterErrorsTypes.results and the rest *)
 type nuclideResult =
   | NoErrorNorWarning of string
   | Unparsable of string
-  | ErrorsAndWarnings of Types.errorOrWarning NuclideDiagnostic.Message.t list
+  | ErrorsAndWarnings of BetterErrorsTypes.errorOrWarning NuclideDiagnostic.Message.t list
 
 let convert (content: result): nuclideResult =
   match content with
-  | Types.NoErrorNorWarning content -> NoErrorNorWarning content
-  | Types.Unparsable content -> Unparsable content
-  | Types.ErrorsAndWarnings errorsAndWarnings ->
+  | BetterErrorsTypes.NoErrorNorWarning content -> NoErrorNorWarning content
+  | BetterErrorsTypes.Unparsable content -> Unparsable content
+  | BetterErrorsTypes.ErrorsAndWarnings errorsAndWarnings ->
     ErrorsAndWarnings (toNuclideList errorsAndWarnings)

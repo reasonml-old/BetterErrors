@@ -1,4 +1,4 @@
-open Types
+open BetterErrorsTypes
 open Helpers
 
 let numberOfDigits n =
@@ -73,7 +73,7 @@ let decryptAssumingErrorsAndWarnings = BatList.map (fun errorOrWarning ->
   | Warning {parsedContent={code; warningType}} -> ReportWarning.report code warningType
 )
 
-let decryptCompilerMessages (content: result) = match content with
+let prettyPrintParsedResult (content: result) = match content with
   (* handle the special cases first *)
   | NoErrorNorWarning content -> content ^ green "\n✔ Seems fine!"
   | Unparsable content -> content ^ red "\n✘ There might be an error."
@@ -93,5 +93,3 @@ let decryptCompilerMessages (content: result) = match content with
         )
       errorsAndWarnings
       (decryptAssumingErrorsAndWarnings errorsAndWarnings)
-
-let print content = print_endline @@ decryptCompilerMessages content

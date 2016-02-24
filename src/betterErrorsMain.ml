@@ -1,4 +1,4 @@
-open Types
+open BetterErrorsTypes
 open Helpers
 
 (* the compiler output might point to an error that spans across many lines;
@@ -116,7 +116,7 @@ let hasErrorOrWarningR = Pcre.regexp
   left in project folders *)
   {|^(Error|ERROR|Warning \d+): |}
 
-let parse (err): result =
+let parse ~customErrorParsers err :result =
   let err = BatString.trim err in
   if not (Pcre.pmatch ~rex:hasErrorOrWarningR err) then NoErrorNorWarning err
   else
@@ -148,7 +148,11 @@ let parse (err): result =
             filePath;
             cachedContent;
             range;
-            parsedContent = ParseError.parse errorBody cachedContent range;
+            parsedContent = BetterErrorsParseError.parse
+              ~customErrorParsers
+              ~errorBody
+              ~cachedContent
+              ~range;
           })
         | (None, (Some code, Some warningBody)) ->
           Some (Warning {
@@ -167,8 +171,13 @@ let parse (err): result =
 
 (* entry point, for convenience purposes for now. Theoretically the parser and
 the reporters are decoupled *)
-let () =
+let parseFromStdin ~customErrorParsers =
+  let err = BatPervasives.input_all stdin in
   try
-    let err = BatPervasives.input_all stdin in
-    TerminalReporter.print @@ parse err;
-  with BatIO.No_more_input -> ()
+    parse ~customErrorParsers err
+    |> TerminalReporter.prettyPrintParsedResult
+    |> print_endline
+  with _ ->
+    (* final fallback, just print  *)
+    print_endline "Something went wrong during error parsing.";
+    print_endline err

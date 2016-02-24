@@ -1,4 +1,4 @@
-open Types
+open BetterErrorsTypes
 open Helpers
 
 let listify suggestions =

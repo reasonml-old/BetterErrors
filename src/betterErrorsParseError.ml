@@ -1,4 +1,4 @@
-open Types
+open BetterErrorsTypes
 open Helpers
 
 (* agnostic extractors, turning err string into proper data structures *)
@@ -202,10 +202,10 @@ let parsers = [
   file_IllegalCharacter;
 ]
 
-let parse errorBody cachedContent range =
-try
-  BatList.find_map (fun parse ->
-    try Some (parse errorBody cachedContent range)
-    with _ -> None)
-  parsers
-with Not_found -> Error_CatchAll errorBody
+let parse ~customErrorParsers ~errorBody ~cachedContent ~range =
+  try
+    (* custom parsers go first *)
+    customErrorParsers @ parsers |> BatList.find_map (fun parse ->
+      try Some (parse errorBody cachedContent range)
+      with _ -> None)
+  with Not_found -> Error_CatchAll errorBody

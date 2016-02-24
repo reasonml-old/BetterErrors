@@ -1,4 +1,4 @@
-open Types
+open BetterErrorsTypes
 open Helpers
 
 (* agnostic extractors, turning err string into proper data structures *)
