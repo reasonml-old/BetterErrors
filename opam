@@ -15,4 +15,8 @@ install: [make "install"]
 remove: ["ocamlfind" "remove" "ocaml-better-errors"]
 depends: [
   "ocamlfind" {build}
+  "oasis" {build}
+  "ANSITerminal" {build}
+  "batteries" {build}
+  "pcre" {build}
 ]
