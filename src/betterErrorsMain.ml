@@ -65,7 +65,7 @@ let normalizeCompilerLineColsToRange ~fileLines ~lineRaw ~col1Raw ~col2Raw =
     (startRow + howManyMoreRowsCoveredSinceStartRow, !howManyCharsLeftToCoverOnSubsequentLines))
 
 (* has the side-effect of reading the file *)
-let extractFromFileMatch fileMatch = Pcre.(
+let extractFromFileMatch fileMatch = Re_pcre.(
   match fileMatch with
   | [Delim _; Group (_, filePath); Group (_, lineNum); col1; col2; Text body] ->
     let cachedContent = BatList.of_enum (BatFile.lines_of filePath) in
@@ -97,7 +97,7 @@ let extractFromFileMatch fileMatch = Pcre.(
 let printFullSplitResult = BatList.iteri (fun i x ->
   print_int i;
   print_endline "";
-  Pcre.(
+  Re_pcre.(
     match x with
     | Delim a -> print_endline @@ "Delim " ^ a
     | Group (_, a) -> print_endline @@ "Group " ^ a
@@ -106,32 +106,32 @@ let printFullSplitResult = BatList.iteri (fun i x ->
   )
 )
 
-let fileR = Pcre.regexp
-  ~flags:[Pcre.(`MULTILINE)]
+let fileR = Re_pcre.regexp
+  ~flags:[Re_pcre.(`MULTILINE)]
   {|^File "([\s\S]+?)", line (\d+)(?:, characters (\d+)-(\d+))?:$|}
 
-let hasErrorOrWarningR = Pcre.regexp
-  ~flags:[Pcre.(`MULTILINE)]
+let hasErrorOrWarningR = Re_pcre.regexp
+  ~flags:[Re_pcre.(`MULTILINE)]
   (* the all-caps ERROR is left by oasis when compilation fails bc of artifacts
   left in project folders *)
   {|^(Error|ERROR|Warning \d+): |}
 
 let parse ~customErrorParsers err :result =
   let err = BatString.trim err in
-  if not (Pcre.pmatch ~rex:hasErrorOrWarningR err) then NoErrorNorWarning err
+  if not (Re_pcre.pmatch ~rex:hasErrorOrWarningR err) then NoErrorNorWarning err
   else
     let errorContent =
       err
-      |> Pcre.full_split ~rex:fileR
+      |> Re_pcre.full_split ~rex:fileR
       (* First few rows might be random output info *)
-      |> BatList.drop_while (function Pcre.Text _ -> true | _ -> false)
+      |> BatList.drop_while (function Re_pcre.Text _ -> true | _ -> false)
     in
     if BatList.length errorContent = 0 then Unparsable err
     else
       err
-      |> Pcre.full_split ~rex:fileR
+      |> Re_pcre.full_split ~rex:fileR
       (* First few rows might be random output info *)
-      |> BatList.drop_while (function Pcre.Text _ -> true | _ -> false)
+      |> BatList.drop_while (function Re_pcre.Text _ -> true | _ -> false)
       (* we match 6 items, so the whole list will always be a multiple of 6 *)
       |> splitInto ~chunckSize:6
       |> BatList.map extractFromFileMatch

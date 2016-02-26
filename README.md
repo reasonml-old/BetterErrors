@@ -12,7 +12,7 @@
 
 **Work in progress!**
 
-If you feel adventurous, `git clone` this repo, install the modules necessary through opam (Pcre, Batteries, ANSITerminal), then run:
+If you feel adventurous, `git clone` this repo, install the modules necessary through opam (Re, Batteries, ANSITerminal), then run:
 
 ```sh
 oasis setup -setup-update dynamic

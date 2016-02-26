@@ -3,8 +3,9 @@ type align =
   | Right
   | Center
 
-let ansiR = {|\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]|}
-let stripAnsi s = Pcre.replace ~pat:ansiR s
+(* let ansiR = Re_pcre.regexp {|\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]|} *)
+let ansiR = Re_pcre.regexp {|asd|}
+let stripAnsi s = Re_pcre.substitute ~rex:ansiR ~subst:(fun _ -> "") s
 
 type style =
   | Compact

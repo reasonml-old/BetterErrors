@@ -1,5 +1,5 @@
 OASISFormat:  0.4
-OCamlVersion: >= 4.02.3
+OCamlVersion: >= 4.02.1
 Name:         BetterErrors
 Version:      0.1
 Maintainers:  chenglou
@@ -18,7 +18,7 @@ Executable huh
   MainIs: betterErrorsShell.ml
   BuildTools: ocamlbuild
   # install: true
-  BuildDepends: pcre, batteries, ANSITerminal
+  BuildDepends: re.pcre, batteries, ANSITerminal
 
 Executable test
   Path: tests
@@ -32,4 +32,4 @@ Library BetterErrors
   BuildTools: ocamlbuild
   Modules: BetterErrorsMain, BetterErrorsParseError, BetterErrorsTypes
   InternalModules: Helpers, TerminalReporter, ReportError, NuclideReporter, ParseWarning, ReportWarning, Table, Table2, Atom, BetterErrorsShell
-  BuildDepends: pcre, batteries, ANSITerminal
+  BuildDepends: re.pcre, batteries, ANSITerminal

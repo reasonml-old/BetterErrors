@@ -17,20 +17,11 @@ let report parsedContent =
     sp "This needs to be applied to %d argument(s), we found %d." expectedCount actualCount
   | Type_IncompatibleType {actual; expected; differingPortion; actualEquivalentType; expectedEquivalentType; extra} ->
     let (diffA, diffB) = differingPortion in
-    "The types don't match.\n" ^
-    Table.table
-    ~align:Table.Left
-    ~style:{
-      Table.top = ("", "", "", "");
-      Table.middle = ("", "", "", "");
-      Table.bottom = ("", "", "", "");
-      Table.vertical = ("", "  ", "");
-    }
-    ~padding:0
-    [
-      [redUnderlined "This is:"; (highlightPart ~color:red ~part:diffA actual)];
-      [green "Wanted:"; (highlightPart ~color:green ~part:diffB expected)]
-    ]
+    (sp "The types don't match.\n%s %s\n%s  %s"
+      (redUnderlined "This is:")
+      (highlightPart ~color:red ~part:diffA actual)
+      (green "Wanted:")
+      (highlightPart ~color:green ~part:diffB expected))
     ^ (match extra with
       | Some e -> "\nExtra info: " ^ e ^ (string_of_int @@ BatString.length e)
       | None -> "")

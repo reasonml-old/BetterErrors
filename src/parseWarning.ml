@@ -10,7 +10,7 @@ let warning_UnusedVariable code err cachedContent range = raise Not_found
 cover all the cases of the variant" we could say "doesn't cover all the possible
 length of the list" *)
 let warning_PatternNotExhaustive code err _ _ =
-  let unmatchedR = {|this pattern-matching is not exhaustive.\nHere is an example of a value that is not matched:\n([\s\S]+)|} in
+  let unmatchedR = {|this pattern-matching is not exhaustive.\sHere is an example of a value that is not matched:\s([\s\S]+)|} in
   let unmatchedRaw = get_match unmatchedR err in
   let unmatched = if (BatString.get unmatchedRaw 0) = '(' then
     (* format was (Variant1|Variant2|Variant3). We strip the surrounding parens *)

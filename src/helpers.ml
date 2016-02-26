@@ -1,24 +1,31 @@
-let get_match_n n pat str = Pcre.get_substring (Pcre.exec ~pat:pat str) n
+let get_match_n n pat str =
+  let rex = Re_pcre.regexp pat in
+  Re_pcre.get_substring (Re_pcre.exec ~rex str) n
 (* get the first (presumably only) match in a string *)
 let get_match = get_match_n 1
 
 let get_match_maybe pat str =
-  try Some (Pcre.get_substring (Pcre.exec ~pat:pat str) 1)
+  let rex = Re_pcre.regexp pat in
+  try Some (Re_pcre.get_substring (Re_pcre.exec ~rex str) 1)
   with Not_found -> None
 
 let get_match_n_maybe n pat str =
-  try Some (Pcre.get_substring (Pcre.exec ~pat:pat str) n)
+  let rex = Re_pcre.regexp pat in
+  try Some (Re_pcre.get_substring (Re_pcre.exec ~rex str) n)
   with _ -> None
 
 let execMaybe pat str =
-  try Some (Pcre.exec ~pat:pat str)
+  let rex = Re_pcre.regexp pat in
+  try Some (Re_pcre.exec ~rex str)
   with Not_found -> None
 
 let getSubstringMaybe result n =
-  try Some (Pcre.get_substring result n)
+  try Some (Re_pcre.get_substring result n)
   with Not_found -> None
 
-let split sep str = Pcre.split ~pat:sep str
+let split sep str =
+  let rex = Re_pcre.regexp sep in
+  Re_pcre.split ~rex str
 
 let rec splitInto ~chunckSize (l: 'a list): 'a list list =
   if BatList.length l <= chunckSize || chunckSize = 0 then [l]

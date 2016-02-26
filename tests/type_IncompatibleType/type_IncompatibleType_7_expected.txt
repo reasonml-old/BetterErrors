@@ -5,6 +5,6 @@
 15 | let () = dec [31;4minc[0m
 
 [31mError[0m: The types don't match.
-[31;4mThis is:[0m  Abc.[31mmyInt -> Def.myFloat[0m  
-[32mWanted:[0m   Abc.[32mmyString -> Def.myBool[0m
+[31;4mThis is:[0m Abc.[31mmyInt -> Def.myFloat[0m
+[32mWanted:[0m  Abc.[32mmyString -> Def.myBool[0m
 Extra info: Type Abc.myInt = int is not compatible with type Abc.myString = string70

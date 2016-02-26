@@ -3,8 +3,11 @@ type align =
   | Right
   | Center
 
-let ansiR = {|\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]|}
-let getLength s = BatString.length (Pcre.replace ~pat:ansiR s)
+(* let ansiR = Re_pcre.regexp {|\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]|} *)
+(* TODO: sigh, no unicode support: https://github.com/ocaml/ocaml-re/issues/24 *)
+let ansiR = Re_pcre.regexp {|asdasdadasdasdasdsd|}
+let getLength s =
+  BatString.length (Re_pcre.substitute ~rex:ansiR ~subst:(fun _ -> "") s)
 
 let pad ~align ~totalWidth content =
   let freeSpace = totalWidth - (getLength content) in

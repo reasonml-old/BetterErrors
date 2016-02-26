@@ -35,7 +35,7 @@ let type_IncompatibleType err _ range =
   let allR =
     (* This regex query is brought to you by debuggex.com. Get your free
     real-time regex visualization today. *)
-    {|This expression has type([\s\S]+?)but an expression was expected of type\s*([\s\S]+?)(?=\s*(Type[\s\S]+?is not compatible with type[\s\S]+|$))|}
+    {|This expression has type([\s\S]*?)but an expression was expected of type([\s\S]*?)(Type\b([\s\S]*?)|$)?((The type constructor[\s\S]*?)|$)?((The type variable[\s\S]* occurs inside ([\s\S])*)|$)|}
   in
   let extraRaw = get_match_n_maybe 3 allR err in
   let extra = match extraRaw with
@@ -82,7 +82,7 @@ let type_UnboundValue err _ _ =
   let suggestionR = {|Unbound value [\w\.]*[\s\S]Hint: Did you mean (.+)\?|} in
   let suggestions =
     get_match_maybe suggestionR err
-    |> BatOption.map (Pcre.split ~pat:{|, | or |})
+    |> BatOption.map (Re_pcre.split ~rex:(Re_pcre.regexp {|, | or |}))
   in
   Type_UnboundValue {
     unboundValue = unboundValue;
@@ -128,12 +128,12 @@ let type_UnboundTypeConstructor err _ _ =
 (* need: number of arguments actually applied to it, and what they are *)
 (* need: number of args the function asks, and what types they are *)
 let type_AppliedTooMany err _ _ =
-  let functionTypeR = {|This function has type (.+)\n +It is applied to too many arguments; maybe you forgot a `;'.|} in
+  let functionTypeR = {|This function has type (.+)\s+It is applied to too many arguments; maybe you forgot a `;'.|} in
   let functionType = get_match functionTypeR err in
   (* the func type 'a -> (int -> 'b) -> string has 2 arguments *)
   (* strip out false positive -> from nested function types passed as param *)
-  let nestedFunctionTypeR = {|\(.+\)|} in
-  let cleaned = Pcre.replace ~pat:nestedFunctionTypeR ~templ:"bla" functionType in
+  let nestedFunctionTypeR = Re_pcre.regexp {|\(.+\)|} in
+  let cleaned = Re_pcre.substitute ~rex:nestedFunctionTypeR ~subst:(fun _ -> "bla") functionType in
   let expectedArgCount = BatList.length (split "->" cleaned) - 1 in
     Type_AppliedTooMany {
       functionType = functionType;
@@ -145,7 +145,7 @@ let type_RecordFieldError err cachedContent range = raise Not_found
 let type_FieldNotBelong err cachedContent range = raise Not_found
 
 let type_NotAFunction err _ range =
-  let actualR = {|This expression has type (.+)\n +This is not a function; it cannot be applied.|} in
+  let actualR = {|This expression has type (.+)\s+This is not a function; it cannot be applied.|} in
   let actual = get_match actualR err in
   Type_NotAFunction {
     actual = actual;
@@ -154,9 +154,9 @@ let type_NotAFunction err _ range =
 (* TODO: apparently syntax error can be followed by more indications *)
 (* need: way, way more information, I can't even *)
 let file_SyntaxError err cachedContent range =
-  let allR = {|Syntax error|} in
+  let allR = Re_pcre.regexp {|Syntax error|} in
   (* raise the same error than if we failed to match *)
-  if not (Pcre.pmatch ~pat:allR err) then
+  if not (Re_pcre.pmatch ~rex:allR err) then
     raise Not_found
   else
     let hintR = {|Syntax error: (.+)|} in
