@@ -12,21 +12,29 @@
 
 **Work in progress!**
 
-If you feel adventurous, `git clone` this repo, install the modules necessary through opam (Re, Batteries, ANSITerminal), then run:
-
-```sh
-oasis setup -setup-update dynamic
-make
+(OPAM package coming soon.)
+```
+opam pin add BetterErrors https://github.com/chenglou/ocaml-better-errors.git
 ```
 
-It'll generate a `main.byte`. Its job is to take from stdin some ocaml error message, and pipe it out again, pristine and happy.
-
-The typical workflow command would be:
-
+This'll expose a `huh` command, for you to use like so:
 ```sh
-ocamlc myApp.ml |& ./main.byte
+ocamlc myApp.ml |& huh
 ```
 
-Where the `|&` is a bash shortcut for `2>&1 |`, which in turn means "pipe the stuff from stderr into stdout, then pipe it back into stdin of the next command (aka main.bytes)".
+**Explanation**: `|&` is a bash shortcut for `2>&1 |` (not available in vanilla sh), which, in turn, means "pipe the stuff from stderr into stdout, then pipe it back into stdin of the next command". `huh` takes in this info and searches for errors to pretty-print back.
 
 Have fun!
+
+### For Development
+`git clone` this repo, `cd` into it, then run:
+
+```sh
+git clone https://github.com/chenglou/ocaml-better-errors.git ./BetterErrors
+cd ./BetterErrors
+oasis setup -setup-update dynamic
+make
+opam pin add BetterErrors ./
+```
+
+`betterErrorsShell.byte` is the locally generated script that's the same as the production `huh`.
