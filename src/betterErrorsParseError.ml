@@ -95,7 +95,7 @@ let type_SignatureItemMissing err cachedContent = raise Not_found
 let type_UnboundModule err _ _ =
   let unboundModuleR = {|Unbound module ([\w\.]*)|} in
   let unboundModule = get_match unboundModuleR err in
-  let suggestionR = {|Unbound module [\w\.]*[\s\S]Hint: Did you mean (.+)\?|} in
+  let suggestionR = {|Unbound module [\w\.]*[\s\S]Hint: Did you mean (\S+)\?|} in
   let suggestion = get_match_maybe suggestionR err in
   Type_UnboundModule {
     unboundModule = unboundModule;

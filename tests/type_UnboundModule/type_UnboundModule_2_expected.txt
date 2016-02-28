@@ -1,0 +1,8 @@
+[36mtests/type_UnboundModule/type_UnboundModule_2.ml:4 5-15
+[0m1 | module HelloWorld = struct
+2 | end
+3 | 
+4 | open [31;4mHulloWorld[0m
+
+[31mError[0m: Module `HulloWorld` not found in included libraries.
+Hint: did you mean `HelloWorld`?

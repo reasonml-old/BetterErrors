@@ -62,13 +62,16 @@ let report parsedContent =
     (match suggestion with
     | None -> sp "Field `%s` can't be found in any record type." recordField
     | Some hint -> sp "Field `%s` can't be found in any record type. Did you mean `%s`?" recordField hint)
-  | Type_UnboundModule {unboundModule} ->
+  | Type_UnboundModule {unboundModule; suggestion} ->
     (sp "Module `%s` not found in included libraries.\n" unboundModule)
     ^
-    (let pckName = BatString.lowercase unboundModule in
-    "Hint: your build rules might be missing a link. If you're using: \n" ^
-    " - Oasis: make sure you have `"^ pckName ^"` under `BuildDepends` in your _oasis file.\n" ^
-    " - ocamlbuild: make sure you have `-pkgs "^ pckName ^"` in your build command.\n" ^
-    " - ocamlc | ocamlopt: make sure you have `-I +"^ pckName ^"` in your build command before the source files.\n" ^
-    " - ocamlfind: make sure you have `-package "^ pckName ^" -linkpkg` in your build command.")
+    (match suggestion with
+    | Some s -> sp "Hint: did you mean `%s`?" s
+    | None ->
+      let pckName = BatString.lowercase unboundModule in
+      "Hint: your build rules might be missing a link. If you're using: \n" ^
+      " - Oasis: make sure you have `"^ pckName ^"` under `BuildDepends` in your _oasis file.\n" ^
+      " - ocamlbuild: make sure you have `-pkgs "^ pckName ^"` in your build command.\n" ^
+      " - ocamlc | ocamlopt: make sure you have `-I +"^ pckName ^"` in your build command before the source files.\n" ^
+      " - ocamlfind: make sure you have `-package "^ pckName ^" -linkpkg` in your build command.")
   |  _ -> "huh"

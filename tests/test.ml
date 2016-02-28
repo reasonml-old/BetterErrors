@@ -14,7 +14,7 @@ let folders = [
   ("type_NotAFunction", 1);
   ("type_RecordFieldNotBelong", 2);
   ("type_RecordFieldsUndefined", 1);
-  ("type_UnboundModule", 1);
+  ("type_UnboundModule", 2);
   ("type_UnboundRecordField", 2);
   ("type_UnboundTypeConstructor", 2);
   ("type_UnboundValue", 4);
