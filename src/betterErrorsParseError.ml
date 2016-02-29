@@ -90,7 +90,7 @@ let type_UnboundValue err _ _ =
   let unboundValueR = {|Unbound value ([\w\.]*)|} in
   let unboundValue = get_match unboundValueR err in
   (* TODO: there might be more than one suggestion *)
-  let suggestionR = {|Unbound value [\w\.]*[\s\S]Hint: Did you mean (.+)\?|} in
+  let suggestionR = {|Unbound value [\w\.]*[\s\S]Hint: Did you mean ([\s\S]+)\?|} in
   let suggestions =
     get_match_maybe suggestionR err
     |> BatOption.map (Re_pcre.split ~rex:(Re_pcre.regexp {|, | or |}))
@@ -115,9 +115,9 @@ let type_UnboundModule err _ _ =
 
 (* need: if there's a hint, show which record type it is *)
 let type_UnboundRecordField err _ _ =
-  let recordFieldR = {|Unbound record field (.+)|} in
+  let recordFieldR = {|Unbound record field (\w+)|} in
   let recordField = get_match recordFieldR err in
-  let suggestionR = {|Hint: Did you mean (.+)\?|} in
+  let suggestionR = {|Hint: Did you mean (\w+)\?|} in
   let suggestion = get_match_maybe suggestionR err in
     Type_UnboundRecordField {
       recordField = recordField;
@@ -127,9 +127,9 @@ let type_UnboundRecordField err _ _ =
 let type_UnboundConstructor err cachedContent = raise Not_found
 
 let type_UnboundTypeConstructor err _ _ =
-  let constructorR = {|Unbound type constructor (.+)|} in
+  let constructorR = {|Unbound type constructor ([\w\.]+)|} in
   let constructor = get_match constructorR err in
-  let suggestionR = {|Hint: Did you mean (.+)\?|} in
+  let suggestionR = {|Hint: Did you mean ([\w\.]+)\?|} in
   let suggestion = get_match_maybe suggestionR err in
     Type_UnboundTypeConstructor {
       namespacedConstructor = constructor;
@@ -139,8 +139,8 @@ let type_UnboundTypeConstructor err _ _ =
 (* need: number of arguments actually applied to it, and what they are *)
 (* need: number of args the function asks, and what types they are *)
 let type_AppliedTooMany err _ _ =
-  let functionTypeR = {|This function has type (.+)\s+It is applied to too many arguments; maybe you forgot a `;'.|} in
-  let functionType = get_match functionTypeR err in
+  let functionTypeR = {|This function has type([\s\S]+)It is applied to too many arguments; maybe you forgot a `;'.|} in
+  let functionType = BatString.trim (get_match functionTypeR err) in
   Type_AppliedTooMany {
     functionType = functionType;
     expectedArgCount = functionArgsCount functionType;
@@ -151,8 +151,8 @@ let type_RecordFieldError err cachedContent range = raise Not_found
 let type_FieldNotBelong err cachedContent range = raise Not_found
 
 let type_NotAFunction err _ range =
-  let actualR = {|This expression has type (.+)\s+This is not a function; it cannot be applied.|} in
-  let actual = get_match actualR err in
+  let actualR = {|This expression has type([\s\S]+)This is not a function; it cannot be applied.|} in
+  let actual = BatString.trim (get_match actualR err) in
   Type_NotAFunction {
     actual = actual;
   }
@@ -165,12 +165,12 @@ let file_SyntaxError err cachedContent range =
   if not (Re_pcre.pmatch ~rex:allR err) then
     raise Not_found
   else
-    let hintR = {|Syntax error: (.+)|} in
+    let hintR = {|Syntax error:([\s\S]+)|} in
     let hint = get_match_maybe hintR err in
     (* assuming on the same row *)
     let ((startRow, startColumn), (_, endColumn)) = range in
     File_SyntaxError {
-      hint = hint;
+      hint = BatOption.map BatString.trim hint;
       offendingString = BatString.slice
         ~first:startColumn
         ~last:endColumn
@@ -181,7 +181,7 @@ let build_InconsistentAssumptions err cachedContent range = raise Not_found
 
 (* need: list of legal characters *)
 let file_IllegalCharacter err _ _ =
-  let characterR = {|Illegal character \((.+)\)|} in
+  let characterR = {|Illegal character \(([\s\S]+)\)|} in
   let character = get_match characterR err in
   File_IllegalCharacter {
     character = character;

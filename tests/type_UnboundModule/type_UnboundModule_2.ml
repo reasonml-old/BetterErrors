@@ -1,4 +1,10 @@
 module HelloWorld = struct
+  module ThisMorningIThink = struct
+    module IWillEatSomeDelicious = struct
+      module Pancake = struct
+      end
+    end
+  end
 end
 
-open HulloWorld
+open HelloWorld.ThisMorningIThink.IWillEatSomeDelicious.Pancaek

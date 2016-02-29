@@ -7,7 +7,7 @@ let folders = [
   ("1_bad_file_name", 1);
   ("file_IllegalCharacter", 1);
   ("file_SyntaxError", 6);
-  ("type_AppliedTooMany", 1);
+  ("type_AppliedTooMany", 2);
   ("type_AppliedWithoutLabel", 1);
   ("type_IncompatibleType", 7);
   ("type_MismatchTypeArguments", 1);
