@@ -169,15 +169,16 @@ let parse ~customErrorParsers err :result =
       |> BatList.filter_map BatPervasives.identity
       |> (fun x -> ErrorsAndWarnings x)
 
+let parseFromString ~customErrorParsers err =
+  try
+    parse ~customErrorParsers err
+    |> TerminalReporter.prettyPrintParsedResult
+  with _ ->
+    (* final fallback, just print  *)
+    Printf.sprintf "Something went wrong during error parsing.\n%s" err
+
 (* entry point, for convenience purposes for now. Theoretically the parser and
 the reporters are decoupled *)
 let parseFromStdin ~customErrorParsers =
   let err = BatPervasives.input_all stdin in
-  try
-    parse ~customErrorParsers err
-    |> TerminalReporter.prettyPrintParsedResult
-    |> print_endline
-  with _ ->
-    (* final fallback, just print  *)
-    print_endline "Something went wrong during error parsing.";
-    print_endline err
+  print_endline @@ parseFromString ~customErrorParsers err

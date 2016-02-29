@@ -27,7 +27,17 @@ let splitEquivalentTypes raw =
   try Some (BatString.split raw ~by:"=")
   with Not_found -> None
 
+let functionArgsCount str =
+  (* the func type 'a -> (int -> 'b) -> string has 2 arguments *)
+  (* strip out false positive -> from nested function types passed as param *)
+  let nestedFunctionTypeR = Re_pcre.regexp {|\([\s\S]+\)|} in
+  let cleaned = Re_pcre.substitute ~rex:nestedFunctionTypeR ~subst:(fun _ -> "|||||") str in
+  (* TODO: allow pluggable function type syntax *)
+  BatList.length (split {|->|} cleaned) - 1
+
 (* need: where the original expected comes from  *)
+(* TODO: when it's a -> b vs b, ask if whether user forgot an argument to the
+func *)
 let type_IncompatibleType err _ range =
   (* the type actual and expected might be on their own line *)
   (* sometimes the error msg might equivalent types, e.g. "myType = string isn't
@@ -56,6 +66,7 @@ let type_IncompatibleType err _ range =
     actual = actual;
     expected = expected;
     differingPortion = typeDiff actual expected;
+    (* TODO: actually use this *)
     actualEquivalentType;
     expectedEquivalentType;
     extra;
@@ -130,15 +141,10 @@ let type_UnboundTypeConstructor err _ _ =
 let type_AppliedTooMany err _ _ =
   let functionTypeR = {|This function has type (.+)\s+It is applied to too many arguments; maybe you forgot a `;'.|} in
   let functionType = get_match functionTypeR err in
-  (* the func type 'a -> (int -> 'b) -> string has 2 arguments *)
-  (* strip out false positive -> from nested function types passed as param *)
-  let nestedFunctionTypeR = Re_pcre.regexp {|\(.+\)|} in
-  let cleaned = Re_pcre.substitute ~rex:nestedFunctionTypeR ~subst:(fun _ -> "bla") functionType in
-  let expectedArgCount = BatList.length (split "->" cleaned) - 1 in
-    Type_AppliedTooMany {
-      functionType = functionType;
-      expectedArgCount = expectedArgCount;
-    }
+  Type_AppliedTooMany {
+    functionType = functionType;
+    expectedArgCount = functionArgsCount functionType;
+  }
 
 let type_RecordFieldNotInExpression err cachedContent range = raise Not_found
 let type_RecordFieldError err cachedContent range = raise Not_found
