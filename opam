@@ -18,4 +18,5 @@ depends: [
   "batteries" {>= "2.3"}
   "ANSITerminal" {>= "0.6.5"}
   "re" {>= "1.5.0"}
+  "oasis" {>= "0.4.5"}
 ]
