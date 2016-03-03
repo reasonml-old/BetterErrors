@@ -23,7 +23,7 @@ let report parsedContent =
       (green "Wanted:")
       (highlightPart ~color:green ~part:diffB expected))
     ^ (match extra with
-      | Some e -> "\nExtra info: " ^ e ^ (string_of_int @@ BatString.length e)
+      | Some e -> "\nExtra info: " ^ e
       | None -> "")
   | Type_NotAFunction {actual} ->
     "This is " ^ actual ^ ". You seem to have called it as a function.\n"

@@ -17,4 +17,4 @@ They will not be selected if the type becomes unknown.
 [31;4mThis is:[0m [31mTopNotchModule.myRecordListList[0m
 [32mWanted:[0m  [32mPettyModule.Nested.weAreStrings[0m
 Extra info: Type TopNotchModule.myRecordList = TopNotchModule.myRecord list
-       is not compatible with type PettyModule.youAreAString = string133
+       is not compatible with type PettyModule.youAreAString = string

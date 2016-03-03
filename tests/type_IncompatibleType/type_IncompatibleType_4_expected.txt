@@ -22,4 +22,4 @@ Extra info: Type
        is not compatible with type TopNotchModule.jeSuisString list 
        Type
          TopNotchModule.myRecordListList = TopNotchModule.myRecordList list
-       is not compatible with type TopNotchModule.jeSuisString = string328
+       is not compatible with type TopNotchModule.jeSuisString = string
