@@ -1,18 +1,18 @@
 opam-version: "1.2"
-name: "ocaml-better-errors"
+name: "BetterErrors"
 version: "0.0.1"
 maintainer: "Cheng Lou <chenglou92@gmail.com>"
 authors: "Cheng Lou <chenglou92@gmail.com>"
-homepage: "https://github.com/chenglou/ocaml-better-errors"
-bug-reports: "https://github.com/chenglou/ocaml-better-errors"
+homepage: "https://github.com/chenglou/BetterErrors"
+bug-reports: "https://github.com/chenglou/BetterErrors"
 license: "MIT"
-dev-repo: "https://github.com/chenglou/ocaml-better-errors"
+dev-repo: "https://github.com/chenglou/BetterErrors"
 build: [
   ["./configure" "--prefix=%{prefix}%"]
   [make]
 ]
 install: [make "install"]
-remove: ["ocamlfind" "remove" "ocaml-better-errors"]
+remove: ["ocamlfind" "remove" "BetterErrors"]
 depends: [
   "ocamlfind" {build}
   "batteries" {>= "2.3"}

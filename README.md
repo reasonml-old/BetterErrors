@@ -14,7 +14,7 @@
 
 (OPAM package coming soon.)
 ```
-opam pin add BetterErrors https://github.com/chenglou/ocaml-better-errors.git
+opam pin add BetterErrors https://github.com/chenglou/BetterErrors.git
 ```
 
 This'll expose a `huh` command, for you to use like so:
@@ -30,7 +30,7 @@ Have fun!
 `git clone` this repo, `cd` into it, then run:
 
 ```sh
-git clone https://github.com/chenglou/ocaml-better-errors.git ./BetterErrors
+git clone https://github.com/chenglou/BetterErrors.git ./BetterErrors
 cd ./BetterErrors
 oasis setup -setup-update dynamic
 make

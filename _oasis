@@ -3,7 +3,7 @@ OCamlVersion: >= 4.02.1
 Name:         BetterErrors
 Version:      0.1
 Maintainers:  chenglou
-Homepage:     https://github.com/chenglou/ocaml-better-errors
+Homepage:     https://github.com/chenglou/BetterErrors
 Synopsis:     Better compiler error output.
 Authors:      chenglou
 License:      MIT
