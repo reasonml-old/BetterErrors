@@ -20,13 +20,6 @@ Executable huh
   # install: true
   BuildDepends: re.pcre, batteries, ANSITerminal
 
-Executable test
-  Path: tests
-  MainIs: test.ml
-  BuildTools: ocamlbuild
-  CompiledObject: byte
-  BuildDepends: batteries
-
 Library BetterErrors
   Path: src
   BuildTools: ocamlbuild
