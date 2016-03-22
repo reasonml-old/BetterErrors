@@ -9,7 +9,7 @@ let diagnosticMessage typee content filePath range originalData =
     providerName = "Merlin";
     typee = typee;
     (* absolute path. Is this right? *)
-    filePath = Filename.concat (BatSys.getcwd ()) filePath;
+    filePath = Filename.concat (Sys.getcwd ()) filePath;
     text = Some content;
     html = None;
     range = Some range;
@@ -18,7 +18,7 @@ let diagnosticMessage typee content filePath range originalData =
   }
 
 let toNuclideList errorsAndWarnings =
-  BatList.map2 (fun decryptedContent original ->
+  List.map2 (fun decryptedContent original ->
     let open NuclideDiagnostic in
     match original with
     | BetterErrorsTypes.Error {filePath; range} ->

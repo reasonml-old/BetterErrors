@@ -17,11 +17,11 @@ expected, since you get easy column count through 3 - 0 *)
 let normalizeCompilerLineColsToRange ~fileLines ~lineRaw ~col1Raw ~col2Raw =
   (* accept strings to constraint usage to parse directly from raw data *)
   let line = (int_of_string lineRaw) in
-  let fileLength = BatList.length fileLines in
+  let fileLength = List.length fileLines in
   let isOCamlBeingBadAndPointingToALineBeyondFileLength = line > fileLength in
   let (col1, col2) = if isOCamlBeingBadAndPointingToALineBeyondFileLength then
     let lastDamnReachableSpotInTheFile =
-      BatString.length @@ BatList.at fileLines (fileLength - 1)
+      String.length @@ List.nth fileLines (fileLength - 1)
     in (lastDamnReachableSpotInTheFile - 1, lastDamnReachableSpotInTheFile)
   else
     match (col1Raw, col2Raw) with
@@ -34,12 +34,12 @@ let normalizeCompilerLineColsToRange ~fileLines ~lineRaw ~col1Raw ~col2Raw =
   else
     line - 1
   in
-  let currentLine = BatList.at fileLines startRow in
+  let currentLine = List.nth fileLines startRow in
   let numberOfCharsBetweenStartAndEndColumn = col2 - col1 in
   let numberOfCharsLeftToCoverOnStartingRow =
     (* +1 bc ocaml looooves to count new line as a char below when the error
     spans multiple lines*)
-    (BatString.length currentLine) - col1 + 1
+    (String.length currentLine) - col1 + 1
   in
   if numberOfCharsBetweenStartAndEndColumn <= numberOfCharsLeftToCoverOnStartingRow then
     ((startRow, col1), (startRow, col2))
@@ -50,7 +50,7 @@ let normalizeCompilerLineColsToRange ~fileLines ~lineRaw ~col1Raw ~col2Raw =
     let suddenlyFunctionalProgrammingOutOfNowhere =
       fileLines
       |> BatList.drop (startRow + 1)
-      |> BatList.map BatString.length
+      |> List.map String.length
       |> BatList.take_while (fun numberOfCharsOnThisLine ->
         if !howManyCharsLeftToCoverOnSubsequentLines > numberOfCharsOnThisLine then
           (howManyCharsLeftToCoverOnSubsequentLines :=
@@ -59,7 +59,7 @@ let normalizeCompilerLineColsToRange ~fileLines ~lineRaw ~col1Raw ~col2Raw =
         else false)
     in
     let howManyMoreRowsCoveredSinceStartRow =
-      1 + BatList.length suddenlyFunctionalProgrammingOutOfNowhere
+      1 + List.length suddenlyFunctionalProgrammingOutOfNowhere
     in
     ((startRow, col1),
     (startRow + howManyMoreRowsCoveredSinceStartRow, !howManyCharsLeftToCoverOnSubsequentLines))
@@ -73,7 +73,7 @@ let extractFromFileMatch fileMatch = Re_pcre.(
     let (col1Raw, col2Raw) = match (col1, col2) with
       | (Group (_, c1), Group (_, c2)) ->
         (* bug: https://github.com/mmottl/pcre-ocaml/issues/5 *)
-        if BatString.trim c1 = "" || BatString.trim c2 = "" then (None, None)
+        if String.trim c1 = "" || String.trim c2 = "" then (None, None)
         else (Some c1, Some c2)
       | _ -> (None, None)
     in
@@ -88,13 +88,13 @@ let extractFromFileMatch fileMatch = Re_pcre.(
       ),
       (* important, otherwise leaves random blank lines that defies some of
       our regex logic, maybe *)
-      BatString.trim body
+      String.trim body
     )
   | _ -> raise (invalid_arg "Couldn't extract error")
 )
 
 (* debug helper *)
-let printFullSplitResult = BatList.iteri (fun i x ->
+let printFullSplitResult = List.iteri (fun i x ->
   print_int i;
   print_endline "";
   Re_pcre.(
@@ -117,7 +117,7 @@ let hasErrorOrWarningR = Re_pcre.regexp
   {|^(Error|ERROR|Warning \d+): |}
 
 let parse ~customErrorParsers err :result =
-  let err = BatString.trim err in
+  let err = String.trim err in
   if not (Re_pcre.pmatch ~rex:hasErrorOrWarningR err) then NoErrorNorWarning err
   else
     let errorContent =
@@ -126,7 +126,7 @@ let parse ~customErrorParsers err :result =
       (* First few rows might be random output info *)
       |> BatList.drop_while (function Re_pcre.Text _ -> true | _ -> false)
     in
-    if BatList.length errorContent = 0 then Unparsable err
+    if List.length errorContent = 0 then Unparsable err
     else
       err
       |> Re_pcre.full_split ~rex:fileR
@@ -134,8 +134,8 @@ let parse ~customErrorParsers err :result =
       |> BatList.drop_while (function Re_pcre.Text _ -> true | _ -> false)
       (* we match 6 items, so the whole list will always be a multiple of 6 *)
       |> splitInto ~chunckSize:6
-      |> BatList.map extractFromFileMatch
-      |> BatList.map (fun (filePath, cachedContent, range, body) ->
+      |> List.map extractFromFileMatch
+      |> List.map (fun (filePath, cachedContent, range, body) ->
         let errorCapture = get_match_maybe {|^Error: ([\s\S]+)|} body in
         let warningCapture =
           match execMaybe {|^Warning (\d+): ([\s\S]+)|} body with

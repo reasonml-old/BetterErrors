@@ -28,7 +28,7 @@ let split sep str =
   Re_pcre.split ~rex str
 
 let rec splitInto ~chunckSize (l: 'a list): 'a list list =
-  if BatList.length l <= chunckSize || chunckSize = 0 then [l]
+  if List.length l <= chunckSize || chunckSize = 0 then [l]
   else (BatList.take chunckSize l) :: (splitInto ~chunckSize (BatList.drop chunckSize l))
 
 let red = ANSITerminal.sprintf [ANSITerminal.red] "%s"
@@ -37,7 +37,7 @@ let yellow = ANSITerminal.sprintf [ANSITerminal.yellow] "%s"
 let yellowUnderlined = ANSITerminal.sprintf [ANSITerminal.yellow; ANSITerminal.Underlined] "%s"
 let green = ANSITerminal.sprintf [ANSITerminal.green] "%s"
 
-let mapcat sep f l = BatString.concat sep (BatList.map f l)
+let mapcat sep f l = String.concat sep (List.map f l)
 
 let sp = Printf.sprintf
 

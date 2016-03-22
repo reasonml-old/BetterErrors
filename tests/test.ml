@@ -27,7 +27,7 @@ exception Not_equal of string
 
 let () =
   try
-    folders |> BatList.iter (fun (dirname, fileCount) -> for i = 1 to fileCount do
+    folders |> List.iter (fun (dirname, fileCount) -> for i = 1 to fileCount do
       let testsDirname = Filename.concat "tests" dirname in
       let filename = Filename.concat testsDirname (Printf.sprintf "%s_%d.ml" dirname i) in
       let expectedOutputName = Filename.concat testsDirname (Printf.sprintf "%s_%d_expected.txt" dirname i) in

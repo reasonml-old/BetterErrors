@@ -7,7 +7,7 @@ open Helpers
 (* get the diffing portion of two incompatible types, columns are 0-indexed *)
 let stripCommonPrefix (l1, l2) =
   let i = ref 0 in
-  while !i < BatList.length l1 && !i < BatList.length l2 && BatList.at l1 !i = BatList.at l2 !i do
+  while !i < List.length l1 && !i < List.length l2 && List.nth l1 !i = List.nth l2 !i do
     i := !i + 1
   done;
   (BatList.drop !i l1, BatList.drop !i l2)
@@ -18,10 +18,10 @@ let typeDiff a b =
   (* look ma, functional programming! *)
   (BatString.nsplit a ~by:".", BatString.nsplit b ~by:".")
   |> stripCommonPrefix
-  |> applyToBoth BatList.rev
+  |> applyToBoth List.rev
   |> stripCommonPrefix
-  |> applyToBoth BatList.rev
-  |> applyToBoth (BatString.concat ".")
+  |> applyToBoth List.rev
+  |> applyToBoth (String.concat ".")
 
 let splitEquivalentTypes raw =
   try Some (BatString.split raw ~by:"=")
@@ -33,7 +33,7 @@ let functionArgsCount str =
   let nestedFunctionTypeR = Re_pcre.regexp {|\([\s\S]+\)|} in
   let cleaned = Re_pcre.substitute ~rex:nestedFunctionTypeR ~subst:(fun _ -> "|||||") str in
   (* TODO: allow pluggable function type syntax *)
-  BatList.length (split {|->|} cleaned) - 1
+  List.length (split {|->|} cleaned) - 1
 
 (* need: where the original expected comes from  *)
 (* TODO: when it's a -> b vs b, ask if whether user forgot an argument to the
@@ -49,18 +49,18 @@ let type_IncompatibleType err _ range =
   in
   let extraRaw = get_match_n_maybe 3 allR err in
   let extra = match extraRaw with
-    | Some a -> if BatString.trim a = "" then None else Some (BatString.trim a)
+    | Some a -> if String.trim a = "" then None else Some (String.trim a)
     | None -> None
   in
   let actualRaw = get_match_n 1 allR err in
   let expectedRaw = get_match_n 2 allR err in
   let (actual, actualEquivalentType) = match splitEquivalentTypes actualRaw with
-    | Some (a, b) -> (BatString.trim a, Some (BatString.trim b))
-    | None -> (BatString.trim actualRaw, None)
+    | Some (a, b) -> (String.trim a, Some (String.trim b))
+    | None -> (String.trim actualRaw, None)
   in
   let (expected, expectedEquivalentType) = match splitEquivalentTypes expectedRaw with
-    | Some (a, b) -> (BatString.trim a, Some (BatString.trim b))
-    | None -> (BatString.trim expectedRaw, None)
+    | Some (a, b) -> (String.trim a, Some (String.trim b))
+    | None -> (String.trim expectedRaw, None)
   in
   Type_IncompatibleType {
     actual = actual;
@@ -140,7 +140,7 @@ let type_UnboundTypeConstructor err _ _ =
 (* need: number of args the function asks, and what types they are *)
 let type_AppliedTooMany err _ _ =
   let functionTypeR = {|This function has type([\s\S]+)It is applied to too many arguments; maybe you forgot a `;'.|} in
-  let functionType = BatString.trim (get_match functionTypeR err) in
+  let functionType = String.trim (get_match functionTypeR err) in
   Type_AppliedTooMany {
     functionType = functionType;
     expectedArgCount = functionArgsCount functionType;
@@ -152,7 +152,7 @@ let type_FieldNotBelong err cachedContent range = raise Not_found
 
 let type_NotAFunction err _ range =
   let actualR = {|This expression has type([\s\S]+)This is not a function; it cannot be applied.|} in
-  let actual = BatString.trim (get_match actualR err) in
+  let actual = String.trim (get_match actualR err) in
   Type_NotAFunction {
     actual = actual;
   }
@@ -170,11 +170,11 @@ let file_SyntaxError err cachedContent range =
     (* assuming on the same row *)
     let ((startRow, startColumn), (_, endColumn)) = range in
     File_SyntaxError {
-      hint = BatOption.map BatString.trim hint;
+      hint = BatOption.map String.trim hint;
       offendingString = BatString.slice
         ~first:startColumn
         ~last:endColumn
-        (BatList.at cachedContent startRow);
+        (List.nth cachedContent startRow);
     }
 
 let build_InconsistentAssumptions err cachedContent range = raise Not_found

@@ -11,7 +11,7 @@ let numberOfDigits n =
   !digits
 
 let pad ?(ch=' ') content n =
-  (BatString.make (n - (BatString.length content)) ch) ^ content
+  (String.make (n - (String.length content)) ch) ^ content
 
 (* row and col 0-indexed; endColumn is 1 past the actual end. See
 Main.compilerLineColsToRange *)
@@ -20,11 +20,11 @@ let _printFile ~highlightColor:color ~highlight:((startRow, startColumn), (endRo
   let displayedStartRow = max 0 (startRow - 3) in
   (* we display no more than 3 lines after startRow. Some endRow are rly far
   away *)
-  let displayedEndRow = min (BatList.length content - 1) (startRow + 3) in
-  let lineNumWidth = numberOfDigits (BatList.length content) in
+  let displayedEndRow = min (List.length content - 1) (startRow + 3) in
+  let lineNumWidth = numberOfDigits (List.length content) in
   let result = ref "" in
   for i = displayedStartRow to displayedEndRow do
-    let currLine = BatList.at content i in
+    let currLine = List.nth content i in
       if i >= startRow && i <= endRow then
         if startRow = endRow then
           result := !result ^ (pad (string_of_int (i + 1)) lineNumWidth)
@@ -67,7 +67,7 @@ let printFile ?(isWarning=false) {cachedContent; filePath; range} =
     ~highlight:range
     cachedContent
 
-let decryptAssumingErrorsAndWarnings = BatList.map (fun errorOrWarning ->
+let decryptAssumingErrorsAndWarnings = List.map (fun errorOrWarning ->
   match errorOrWarning with
   | Error {parsedContent} -> ReportError.report parsedContent
   | Warning {parsedContent={code; warningType}} -> ReportWarning.report code warningType
@@ -78,8 +78,8 @@ let prettyPrintParsedResult (content: result) = match content with
   | NoErrorNorWarning content -> content ^ green "\n✔ Seems fine!"
   | Unparsable content -> content ^ red "\n✘ There might be an error."
   | ErrorsAndWarnings errorsAndWarnings ->
-    BatString.concat "\n" @@
-      BatList.map2 (fun errorOrWarning generatedText ->
+    String.concat "\n" @@
+      List.map2 (fun errorOrWarning generatedText ->
         match errorOrWarning with
         | Error withFileInfo ->
           sp "%s\n%s: %s" (printFile withFileInfo) (red "Error") generatedText

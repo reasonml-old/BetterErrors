@@ -3,12 +3,12 @@ open Helpers
 
 let listify suggestions =
   suggestions
-  |> BatList.map (fun sug -> "- `" ^ sug ^ "`")
-  |> BatString.concat "\n"
+  |> List.map (fun sug -> "- `" ^ sug ^ "`")
+  |> String.concat "\n"
 
 let highlightPart ~color ~part str =
   let indexOfPartInStr = BatString.find str part in
-  highlight ~color ~first:indexOfPartInStr ~last:(indexOfPartInStr + (BatString.length part)) str
+  highlight ~color ~first:indexOfPartInStr ~last:(indexOfPartInStr + (String.length part)) str
 
 let report parsedContent =
   match parsedContent with
@@ -68,7 +68,7 @@ let report parsedContent =
     (match suggestion with
     | Some s -> sp "Hint: did you mean `%s`?" s
     | None ->
-      let pckName = BatString.lowercase unboundModule in
+      let pckName = String.lowercase unboundModule in
       "Hint: your build rules might be missing a link. If you're using: \n" ^
       " - Oasis: make sure you have `"^ pckName ^"` under `BuildDepends` in your _oasis file.\n" ^
       " - ocamlbuild: make sure you have `-pkgs "^ pckName ^"` in your build command.\n" ^
