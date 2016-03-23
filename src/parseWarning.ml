@@ -12,11 +12,10 @@ length of the list" *)
 let warning_PatternNotExhaustive code err _ _ =
   let unmatchedR = {|this pattern-matching is not exhaustive.\sHere is an example of a value that is not matched:\s([\s\S]+)|} in
   let unmatchedRaw = get_match unmatchedR err in
-  let unmatched = if (BatString.get unmatchedRaw 0) = '(' then
+  let unmatched = if (String.get unmatchedRaw 0) = '(' then
     (* format was (Variant1|Variant2|Variant3). We strip the surrounding parens *)
     unmatchedRaw
-    |> BatString.lchop
-    |> BatString.rchop
+    |> Helpers.stringSlice ~first:1 ~last:(String.length unmatchedRaw - 1)
     |> split {|\|[\s]*|}
   else
     [unmatchedRaw]
@@ -36,7 +35,7 @@ let warning_OptionalArgumentNotErased code err cachedContent range =
   let allR = {|this optional argument cannot be erased\.|} in
   let fileLine = List.nth cachedContent startRow in
   let _ = get_match_n 0 allR err in
-  let argumentNameRaw = BatString.slice
+  let argumentNameRaw = Helpers.stringSlice
     ~first:startColumn
     ~last: (if startRow = endRow then endColumn else 99999)
     fileLine
@@ -57,7 +56,7 @@ let parsers = [
 
 let parse code warningBody cachedContent range =
   try
-    BatList.find_map (fun parse ->
+    Helpers.listFindMap (fun parse ->
       try Some (parse code warningBody cachedContent range)
       with _ -> None)
     parsers

@@ -10,13 +10,13 @@ let stripCommonPrefix (l1, l2) =
   while !i < List.length l1 && !i < List.length l2 && List.nth l1 !i = List.nth l2 !i do
     i := !i + 1
   done;
-  (BatList.drop !i l1, BatList.drop !i l2)
+  (Helpers.listDrop !i l1, Helpers.listDrop !i l2)
 
 let applyToBoth f (a, b) = (f a, f b)
 
 let typeDiff a b =
   (* look ma, functional programming! *)
-  (BatString.nsplit a ~by:".", BatString.nsplit b ~by:".")
+  (Helpers.stringNsplit a ~by:".", Helpers.stringNsplit b ~by:".")
   |> stripCommonPrefix
   |> applyToBoth List.rev
   |> stripCommonPrefix
@@ -24,7 +24,7 @@ let typeDiff a b =
   |> applyToBoth (String.concat ".")
 
 let splitEquivalentTypes raw =
-  try Some (BatString.split raw ~by:"=")
+  try Some (Helpers.stringSplit raw ~by:"=")
   with Not_found -> None
 
 let functionArgsCount str =
@@ -93,7 +93,7 @@ let type_UnboundValue err _ _ =
   let suggestionR = {|Unbound value [\w\.]*[\s\S]Hint: Did you mean ([\s\S]+)\?|} in
   let suggestions =
     get_match_maybe suggestionR err
-    |> BatOption.map (Re_pcre.split ~rex:(Re_pcre.regexp {|, | or |}))
+    |> Helpers.optionMap (Re_pcre.split ~rex:(Re_pcre.regexp {|, | or |}))
   in
   Type_UnboundValue {
     unboundValue = unboundValue;
@@ -170,8 +170,8 @@ let file_SyntaxError err cachedContent range =
     (* assuming on the same row *)
     let ((startRow, startColumn), (_, endColumn)) = range in
     File_SyntaxError {
-      hint = BatOption.map String.trim hint;
-      offendingString = BatString.slice
+      hint = Helpers.optionMap String.trim hint;
+      offendingString = Helpers.stringSlice
         ~first:startColumn
         ~last:endColumn
         (List.nth cachedContent startRow);
@@ -211,7 +211,7 @@ let parsers = [
 let parse ~customErrorParsers ~errorBody ~cachedContent ~range =
   try
     (* custom parsers go first *)
-    customErrorParsers @ parsers |> BatList.find_map (fun parse ->
+    customErrorParsers @ parsers |> Helpers.listFindMap (fun parse ->
       try Some (parse errorBody cachedContent range)
       with _ -> None)
   with Not_found -> Error_CatchAll errorBody

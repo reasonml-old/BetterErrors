@@ -49,9 +49,9 @@ let normalizeCompilerLineColsToRange ~fileLines ~lineRaw ~col1Raw ~col2Raw =
     in
     let suddenlyFunctionalProgrammingOutOfNowhere =
       fileLines
-      |> BatList.drop (startRow + 1)
+      |> Helpers.listDrop (startRow + 1)
       |> List.map String.length
-      |> BatList.take_while (fun numberOfCharsOnThisLine ->
+      |> Helpers.listTakeWhile (fun numberOfCharsOnThisLine ->
         if !howManyCharsLeftToCoverOnSubsequentLines > numberOfCharsOnThisLine then
           (howManyCharsLeftToCoverOnSubsequentLines :=
             !howManyCharsLeftToCoverOnSubsequentLines - numberOfCharsOnThisLine - 1;
@@ -124,14 +124,14 @@ let parse ~customErrorParsers err :result =
       err
       |> Re_pcre.full_split ~rex:fileR
       (* First few rows might be random output info *)
-      |> BatList.drop_while (function Re_pcre.Text _ -> true | _ -> false)
+      |> Helpers.listDropWhile (function Re_pcre.Text _ -> true | _ -> false)
     in
     if List.length errorContent = 0 then Unparsable err
     else
       err
       |> Re_pcre.full_split ~rex:fileR
       (* First few rows might be random output info *)
-      |> BatList.drop_while (function Re_pcre.Text _ -> true | _ -> false)
+      |> Helpers.listDropWhile (function Re_pcre.Text _ -> true | _ -> false)
       (* we match 6 items, so the whole list will always be a multiple of 6 *)
       |> splitInto ~chunckSize:6
       |> List.map extractFromFileMatch
@@ -166,16 +166,16 @@ let parse ~customErrorParsers err :result =
           })
         | _ -> None (* not an error, not a warning. False alarm? *)
       )
-      |> BatList.filter_map BatPervasives.identity
+      |> Helpers.listFilterMap (fun a -> a)
       |> (fun x -> ErrorsAndWarnings x)
 
 let parseFromString ~customErrorParsers err =
-  try
+  (* try *)
     parse ~customErrorParsers err
     |> TerminalReporter.prettyPrintParsedResult
-  with _ ->
+  (* with _ -> *)
     (* final fallback, just print  *)
-    Printf.sprintf "Something went wrong during error parsing.\n%s" err
+    (* Printf.sprintf "Something went wrong during error parsing.\n%s" err *)
 
 (* entry point, for convenience purposes for now. Theoretically the parser and
 the reporters are decoupled *)

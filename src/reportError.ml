@@ -7,7 +7,7 @@ let listify suggestions =
   |> String.concat "\n"
 
 let highlightPart ~color ~part str =
-  let indexOfPartInStr = BatString.find str part in
+  let indexOfPartInStr = Helpers.stringFind str part in
   highlight ~color ~first:indexOfPartInStr ~last:(indexOfPartInStr + (String.length part)) str
 
 let report parsedContent =
