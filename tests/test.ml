@@ -25,9 +25,22 @@ let folders = [
 
 exception Not_equal of string
 
+let readFile filePath =
+  let lines = ref [] in
+  let chan = open_in filePath in
+  try
+    while true do
+      lines := input_line chan :: !lines
+    done;
+    "this will never be reached"
+  with End_of_file ->
+    close_in chan;
+    List.rev !lines |> String.concat "\n"
+
 let () =
   try
-    folders |> List.iter (fun (dirname, fileCount) -> for i = 1 to fileCount do
+    folders
+    |> List.iter (fun (dirname, fileCount) -> for i = 1 to fileCount do
       let testsDirname = Filename.concat "tests" dirname in
       let filename = Filename.concat testsDirname (Printf.sprintf "%s_%d.ml" dirname i) in
       let expectedOutputName = Filename.concat testsDirname (Printf.sprintf "%s_%d_expected.txt" dirname i) in
@@ -35,17 +48,13 @@ let () =
         (* expecting compiling errors in stderr; pipe to a file *)
         ignore @@ Sys.command @@ Printf.sprintf "ocamlc %s 2>&1 | ./betterErrorsShell.byte > %s" filename actualOutputName;
         (* open the produced error output *)
-        BatFile.with_file_in expectedOutputName (fun inp ->
-          let expected = BatIO.read_all inp in
-          BatFile.with_file_in actualOutputName (fun inp2 ->
-            let actual = BatIO.read_all inp2 in
-            (* swap-comment below two lines if you want to generate new expected
-            from the new actual *)
+        let expected = readFile expectedOutputName in
+        let actual = readFile actualOutputName in
+        (* swap-comment below two lines if you want to generate new expected
+        from the new actual *)
 
-            (* ignore @@ Sys.command @@ Printf.sprintf "cp %s %s" actualOutputName expectedOutputName *)
-            if actual = expected then () else raise (Not_equal filename)
-          )
-        )
+        (* ignore @@ Sys.command @@ Printf.sprintf "cp %s %s" actualOutputName expectedOutputName *)
+        if actual = expected then () else raise (Not_equal filename)
     done);
     print_endline "ALL GOOD!";
     ignore @@ Sys.command "rm -rf ./tests/**/*.{cmi,cmo}";

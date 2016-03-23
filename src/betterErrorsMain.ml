@@ -68,7 +68,7 @@ let normalizeCompilerLineColsToRange ~fileLines ~lineRaw ~col1Raw ~col2Raw =
 let extractFromFileMatch fileMatch = Re_pcre.(
   match fileMatch with
   | [Delim _; Group (_, filePath); Group (_, lineNum); col1; col2; Text body] ->
-    let cachedContent = BatList.of_enum (BatFile.lines_of filePath) in
+    let cachedContent = Helpers.fileLinesOf filePath in
     (* sometimes there's only line, but no characters *)
     let (col1Raw, col2Raw) = match (col1, col2) with
       | (Group (_, c1), Group (_, c2)) ->
@@ -180,5 +180,5 @@ let parseFromString ~customErrorParsers err =
 (* entry point, for convenience purposes for now. Theoretically the parser and
 the reporters are decoupled *)
 let parseFromStdin ~customErrorParsers =
-  let err = BatPervasives.input_all stdin in
+  let err = pervasivesInputAll stdin in
   print_endline @@ parseFromString ~customErrorParsers err

@@ -100,6 +100,22 @@ let stringSplit str ~by =
     | [] | [_] -> raise Not_found
     | x :: xs -> (x, String.concat by xs)
 
+let linesOfChannel chan =
+  let lines = ref [] in
+  try
+    while true do
+      lines := input_line chan :: !lines
+    done;
+    !lines
+  with End_of_file ->
+    close_in chan;
+    List.rev !lines
+
+let fileLinesOf filePath = linesOfChannel (open_in filePath)
+
+let pervasivesInputAll ch = linesOfChannel ch |> String.concat "\n"
+
+
 (* ============ *)
 
 let get_match_n n pat str =

@@ -18,11 +18,11 @@ Executable huh
   MainIs: betterErrorsShell.ml
   BuildTools: ocamlbuild
   # install: true
-  BuildDepends: re.pcre, batteries, ANSITerminal
+  BuildDepends: re.pcre, ANSITerminal
 
 Library BetterErrors
   Path: src
   BuildTools: ocamlbuild
   Modules: BetterErrorsMain, BetterErrorsParseError, BetterErrorsTypes
   InternalModules: Helpers, TerminalReporter, ReportError, NuclideReporter, ParseWarning, ReportWarning, Atom, BetterErrorsShell
-  BuildDepends: re.pcre, batteries, ANSITerminal
+  BuildDepends: re.pcre, ANSITerminal
