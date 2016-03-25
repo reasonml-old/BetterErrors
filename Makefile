@@ -1,41 +1,25 @@
-# OASIS_START
-# DO NOT EDIT (digest: a3c674b4239234cbbe53afe090018954)
+# Copyright (c) 2015-present, Facebook, Inc. All rights reserved.
+build:
+	cp pkg/META.in pkg/META
+	ocaml pkg/build.ml native=true native-dynlink=true
 
-SETUP = ocaml setup.ml
-
-build: setup.data
-	$(SETUP) -build $(BUILDFLAGS)
-
-doc: setup.data build
-	$(SETUP) -doc $(DOCFLAGS)
-
-test: setup.data build
-	$(SETUP) -test $(TESTFLAGS)
-
-all:
-	$(SETUP) -all $(ALLFLAGS)
-
-install: setup.data
-	$(SETUP) -install $(INSTALLFLAGS)
-
-uninstall: setup.data
-	$(SETUP) -uninstall $(UNINSTALLFLAGS)
-
-reinstall: setup.data
-	$(SETUP) -reinstall $(REINSTALLFLAGS)
+install:
+	opam pin add BetterErrors . -y
 
 clean:
-	$(SETUP) -clean $(CLEANFLAGS)
+	ocamlbuild -clean
 
-distclean:
-	$(SETUP) -distclean $(DISTCLEANFLAGS)
+.PHONY: build clean
 
-setup.data:
-	$(SETUP) -configure $(CONFIGUREFLAGS)
+VERSION      := $$(opam query --version)
+NAME_VERSION := $$(opam query --name-version)
+ARCHIVE      := $$(opam query --archive)
 
-configure:
-	$(SETUP) -configure $(CONFIGUREFLAGS)
+release:
+	git tag -a v$(VERSION) -m "Version $(VERSION)."
+	git push origin v$(VERSION)
+	opam publish prepare $(NAME_VERSION) $(ARCHIVE)
+	opam publish submit $(NAME_VERSION)
+	rm -rf $(NAME_VERSION)
 
-.PHONY: build doc test all install uninstall reinstall clean distclean configure
-
-# OASIS_STOP
+.PHONY: release
