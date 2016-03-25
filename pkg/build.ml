@@ -6,7 +6,7 @@
 let () =
   Pkg.describe "BetterErrors" ~builder:(`OCamlbuild []) [
     Pkg.lib "pkg/META";
-    Pkg.bin ~auto:true "src/betterErrorsShell";
+    Pkg.bin ~auto:true "src/betterErrorsShell" ~dst:"huh";
     Pkg.lib ~exts:Exts.library "src/BetterErrors";
     Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx"; ".cmt"; ".cmi"]) "src/betterErrorsTypes";
     Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx"; ".cmt"; ".cmi"]) "src/betterErrorsParseError";

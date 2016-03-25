@@ -32,7 +32,6 @@ Have fun!
 ```sh
 git clone https://github.com/chenglou/BetterErrors.git ./BetterErrors
 cd ./BetterErrors
-oasis setup -setup-update dynamic
 make
 opam pin add BetterErrors ./
 ```

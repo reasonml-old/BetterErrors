@@ -6,7 +6,8 @@ authors: "Cheng Lou <chenglou92@gmail.com>"
 homepage: "https://github.com/chenglou/BetterErrors"
 bug-reports: "https://github.com/chenglou/BetterErrors"
 license: "MIT"
-dev-repo: "https://github.com/chenglou/BetterErrors"
+dev-repo: "https://github.com/chenglou/BetterErrors.git"
+available: [ocaml-version >= "4.02.1"]
 tags: [ "syntax" ]
 substs: [ "pkg/META" ]
 build: [
