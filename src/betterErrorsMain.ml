@@ -177,8 +177,28 @@ let parseFromString ~customErrorParsers err =
     (* final fallback, just print  *)
     (* Printf.sprintf "Something went wrong during error parsing.\n%s" err *)
 
+let line_stream_of_channel channel =
+  Stream.from
+    (fun _ -> try Some (input_line channel) with | End_of_file -> None)
+
 (* entry point, for convenience purposes for now. Theoretically the parser and
 the reporters are decoupled *)
 let parseFromStdin ~customErrorParsers =
-  let err = pervasivesInputAll stdin in
-  print_endline @@ parseFromString ~customErrorParsers err
+  let buf = ref "" in
+  try
+    Stream.iter (fun line ->
+      match (get_match_maybe {|^File "([\s\S]+?)", line (\d+)(?:, characters (\d+)-(\d+))?:$|} line) with
+      | None ->
+        if buf.contents = "" then print_endline line
+        else buf := buf.contents ^ line ^ "\n"
+      | Some fileName ->
+        if buf.contents = "" then buf := buf.contents ^ line ^ "\n"
+        else
+          let res = parseFromString ~customErrorParsers buf.contents in
+          buf := line ^ "\n";
+          print_endline res
+    )
+    (line_stream_of_channel stdin);
+    print_endline (parseFromString ~customErrorParsers buf.contents);
+    close_in stdin
+  with | e -> (close_in stdin; raise e)

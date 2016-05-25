@@ -46,7 +46,7 @@ let () =
       let expectedOutputName = Filename.concat testsDirname (Printf.sprintf "%s_%d_expected.txt" dirname i) in
       let actualOutputName = Filename.concat testsDirname (Printf.sprintf "%s_%d_actual.txt" dirname i) in
         (* expecting compiling errors in stderr; pipe to a file *)
-        ignore @@ Sys.command @@ Printf.sprintf "ocamlc %s 2>&1 | ./betterErrorsShell.byte > %s" filename actualOutputName;
+        ignore @@ Sys.command @@ Printf.sprintf "ocamlc %s 2>&1 | ./betterErrorsShell.native > %s" filename actualOutputName;
         (* open the produced error output *)
         let expected = readFile expectedOutputName in
         let actual = readFile actualOutputName in
