@@ -1,4 +1,4 @@
-PKG Re ANSITerminal
+PKG Re
 
 S src
 S tests/test.ml

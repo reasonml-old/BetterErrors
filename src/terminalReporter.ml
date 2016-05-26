@@ -46,16 +46,14 @@ let _printFile ~highlightColor:color ~highlight:((startRow, startColumn), (endRo
 let printFile ?(isWarning=false) {cachedContent; filePath; range} =
   let ((startRow, startColumn), (endRow, endColumn)) = range in
   let filePathDisplay = if startRow = endRow then
-      ANSITerminal.sprintf
-        [ANSITerminal.cyan]
+      cyan @@ sp
         "%s:%d %d-%d\n"
         filePath
         (startRow + 1)
         startColumn
         endColumn
     else
-      ANSITerminal.sprintf
-        [ANSITerminal.cyan]
+      cyan @@ sp
         "%s:%d:%d-%d:%d\n"
         filePath
         (startRow + 1)

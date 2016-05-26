@@ -151,11 +151,13 @@ let rec splitInto ~chunckSize (l: 'a list): 'a list list =
   if List.length l <= chunckSize || chunckSize = 0 then [l]
   else (listTake chunckSize l) :: (splitInto ~chunckSize (listDrop chunckSize l))
 
-let red = ANSITerminal.sprintf [ANSITerminal.red] "%s"
-let redUnderlined = ANSITerminal.sprintf [ANSITerminal.red; ANSITerminal.Underlined] "%s"
-let yellow = ANSITerminal.sprintf [ANSITerminal.yellow] "%s"
-let yellowUnderlined = ANSITerminal.sprintf [ANSITerminal.yellow; ANSITerminal.Underlined] "%s"
-let green = ANSITerminal.sprintf [ANSITerminal.green] "%s"
+let resetANSI = "\027[0m"
+let red s = "\027[31m" ^ s ^ resetANSI
+let redUnderlined s = "\027[31;4m" ^ s ^ resetANSI
+let yellow s = "\027[33m" ^ s ^ resetANSI
+let yellowUnderlined s = "\027[33;4m" ^ s ^ resetANSI
+let green s = "\027[32m" ^ s ^ resetANSI
+let cyan s = "\027[36m" ^ s ^ resetANSI
 
 let mapcat sep f l = String.concat sep (List.map f l)
 
