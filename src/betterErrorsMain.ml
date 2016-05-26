@@ -68,7 +68,7 @@ let normalizeCompilerLineColsToRange ~fileLines ~lineRaw ~col1Raw ~col2Raw =
 let extractFromFileMatch fileMatch = Re_pcre.(
   match fileMatch with
   | [Delim _; Group (_, filePath); Group (_, lineNum); col1; col2; Text body] ->
-    let cachedContent = Helpers.fileLinesOf filePath in
+    let cachedContent = Helpers.fileLinesOfExn filePath in
     (* sometimes there's only line, but no characters *)
     let (col1Raw, col2Raw) = match (col1, col2) with
       | (Group (_, c1), Group (_, c2)) ->
@@ -106,9 +106,10 @@ let printFullSplitResult = List.iteri (fun i x ->
   )
 )
 
-let fileR = Re_pcre.regexp
-  ~flags:[Re_pcre.(`MULTILINE)]
+let fileRStr =
   {|^File "([\s\S]+?)", line (\d+)(?:, characters (\d+)-(\d+))?:$|}
+
+let fileR = Re_pcre.regexp ~flags:[Re_pcre.(`MULTILINE)] fileRStr
 
 let hasErrorOrWarningR = Re_pcre.regexp
   ~flags:[Re_pcre.(`MULTILINE)]
@@ -170,12 +171,12 @@ let parse ~customErrorParsers err :result =
       |> (fun x -> ErrorsAndWarnings x)
 
 let parseFromString ~customErrorParsers err =
-  (* try *)
+  try
     parse ~customErrorParsers err
     |> TerminalReporter.prettyPrintParsedResult
-  (* with _ -> *)
-    (* final fallback, just print  *)
-    (* Printf.sprintf "Something went wrong during error parsing.\n%s" err *)
+  with _ ->
+    (* final fallback, just print *)
+    Printf.sprintf "Something went wrong during error parsing.\n%s" err
 
 let line_stream_of_channel channel =
   Stream.from
@@ -187,7 +188,7 @@ let parseFromStdin ~customErrorParsers =
   let buf = ref "" in
   try
     Stream.iter (fun line ->
-      match (get_match_maybe {|^File "([\s\S]+?)", line (\d+)(?:, characters (\d+)-(\d+))?:$|} line) with
+      match (get_match_maybe fileRStr line) with
       | None ->
         if buf.contents = "" then print_endline line
         else buf := buf.contents ^ line ^ "\n"
@@ -195,10 +196,12 @@ let parseFromStdin ~customErrorParsers =
         if buf.contents = "" then buf := buf.contents ^ line ^ "\n"
         else
           let res = parseFromString ~customErrorParsers buf.contents in
+          (* reset buf *)
           buf := line ^ "\n";
           print_endline res
     )
     (line_stream_of_channel stdin);
+    (* might have accumulated a few more lines *)
     print_endline (parseFromString ~customErrorParsers buf.contents);
     close_in stdin
   with | e -> (close_in stdin; raise e)

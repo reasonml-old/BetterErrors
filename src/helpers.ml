@@ -100,7 +100,7 @@ let stringSplit str ~by =
     | [] | [_] -> raise Not_found
     | x :: xs -> (x, String.concat by xs)
 
-let linesOfChannel chan =
+let linesOfChannelExn chan =
   let lines = ref [] in
   try
     while true do
@@ -111,9 +111,7 @@ let linesOfChannel chan =
     close_in chan;
     List.rev !lines
 
-let fileLinesOf filePath = linesOfChannel (open_in filePath)
-
-let pervasivesInputAll ch = linesOfChannel ch |> String.concat "\n"
+let fileLinesOfExn filePath = linesOfChannelExn (open_in filePath)
 
 
 (* ============ *)
