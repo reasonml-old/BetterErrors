@@ -106,46 +106,63 @@ let printFullSplitResult = List.iteri (fun i x ->
   )
 )
 
-let fileRStr =
+let fileR = Re_pcre.regexp
+  ~flags:[Re_pcre.(`MULTILINE)]
   {|^File "([\s\S]+?)", line (\d+)(?:, characters (\d+)-(\d+))?:$|}
-
-let fileR = Re_pcre.regexp ~flags:[Re_pcre.(`MULTILINE)] fileRStr
 
 let hasErrorOrWarningR = Re_pcre.regexp
   ~flags:[Re_pcre.(`MULTILINE)]
-  (* the all-caps ERROR is left by oasis when compilation fails bc of artifacts
-  left in project folders *)
-  {|^(Error|ERROR|Warning \d+): |}
+  {|^(Error|Warning \d+): |}
 
-let parse ~customErrorParsers err :result =
+let hasIndentationR = Re_pcre.regexp
+  ~flags:[Re_pcre.(`MULTILINE)]
+  {|^       +|}
+
+(* TODO: make the below work. the "Here is an example..." is followed by even more lines of hints *)
+(* let hasHintRStr = {|^(Hint: Did you mean |Here is an example of a value that is not matched:)|} *)
+(* let hasHintRStr = {|^(Here is an example of a value that is not matched:|Hint: Did you mean )|} *)
+let hasHintRStr = {|^Hint: Did you mean |}
+let hasHintR = Re_pcre.regexp
+  ~flags:[Re_pcre.(`MULTILINE)]
+  hasHintRStr
+
+(* TODO: check if following tags are used
+- Unparsable
+ *)
+let parse ~customErrorParsers err =
+  (* we know whatever err is, it starts with "File: ..." because that's how `parse`
+  is used *)
   let err = String.trim err in
-  if not (Re_pcre.pmatch ~rex:hasErrorOrWarningR err) then NoErrorNorWarning err
-  else
-    let errorContent =
-      err
-      |> Re_pcre.full_split ~rex:fileR
-      (* First few rows might be random output info *)
-      |> Helpers.listDropWhile (function Re_pcre.Text _ -> true | _ -> false)
-    in
-    if List.length errorContent = 0 then Unparsable err
-    else
-      err
-      |> Re_pcre.full_split ~rex:fileR
-      (* First few rows might be random output info *)
-      |> Helpers.listDropWhile (function Re_pcre.Text _ -> true | _ -> false)
-      (* we match 6 items, so the whole list will always be a multiple of 6 *)
-      |> splitInto ~chunckSize:6
-      |> List.map extractFromFileMatch
-      |> List.map (fun (filePath, cachedContent, range, body) ->
-        let errorCapture = get_match_maybe {|^Error: ([\s\S]+)|} body in
-        let warningCapture =
-          match execMaybe {|^Warning (\d+): ([\s\S]+)|} body with
-          | None -> (None, None)
-          | Some capture -> (getSubstringMaybe capture 1, getSubstringMaybe capture 2)
-        in
+  Re_pcre.(
+    match Re_pcre.full_split ~rex:fileR err with
+    | [Delim _; Group (_, filePath); Group (_, lineNum); col1; col2; Text body] ->
+      let cachedContent = Helpers.fileLinesOfExn filePath in
+      (* sometimes there's only line, but no characters *)
+      let (col1Raw, col2Raw) = match (col1, col2) with
+        | (Group (_, c1), Group (_, c2)) ->
+          (* bug: https://github.com/mmottl/pcre-ocaml/issues/5 *)
+          if String.trim c1 = "" || String.trim c2 = "" then raise (Invalid_argument "HUHUHUH")
+          else (Some c1, Some c2)
+        | _ -> (None, None)
+      in
+      let range = normalizeCompilerLineColsToRange
+        ~fileLines:cachedContent
+        ~lineRaw:lineNum
+        ~col1Raw:col1Raw
+        ~col2Raw:col2Raw
+      in
+      (* important, otherwise leaves random blank lines that defies some of
+      our regex logic, maybe *)
+      let body = String.trim body in
+      let errorCapture = get_match_maybe {|^Error: ([\s\S]+)|} body in
+      let warningCapture =
+        match execMaybe {|^Warning (\d+): ([\s\S]+)|} body with
+        | None -> (None, None)
+        | Some capture -> (getSubstringMaybe capture 1, getSubstringMaybe capture 2)
+      in (
         match (errorCapture, warningCapture) with
         | (Some errorBody, (None, None)) ->
-          Some (Error {
+          Error {
             filePath;
             cachedContent;
             range;
@@ -154,9 +171,9 @@ let parse ~customErrorParsers err :result =
               ~errorBody
               ~cachedContent
               ~range;
-          })
+          }
         | (None, (Some code, Some warningBody)) ->
-          Some (Warning {
+          Warning {
             filePath;
             cachedContent;
             range;
@@ -164,19 +181,19 @@ let parse ~customErrorParsers err :result =
               code = int_of_string code;
               warningType = ParseWarning.parse code warningBody cachedContent range;
             };
-          })
-        | _ -> None (* not an error, not a warning. False alarm? *)
-      )
-      |> Helpers.listFilterMap (fun a -> a)
-      |> (fun x -> ErrorsAndWarnings x)
+          }
+        | _ -> raise (Invalid_argument err)
+      ) (* not an error, not a warning. False alarm? *)
+    | _ -> Unparsable err
+  )
 
-let parseFromString ~customErrorParsers err =
+(* let parse ~customErrorParsers err =
   try
     parse ~customErrorParsers err
     |> TerminalReporter.prettyPrintParsedResult
   with _ ->
     (* final fallback, just print *)
-    Printf.sprintf "Something went wrong during error parsing.\n%s" err
+    Printf.sprintf "Something went wrong during error parsing.\n%s" err *)
 
 let line_stream_of_channel channel =
   Stream.from
@@ -185,23 +202,63 @@ let line_stream_of_channel channel =
 (* entry point, for convenience purposes for now. Theoretically the parser and
 the reporters are decoupled *)
 let parseFromStdin ~customErrorParsers =
-  let buf = ref "" in
+  let errBuffer = ref "" in
   try
-    Stream.iter (fun line ->
-      match (get_match_maybe fileRStr line) with
-      | None ->
-        if buf.contents = "" then print_endline line
-        else buf := buf.contents ^ line ^ "\n"
-      | Some fileName ->
-        if buf.contents = "" then buf := buf.contents ^ line ^ "\n"
-        else
-          let res = parseFromString ~customErrorParsers buf.contents in
-          (* reset buf *)
-          buf := line ^ "\n";
-          print_endline res
-    )
-    (line_stream_of_channel stdin);
+    (line_stream_of_channel stdin) |> Stream.iter (fun line ->
+      match (
+        errBuffer.contents,
+        Re_pcre.pmatch ~rex:fileR line,
+        Re_pcre.pmatch ~rex:hasErrorOrWarningR line,
+        Re_pcre.pmatch ~rex:hasIndentationR line
+      ) with
+      | ("", false, false, false) ->
+        (* no error, just stream on the line *)
+        print_endline line
+      | ("", true, _, _) | ("", _, true, _) | ("", _, _, true) -> (
+        (* the beginning of a new error! *)
+        errBuffer := line ^ "\n";
+        (* don't parse it yet. Maybe the error's continuing on the next line *)
+      )
+      | (_, true, _, _) -> (
+        (* we have a file match, AND the current errBuffer isn't empty? We'll
+        just assume here that this is also the beginning of a new error, unless
+        a single error might span many (non-indented, god forbid) fileNames.
+        Print out the current (previous) error and keep accumulating *)
+        parse ~customErrorParsers errBuffer.contents
+        |> TerminalReporter.prettyPrintParsedResult
+        |> print_endline;
+        errBuffer := line ^ "\n"
+      )
+      | (_, _, _, true) | (_, _, true, _)->
+        (* buffer not empty, and we're seeing an error/indentation line. This is
+        the continuation of a currently streaming error/warning *)
+        errBuffer := errBuffer.contents ^ line ^ "\n";
+      | (_, false, false, false) -> (
+        (* woah this case was previously forgotten but caught by the compiler.
+        Man I don't ever wanna write an if-else anymore *)
+
+        (* buffer not empty, and no indentation and not an error/file line? This
+        means the previous error might have ended. We say "might" because some
+        errors provide non-indented messages... here's one such case *)
+        if Re_pcre.pmatch ~rex:hasHintR line then (
+          errBuffer := errBuffer.contents ^ line ^ "\n";
+          parse ~customErrorParsers errBuffer.contents
+          |> TerminalReporter.prettyPrintParsedResult
+          |> print_endline;
+          errBuffer := ""
+        ) else (
+          parse ~customErrorParsers errBuffer.contents
+          |> TerminalReporter.prettyPrintParsedResult
+          |> print_endline;
+          errBuffer := line ^ "\n"
+        )
+      )
+    );
     (* might have accumulated a few more lines *)
-    print_endline (parseFromString ~customErrorParsers buf.contents);
+    if (String.trim errBuffer.contents) <> "" then (
+      parse ~customErrorParsers errBuffer.contents
+      |> TerminalReporter.prettyPrintParsedResult
+      |> print_endline;
+    );
     close_in stdin
   with | e -> (close_in stdin; raise e)

@@ -21,3 +21,12 @@ setTimeout(function() {
 setTimeout(function() {
   console.log('asdasd--------------');
 }, 3000);
+setTimeout(function() {
+  console.log('asdasd--------------');
+}, 3500);
+setTimeout(function() {
+  console.log('asdasd--------------');
+}, 4000);
+setTimeout(function() {
+  console.log('asdasd--------------');
+}, 4500);

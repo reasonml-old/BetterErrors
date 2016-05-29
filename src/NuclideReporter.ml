@@ -1,4 +1,4 @@
-open BetterErrorsTypes
+(* open BetterErrorsTypes
 open Atom
 
 let diagnosticMessage typee content filePath range originalData =
@@ -50,4 +50,4 @@ let convert (content: result): nuclideResult =
   | BetterErrorsTypes.NoErrorNorWarning content -> NoErrorNorWarning content
   | BetterErrorsTypes.Unparsable content -> Unparsable content
   | BetterErrorsTypes.ErrorsAndWarnings errorsAndWarnings ->
-    ErrorsAndWarnings (toNuclideList errorsAndWarnings)
+    ErrorsAndWarnings (toNuclideList errorsAndWarnings) *)

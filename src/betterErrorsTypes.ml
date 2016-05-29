@@ -115,10 +115,7 @@ type 'a withFileInfo = {
   range: Atom.Range.t;
   parsedContent: 'a;
 }
-type errorOrWarning =
+type result =
+  | Unparsable of string
   | Error of error withFileInfo
   | Warning of warning withFileInfo
-type result =
-  | NoErrorNorWarning of string
-  | Unparsable of string
-  | ErrorsAndWarnings of errorOrWarning list

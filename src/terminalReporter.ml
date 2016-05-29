@@ -65,29 +65,23 @@ let printFile ?(isWarning=false) {cachedContent; filePath; range} =
     ~highlight:range
     cachedContent
 
-let decryptAssumingErrorsAndWarnings = List.map (fun errorOrWarning ->
-  match errorOrWarning with
-  | Error {parsedContent} -> ReportError.report parsedContent
-  | Warning {parsedContent={code; warningType}} -> ReportWarning.report code warningType
-)
-
-let prettyPrintParsedResult (content: result) = match content with
-  (* handle the special cases first *)
-  | NoErrorNorWarning content -> content ^ green "\n✔ Seems fine!"
-  | Unparsable content -> content ^ red "\n✘ There might be an error."
-  | ErrorsAndWarnings errorsAndWarnings ->
-    String.concat "\n" @@
-      List.map2 (fun errorOrWarning generatedText ->
-        match errorOrWarning with
-        | Error withFileInfo ->
-          sp "%s\n%s: %s" (printFile withFileInfo) (red "Error") generatedText
-        | Warning withFileInfo ->
-          sp
-            "%s\n%s %d: %s"
-            (printFile ~isWarning:true withFileInfo)
-            (yellow "Warning")
-            withFileInfo.parsedContent.code
-            generatedText
-        )
-      errorsAndWarnings
-      (decryptAssumingErrorsAndWarnings errorsAndWarnings)
+let prettyPrintParsedResult (result: result) =
+  match result with
+  | Unparsable str ->
+    (* output the line without any decoration around. We previously had some
+    cute little ascii red x mark to say "we couldn't parse this but there's
+    probably an error". But it's very possible that this line's a continuation
+    of a previous error, just that we couldn't parse it. So we try to bolt this
+    line right after our supposedly parsed and pretty-printed error to make them
+    look like one printed error. *)
+    (* the effing length we'd go for better errors... someone gimme a cookie *)
+    str
+  | Error withFileInfo ->
+    sp "%s\n%s: %s" (printFile withFileInfo) (red "Error") (ReportError.report withFileInfo.parsedContent)
+  | Warning withFileInfo ->
+    sp
+      "%s\n%s %d: %s"
+      (printFile ~isWarning:true withFileInfo)
+      (yellow "Warning")
+      withFileInfo.parsedContent.code
+      (ReportWarning.report withFileInfo.parsedContent.code withFileInfo.parsedContent.warningType)

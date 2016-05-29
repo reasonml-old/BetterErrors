@@ -66,7 +66,7 @@ let stringFind str part =
 
 let stringNsplit str ~by =
   if String.length str = 0 then
-    raise (Invalid_argument "stringNSplit: empty sep not allowed")
+    raise (Invalid_argument "stringNSplit: empty str not allowed")
   else if str = "" then
     []
   else
