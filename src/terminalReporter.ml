@@ -78,6 +78,14 @@ let prettyPrintParsedResult (result: result) =
     str
   | ErrorFile NonexistentFile -> ""
   | ErrorFile CommandLine -> ""
+  | ErrorFile (NoneFile filename) ->
+    (* TODO: test case for this. Forgot how to repro it *)
+    if Filename.check_suffix filename ".cmo" then
+      sp
+        "%s: Cannot find file %s. Cmo files are artifacts the compiler looks for when compiling/linking dependent files."
+        (red "Error")
+        (cyan filename)
+    else sp "%s: Cannot find file %s." (red "Error") (cyan filename)
   | ErrorFile (BadFileName filepath) ->
     sp
       "%s\n\n%s 24: \"%s\" isn't a valid file name; OCaml file names are often turned into modules, which need to start with a capitalized letter."

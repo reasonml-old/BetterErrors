@@ -209,10 +209,19 @@ let parsers = [
 ]
 
 let goodFileNameR = Re_pcre.regexp {|^[a-zA-Z]|}
+let cannotFindFileRStr = {|Cannot find file ([\s\S]+)|}
 (* not pluggable yet (unlike `customErrorParsers` below)  *)
-let specialParserThatChecksWhetherFileEvenExists filePath =
+let specialParserThatChecksWhetherFileEvenExists filePath errorBody =
   match filePath with
-  | "_none_" -> Some (ErrorFile NonexistentFile)
+  | "_none_" -> (
+    match errorBody with
+    | None -> None (* unrecognized? We're mainly trying to catch the case below *)
+    | Some err -> (
+      match get_match_maybe cannotFindFileRStr err with
+      | None -> None (* unrecognized again? We're mainly trying to catch the case below *)
+      | Some fileName -> Some (ErrorFile (NoneFile fileName))
+    )
+  )
   | "command line" -> Some (ErrorFile CommandLine)
   | _ when String.length filePath > 0 && not (Re_pcre.pmatch ~rex:goodFileNameR (Filename.basename filePath)) ->
     Some (ErrorFile (BadFileName filePath))

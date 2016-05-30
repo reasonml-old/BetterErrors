@@ -136,7 +136,11 @@ let parse ~customErrorParsers err =
   let open Re_pcre in
   match full_split ~rex:fileR err with
   | [Delim _; Group (_, filePath); Group (_, lineNum); col1; col2; Text body] -> (
-    match BetterErrorsParseError.specialParserThatChecksWhetherFileEvenExists filePath with
+    (* important, otherwise leaves random blank lines that defies some of
+    our regex logic, maybe *)
+    let body = String.trim body in
+    let errorCapture = get_match_maybe {|^Error: ([\s\S]+)|} body in
+    match BetterErrorsParseError.specialParserThatChecksWhetherFileEvenExists filePath errorCapture with
     | Some err -> err
     | None ->
       let cachedContent = Helpers.fileLinesOfExn filePath in
@@ -154,10 +158,6 @@ let parse ~customErrorParsers err =
         ~col1Raw:col1Raw
         ~col2Raw:col2Raw
       in
-      (* important, otherwise leaves random blank lines that defies some of
-      our regex logic, maybe *)
-      let body = String.trim body in
-      let errorCapture = get_match_maybe {|^Error: ([\s\S]+)|} body in
       let warningCapture =
         match execMaybe {|^Warning (\d+): ([\s\S]+)|} body with
         | None -> (None, None)

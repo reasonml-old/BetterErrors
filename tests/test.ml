@@ -54,6 +54,7 @@ let () =
         from the new actual *)
 
         (* ignore @@ Sys.command @@ Printf.sprintf "cp %s %s" actualOutputName expectedOutputName *)
+        (* TODO: show the differences *)
         if actual = expected then () else raise (Not_equal filename)
     done);
     print_endline "ALL GOOD!";

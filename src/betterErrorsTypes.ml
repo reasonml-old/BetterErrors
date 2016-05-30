@@ -106,6 +106,7 @@ type error =
   | Error_CatchAll of string
 
 type fileError =
+  | NoneFile of string
   | NonexistentFile
   | CommandLine
   | BadFileName of string
