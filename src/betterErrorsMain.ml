@@ -133,63 +133,64 @@ let parse ~customErrorParsers err =
   (* we know whatever err is, it starts with "File: ..." because that's how `parse`
   is used *)
   let err = String.trim err in
-  let open Re_pcre in
-  match full_split ~rex:fileR err with
-  | [Delim _; Group (_, filePath); Group (_, lineNum); col1; col2; Text body] -> (
-    (* important, otherwise leaves random blank lines that defies some of
-    our regex logic, maybe *)
-    let body = String.trim body in
-    let errorCapture = get_match_maybe {|^Error: ([\s\S]+)|} body in
-    match BetterErrorsParseError.specialParserThatChecksWhetherFileEvenExists filePath errorCapture with
-    | Some err -> err
-    | None ->
-      let cachedContent = Helpers.fileLinesOfExn filePath in
-      (* sometimes there's only line, but no characters *)
-      let (col1Raw, col2Raw) = match (col1, col2) with
-        | (Group (_, c1), Group (_, c2)) ->
-          (* bug: https://github.com/mmottl/pcre-ocaml/issues/5 *)
-          if String.trim c1 = "" || String.trim c2 = "" then raise (Invalid_argument "HUHUHUH")
-          else (Some c1, Some c2)
-        | _ -> (None, None)
-      in
-      let range = normalizeCompilerLineColsToRange
-        ~fileLines:cachedContent
-        ~lineRaw:lineNum
-        ~col1Raw:col1Raw
-        ~col2Raw:col2Raw
-      in
-      let warningCapture =
-        match execMaybe {|^Warning (\d+): ([\s\S]+)|} body with
-        | None -> (None, None)
-        | Some capture -> (getSubstringMaybe capture 1, getSubstringMaybe capture 2)
-      in (
-        match (errorCapture, warningCapture) with
-        | (Some errorBody, (None, None)) ->
-          ErrorContent {
-            filePath;
-            cachedContent;
-            range;
-            parsedContent = BetterErrorsParseError.parse
-              ~customErrorParsers
-              ~errorBody
-              ~cachedContent
-              ~range;
-          }
-        | (None, (Some code, Some warningBody)) ->
-          Warning {
-            filePath;
-            cachedContent;
-            range;
-            parsedContent = {
-              code = int_of_string code;
-              warningType = ParseWarning.parse code warningBody cachedContent range;
-            };
-          }
-        | _ -> raise (Invalid_argument err)
-      ) (* not an error, not a warning. False alarm? *)
-    )
-    | _ -> Unparsable err
-
+  try
+    let open Re_pcre in
+    match full_split ~rex:fileR err with
+    | [Delim _; Group (_, filePath); Group (_, lineNum); col1; col2; Text body] -> (
+      (* important, otherwise leaves random blank lines that defies some of
+      our regex logic, maybe *)
+      let body = String.trim body in
+      let errorCapture = get_match_maybe {|^Error: ([\s\S]+)|} body in
+      match BetterErrorsParseError.specialParserThatChecksWhetherFileEvenExists filePath errorCapture with
+      | Some err -> err
+      | None ->
+        let cachedContent = Helpers.fileLinesOfExn filePath in
+        (* sometimes there's only line, but no characters *)
+        let (col1Raw, col2Raw) = match (col1, col2) with
+          | (Group (_, c1), Group (_, c2)) ->
+            (* bug: https://github.com/mmottl/pcre-ocaml/issues/5 *)
+            if String.trim c1 = "" || String.trim c2 = "" then raise (Invalid_argument "HUHUHUH")
+            else (Some c1, Some c2)
+          | _ -> (None, None)
+        in
+        let range = normalizeCompilerLineColsToRange
+          ~fileLines:cachedContent
+          ~lineRaw:lineNum
+          ~col1Raw:col1Raw
+          ~col2Raw:col2Raw
+        in
+        let warningCapture =
+          match execMaybe {|^Warning (\d+): ([\s\S]+)|} body with
+          | None -> (None, None)
+          | Some capture -> (getSubstringMaybe capture 1, getSubstringMaybe capture 2)
+        in (
+          match (errorCapture, warningCapture) with
+          | (Some errorBody, (None, None)) ->
+            ErrorContent {
+              filePath;
+              cachedContent;
+              range;
+              parsedContent = BetterErrorsParseError.parse
+                ~customErrorParsers
+                ~errorBody
+                ~cachedContent
+                ~range;
+            }
+          | (None, (Some code, Some warningBody)) ->
+            Warning {
+              filePath;
+              cachedContent;
+              range;
+              parsedContent = {
+                code = int_of_string code;
+                warningType = ParseWarning.parse code warningBody cachedContent range;
+              };
+            }
+          | _ -> raise (Invalid_argument err)
+        ) (* not an error, not a warning. False alarm? *)
+      )
+      | _ -> Unparsable err
+  with _ -> Unparsable err
 
 (* let parse ~customErrorParsers err =
   try
