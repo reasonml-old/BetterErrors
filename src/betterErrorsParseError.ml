@@ -210,10 +210,13 @@ let parsers = [
 
 let goodFileNameR = Re_pcre.regexp {|^[a-zA-Z]|}
 let cannotFindFileRStr = {|Cannot find file ([\s\S]+)|}
+let unboundModuleRStr = {|Unbound module ([\s\S]+)|}
+
 (* not pluggable yet (unlike `customErrorParsers` below)  *)
 let specialParserThatChecksWhetherFileEvenExists filePath errorBody =
   match filePath with
   | "_none_" -> (
+    (* TODO: test this *)
     match errorBody with
     | None -> None (* unrecognized? We're mainly trying to catch the case below *)
     | Some err -> (
@@ -222,10 +225,20 @@ let specialParserThatChecksWhetherFileEvenExists filePath errorBody =
       | Some fileName -> Some (ErrorFile (NoneFile fileName))
     )
   )
-  | "command line" -> Some (ErrorFile CommandLine)
+  | "command line" -> (
+    (* TODO: test this *)
+    match errorBody with
+    | None -> None (* unrecognized? We're mainly trying to catch the case below *)
+    | Some err -> (
+      match get_match_maybe unboundModuleRStr err with
+      | None -> None (* unrecognized? We're mainly trying to catch the case below *)
+      | Some moduleName -> Some (ErrorFile (CommandLine moduleName))
+    )
+  )
   | _ when String.length filePath > 0 && not (Re_pcre.pmatch ~rex:goodFileNameR (Filename.basename filePath)) ->
     Some (ErrorFile (BadFileName filePath))
   | _ -> None
+
 let parse ~customErrorParsers ~errorBody ~cachedContent ~range =
   try
     (* custom parsers go first *)

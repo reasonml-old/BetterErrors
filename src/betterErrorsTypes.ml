@@ -108,7 +108,7 @@ type error =
 type fileError =
   | NoneFile of string
   | NonexistentFile
-  | CommandLine
+  | CommandLine of string
   | BadFileName of string
 
 type warning = {

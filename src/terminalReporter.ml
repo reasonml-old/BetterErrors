@@ -77,7 +77,8 @@ let prettyPrintParsedResult (result: result) =
     (* the effing length we'd go for better errors... someone gimme a cookie *)
     str
   | ErrorFile NonexistentFile -> ""
-  | ErrorFile CommandLine -> ""
+  | ErrorFile (CommandLine moduleName) ->
+    sp "%s: module `%s` not found." (red "Error") moduleName
   | ErrorFile (NoneFile filename) ->
     (* TODO: test case for this. Forgot how to repro it *)
     if Filename.check_suffix filename ".cmo" then
