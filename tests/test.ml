@@ -55,7 +55,13 @@ let () =
 
         (* ignore @@ Sys.command @@ Printf.sprintf "cp %s %s" actualOutputName expectedOutputName *)
         (* TODO: show the differences *)
-        if actual = expected then () else raise (Not_equal filename)
+        if actual <> expected then (
+          print_endline "Actual:";
+          print_endline actual;
+          print_endline "Expected:";
+          print_endline expected;
+          raise (Not_equal filename)
+        )
     done);
     print_endline "ALL GOOD!";
     ignore @@ Sys.command "rm -rf ./tests/**/*.{cmi,cmo}";
