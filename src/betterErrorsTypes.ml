@@ -105,6 +105,11 @@ type error =
   | File_IllegalCharacter of illegalCharacter
   | Error_CatchAll of string
 
+type fileError =
+  | NonexistentFile
+  | CommandLine
+  | BadFileName of string
+
 type warning = {
   code: int;
   warningType: warningType;
@@ -117,5 +122,6 @@ type 'a withFileInfo = {
 }
 type result =
   | Unparsable of string
-  | Error of error withFileInfo
+  | ErrorFile of fileError
+  | ErrorContent of error withFileInfo
   | Warning of warning withFileInfo

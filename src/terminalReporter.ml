@@ -76,7 +76,15 @@ let prettyPrintParsedResult (result: result) =
     look like one printed error. *)
     (* the effing length we'd go for better errors... someone gimme a cookie *)
     str
-  | Error withFileInfo ->
+  | ErrorFile NonexistentFile -> ""
+  | ErrorFile CommandLine -> ""
+  | ErrorFile (BadFileName filepath) ->
+    sp
+      "%s\n\n%s 24: \"%s\" isn't a valid file name; OCaml file names are often turned into modules, which need to start with a capitalized letter."
+      (cyan filepath)
+      (yellow "Warning")
+      (Filename.basename filepath)
+  | ErrorContent withFileInfo ->
     sp "%s\n%s: %s" (printFile withFileInfo) (red "Error") (ReportError.report withFileInfo.parsedContent)
   | Warning withFileInfo ->
     sp

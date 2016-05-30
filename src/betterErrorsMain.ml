@@ -133,9 +133,12 @@ let parse ~customErrorParsers err =
   (* we know whatever err is, it starts with "File: ..." because that's how `parse`
   is used *)
   let err = String.trim err in
-  Re_pcre.(
-    match Re_pcre.full_split ~rex:fileR err with
-    | [Delim _; Group (_, filePath); Group (_, lineNum); col1; col2; Text body] ->
+  let open Re_pcre in
+  match full_split ~rex:fileR err with
+  | [Delim _; Group (_, filePath); Group (_, lineNum); col1; col2; Text body] -> (
+    match BetterErrorsParseError.specialParserThatChecksWhetherFileEvenExists filePath with
+    | Some err -> err
+    | None ->
       let cachedContent = Helpers.fileLinesOfExn filePath in
       (* sometimes there's only line, but no characters *)
       let (col1Raw, col2Raw) = match (col1, col2) with
@@ -162,7 +165,7 @@ let parse ~customErrorParsers err =
       in (
         match (errorCapture, warningCapture) with
         | (Some errorBody, (None, None)) ->
-          Error {
+          ErrorContent {
             filePath;
             cachedContent;
             range;
@@ -184,8 +187,9 @@ let parse ~customErrorParsers err =
           }
         | _ -> raise (Invalid_argument err)
       ) (* not an error, not a warning. False alarm? *)
+    )
     | _ -> Unparsable err
-  )
+
 
 (* let parse ~customErrorParsers err =
   try

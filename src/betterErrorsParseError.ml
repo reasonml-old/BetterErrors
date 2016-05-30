@@ -208,6 +208,15 @@ let parsers = [
   file_IllegalCharacter;
 ]
 
+let goodFileNameR = Re_pcre.regexp {|^[a-zA-Z]|}
+(* not pluggable yet (unlike `customErrorParsers` below)  *)
+let specialParserThatChecksWhetherFileEvenExists filePath =
+  match filePath with
+  | "_none_" -> Some (ErrorFile NonexistentFile)
+  | "command line" -> Some (ErrorFile CommandLine)
+  | _ when String.length filePath > 0 && not (Re_pcre.pmatch ~rex:goodFileNameR (Filename.basename filePath)) ->
+    Some (ErrorFile (BadFileName filePath))
+  | _ -> None
 let parse ~customErrorParsers ~errorBody ~cachedContent ~range =
   try
     (* custom parsers go first *)
