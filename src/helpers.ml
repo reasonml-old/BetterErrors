@@ -1,3 +1,5 @@
+open OcamlRe
+
 (* Batteries library substitutes *)
 let listDrop n lst =
   let lst = ref lst in
