@@ -18,7 +18,7 @@ let report parsedContent =
   | Type_IncompatibleType {actual; expected; differingPortion; actualEquivalentType; expectedEquivalentType; extra} ->
     let (diffA, diffB) = differingPortion in
     (sp "The types don't match.\n%s %s\n%s  %s"
-      (redUnderlined "This is:")
+      (red "This is:")
       (highlightPart ~color:red ~part:diffA actual)
       (green "Wanted:")
       (highlightPart ~color:green ~part:diffB expected))

@@ -61,7 +61,7 @@ let printFile ?(isWarning=false) {cachedContent; filePath; range} =
         (endRow + 1)
         endColumn
   in filePathDisplay ^ _printFile
-    ~highlightColor:(if isWarning then yellowUnderlined else redUnderlined)
+    ~highlightColor:(if isWarning then yellow else red)
     ~highlight:range
     cachedContent
 
