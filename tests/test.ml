@@ -4,6 +4,7 @@ Sys.command calls below happen in the wrong directory *)
 let folders = [
   (* (directory, number of tests) *)
   ("noError", 1);
+  ("prettyPrint", 2);
   ("1_bad_file_name", 1);
   ("file_IllegalCharacter", 1);
   ("file_SyntaxError", 6);
