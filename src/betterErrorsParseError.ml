@@ -1,5 +1,6 @@
 open BetterErrorsTypes
 open Helpers
+open OcamlRe
 
 (* agnostic extractors, turning err string into proper data structures *)
 (* TODO: don't make these raise error *)

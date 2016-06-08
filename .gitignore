@@ -13,3 +13,6 @@ setup.data
 setup.log
 
 /tests/**/*actual.txt
+
+node_modules
+.jenga

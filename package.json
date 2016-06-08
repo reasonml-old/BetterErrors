@@ -1,0 +1,13 @@
+{
+  "name": "ocamlBetterErrors",
+  "version": "0.0.1",
+  "description": "Better errors for ocaml",
+  "dependencies": {
+    "ocamlRe": ">=0.0.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chenglou/BetterErrors.git"
+  },
+  "author": "chenglou"
+}

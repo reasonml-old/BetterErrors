@@ -1,5 +1,6 @@
 open BetterErrorsTypes
 open Helpers
+open OcamlRe
 
 (* the compiler output might point to an error that spans across many lines;
 however, instead of indicating from (startRow, startColumn) to (endRow,
