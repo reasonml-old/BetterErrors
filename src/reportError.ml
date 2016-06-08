@@ -14,7 +14,11 @@ let report parsedContent =
   match parsedContent with
   | Error_CatchAll error -> error
   | Type_MismatchTypeArguments {typeConstructor; expectedCount; actualCount} ->
-    sp "This needs to be applied to %d argument(s), we found %d." expectedCount actualCount
+    sp
+      "This needs to be applied to %d argument%s, we found %d."
+      expectedCount
+      (if expectedCount = 1 then "" else "s")
+      actualCount
   | Type_IncompatibleType {actual; expected; differingPortion; actualEquivalentType; expectedEquivalentType; extra} ->
     let (diffA, diffB) = differingPortion in
     (sp "The types don't match.\n%s %s\n%s  %s"

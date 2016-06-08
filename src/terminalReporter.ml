@@ -13,35 +13,62 @@ let numberOfDigits n =
 let pad ?(ch=' ') content n =
   (String.make (n - (String.length content)) ch) ^ content
 
+let startingSpacesCount str =
+  let rec startingSpacesCount' str idx =
+    if idx = String.length str then idx
+    else if String.get str idx <> ' ' then idx
+    else startingSpacesCount' str (idx + 1)
+  in startingSpacesCount' str 0
+
 (* row and col 0-indexed; endColumn is 1 past the actual end. See
 Main.compilerLineColsToRange *)
 let _printFile ~highlightColor:color ~highlight:((startRow, startColumn), (endRow, endColumn)) content =
-  let sep = " | " in
   let displayedStartRow = max 0 (startRow - 3) in
   (* we display no more than 3 lines after startRow. Some endRow are rly far
   away *)
   let displayedEndRow = min (List.length content - 1) (startRow + 3) in
   let lineNumWidth = numberOfDigits (List.length content) in
-  let result = ref "" in
+  (* sometimes the snippet of file we show is really indented. We de-indent it
+  for nicer display by trimming out the maximum amount of leading spaces we can. *)
+  let rowsForCountingStartingSpaces =
+    listDrop displayedStartRow content
+    |> listTake (displayedEndRow - displayedStartRow + 1)
+    |> List.filter (fun row -> row <> "")
+  in
+  let minIndent =
+    match rowsForCountingStartingSpaces with
+    | [] -> 0
+    | _ ->
+      let startingSpaces = List.map startingSpacesCount rowsForCountingStartingSpaces in
+      List.fold_left
+        (fun acc num -> if num < acc then num else acc)
+        (List.hd startingSpaces)
+        startingSpaces
+  in
+  (* ellipsis vertical separator to indicate "there are white spaces before" *)
+  let sep = if minIndent = 0 then " │ " else " ┆ " in
+  let startColumn = startColumn - minIndent in
+  let endColumn = endColumn - minIndent in
+  let result = ref [] in
   for i = displayedStartRow to displayedEndRow do
-    let currLine = List.nth content i in
-      if i >= startRow && i <= endRow then
-        if startRow = endRow then
-          result := !result ^ (pad (string_of_int (i + 1)) lineNumWidth)
-            ^ sep ^ (highlight ~color ~first:startColumn ~last:endColumn currLine) ^ "\n"
-        else if i = startRow then
-          result := !result ^ (pad (string_of_int (i + 1)) lineNumWidth)
-            ^ sep ^ (highlight ~color ~first:startColumn currLine) ^ "\n"
-        else if i = endRow then
-          result := !result ^ (pad (string_of_int (i + 1)) lineNumWidth)
-            ^ sep ^ (highlight ~color ~last:endColumn currLine) ^ "\n"
-        else
-          result := !result ^ (pad (string_of_int (i + 1)) lineNumWidth)
-            ^ sep ^ (highlight ~color currLine) ^ "\n"
+    let currLine = List.nth content i |> stringSlice ~first:minIndent in
+    if i >= startRow && i <= endRow then
+      if startRow = endRow then
+        result := ((pad (string_of_int (i + 1)) lineNumWidth)
+          ^ sep ^ (highlight ~color ~first:startColumn ~last:endColumn currLine)) :: !result
+      else if i = startRow then
+        result := ((pad (string_of_int (i + 1)) lineNumWidth)
+          ^ sep ^ (highlight ~color ~first:startColumn currLine)) :: !result
+      else if i = endRow then
+        result := ((pad (string_of_int (i + 1)) lineNumWidth)
+          ^ sep ^ (highlight ~color ~last:endColumn currLine)) :: !result
       else
-        result := !result ^ (pad (string_of_int (i + 1)) lineNumWidth) ^ sep ^ currLine ^ "\n"
+        result := ((pad (string_of_int (i + 1)) lineNumWidth)
+          ^ sep ^ (highlight ~color currLine)) :: !result
+    else
+      result := ((pad (string_of_int (i + 1)) lineNumWidth) ^ sep ^ currLine) :: !result
   done;
-  !result
+  !result |> List.rev |> String.concat "\n"
 
 let printFile ?(isWarning=false) {cachedContent; filePath; range} =
   let ((startRow, startColumn), (endRow, endColumn)) = range in
@@ -94,10 +121,10 @@ let prettyPrintParsedResult (result: result) =
       (yellow "Warning")
       (Filename.basename filepath)
   | ErrorContent withFileInfo ->
-    sp "%s\n%s: %s" (printFile withFileInfo) (red "Error") (ReportError.report withFileInfo.parsedContent)
+    sp "%s\n\n%s: %s" (printFile withFileInfo) (red "Error") (ReportError.report withFileInfo.parsedContent)
   | Warning withFileInfo ->
     sp
-      "%s\n%s %d: %s"
+      "%s\n\n%s %d: %s"
       (printFile ~isWarning:true withFileInfo)
       (yellow "Warning")
       withFileInfo.parsedContent.code
