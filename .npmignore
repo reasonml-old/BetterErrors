@@ -3,4 +3,4 @@ testa
 errs
 asd.js
 !_build/top/app.out
-.merlin
+.*
