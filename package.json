@@ -14,9 +14,10 @@
   },
   "author": "chenglou",
   "devDependencies": {
-    "jengaboot": "0.0.11"
+    "jengaboot": "0.0.13"
   },
   "scripts": {
+    "start": "compile",
     "test": "ocaml tests/test.ml"
   }
 }
