@@ -1,3 +1,4 @@
+
 open BetterErrorsTypes;
 
 open Helpers;
@@ -169,10 +170,7 @@ let parse customErrorParsers::customErrorParsers err =>
              our regex logic, maybe */
           let body = String.trim body;
           let errorCapture = get_match_maybe {|^Error: ([\s\S]+)|} body;
-          switch (
-            ParseError.specialParserThatChecksWhetherFileEvenExists
-              filePath errorCapture
-          ) {
+          switch (ParseError.specialParserThatChecksWhetherFileEvenExists filePath errorCapture) {
           | Some err => err
           | None =>
             let cachedContent = Helpers.fileLinesOfExn filePath;
@@ -210,13 +208,14 @@ let parse customErrorParsers::customErrorParsers err =>
                     range::range
               }
             | (None, (Some code, Some warningBody)) =>
+              let code = int_of_string code;
               Warning {
                 filePath,
                 cachedContent,
                 range,
                 parsedContent: {
-                  code: int_of_string code,
-                  warningType: ParseWarning.parse code warningBody cachedContent range
+                  code,
+                  warningType: ParseWarning.parse code warningBody filePath cachedContent range
                 }
               }
             | _ => raise (Invalid_argument err)
@@ -265,8 +264,7 @@ let parseFromStdin customErrorParsers::customErrorParsers => {
           | ("", _, true, _)
           | ("", _, _, true) =>
             /* the beginning of a new error! */
-            errBuffer :=
-              line ^ "\n"
+            errBuffer := line ^ "\n"
           /* don't parse it yet. Maybe the error's continuing on the next line */
           | (_, true, _, _) =>
             /* we have a file match, AND the current errBuffer isn't empty? We'll

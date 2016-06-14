@@ -3,6 +3,8 @@ open BetterErrorsTypes;
 
 open Helpers;
 
+open OcamlRe;
+
 let numberOfDigits n => {
   let digits = ref 1;
   let nn = ref n;
@@ -152,12 +154,6 @@ let prettyPrintParsedResult (result: result) =>
     } else {
       sp "%s: Cannot find file %s." (red "Error") (cyan filename)
     }
-  | ErrorFile (BadFileName filepath) =>
-    sp
-      "%s\n\n%s 24: \"%s\" isn't a valid file name; OCaml file names are often turned into modules, which need to start with a capitalized letter."
-      (cyan filepath)
-      (yellow "Warning")
-      (Filename.basename filepath)
   | ErrorContent withFileInfo =>
     sp
       "%s\n\n%s: %s"
@@ -170,5 +166,10 @@ let prettyPrintParsedResult (result: result) =>
       (printFile isWarning::true withFileInfo)
       (yellow "Warning")
       withFileInfo.parsedContent.code
-      (ReportWarning.report withFileInfo.parsedContent.code withFileInfo.parsedContent.warningType)
+      (
+        ReportWarning.report
+          withFileInfo.parsedContent.code
+          withFileInfo.filePath
+          withFileInfo.parsedContent.warningType
+      )
   };

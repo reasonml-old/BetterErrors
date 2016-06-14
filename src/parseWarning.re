@@ -5,12 +5,12 @@ open Helpers;
 
 /* agnostic extractors, turning err string into proper data structures */
 /* TODO: don't make these raise error */
-let warning_UnusedVariable code err cachedContent range => raise Not_found;
+let warning_UnusedVariable code err _ _ _ => raise Not_found;
 
 /* need: what the variant is. If it's e.g. a list, instead of saying "doesn't
    cover all the cases of the variant" we could say "doesn't cover all the possible
    length of the list" */
-let warning_PatternNotExhaustive code err _ _ => {
+let warning_PatternNotExhaustive code err _ _ _ => {
   let unmatchedR = {|this pattern-matching is not exhaustive.\sHere is an example of a value that is not matched:\s([\s\S]+)|};
   let unmatchedRaw = get_match unmatchedR err;
   let unmatched =
@@ -24,11 +24,11 @@ let warning_PatternNotExhaustive code err _ _ => {
   Warning_PatternNotExhaustive {unmatched: unmatched}
 };
 
-let warning_PatternUnused code err cachedContent range => raise Not_found;
+let warning_PatternUnused code err _ _ _ => raise Not_found;
 
 /* need: offending optional argument name from AST */
 /* need: offending function name */
-let warning_OptionalArgumentNotErased code err cachedContent range => {
+let warning_OptionalArgumentNotErased code err _ cachedContent range => {
   let ((startRow, startColumn), (endRow, endColumn)) = range;
   /* Hardcoding 16 for now. We might one day switch to use the variant from
      https://github.com/ocaml/ocaml/blob/901c67559469acc58935e1cc0ced253469a8c77a/utils/warnings.ml#L20 */
@@ -51,20 +51,41 @@ let warning_OptionalArgumentNotErased code err cachedContent range => {
   Warning_OptionalArgumentNotErased {argumentName: String.trim argumentName}
 };
 
+/* need: what the variant is. If it's e.g. a list, instead of saying "doesn't
+   cover all the cases of the variant" we could say "doesn't cover all the possible
+   length of the list" */
+let warning_BadFileName code err filePath _ _ =>
+  if (code == 24) {
+    let fileName = Filename.basename filePath;
+    let offendingChar =
+      switch (
+        get_match_maybe {|^([^a-zA-Z])|} fileName,
+        get_match_maybe {|.+?([^a-zA-Z\.])|} fileName
+      ) {
+      | (Some m, _) => Leading m
+      | (None, Some m) => Contains m
+      | _ => UnknownIllegalChar
+      };
+    Warning_BadFileName offendingChar
+  } else {
+    raise Not_found
+  };
+
 /* TODO: better logic using these codes */
 let parsers = [
   warning_UnusedVariable,
   warning_PatternNotExhaustive,
   warning_PatternUnused,
-  warning_OptionalArgumentNotErased
+  warning_OptionalArgumentNotErased,
+  warning_BadFileName
 ];
 
-let parse code warningBody cachedContent range =>
+let parse code warningBody filePath cachedContent range =>
   try (
     Helpers.listFindMap
       (
-        fun parse =>
-          try (Some (parse code warningBody cachedContent range)) {
+        fun parse' =>
+          try (Some (parse' code warningBody filePath cachedContent range)) {
           | _ => None
           }
       )

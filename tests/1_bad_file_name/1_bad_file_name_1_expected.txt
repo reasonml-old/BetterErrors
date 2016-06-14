@@ -1,3 +1,5 @@
-[36mtests/1_bad_file_name/1_bad_file_name_1.ml[0m
+[36mtests/1_bad_file_name/1_bad_file_name_1.ml:1 0-0
+[0m1 │ [33m[0mlet a = 5
 
-[33mWarning[0m 24: "1_bad_file_name_1.ml" isn't a valid file name; OCaml file names are often turned into modules, which need to start with a capitalized letter.
+[33mWarning[0m 24: file name potentially invalid. The OCaml ecosystem's build systems usually turn file names into module names by simply upper-casing the first letter. In this case, `1_bad_file_name_1.ml` starts with `1`, which doesn't form a legal module name.
+Note: some build systems might e.g. turn kebab-case into CamelCase module, which is why this isn't a hard error.

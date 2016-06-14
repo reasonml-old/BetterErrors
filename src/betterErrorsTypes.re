@@ -29,6 +29,8 @@ type unusedVariable = {constructor: string, expectedCount: int, observedCount: i
 
 type fieldNotBelong = {actual: string, expected: string};
 
+type badFileName = | Leading of string | Contains of string | UnknownIllegalChar;
+
 type incompatibleType = {
   actual: string,
   expected: string,
@@ -58,6 +60,7 @@ type warningType =
   | Warning_PatternNotExhaustive of patternNotExhaustive
   | Warning_PatternUnused of unusedVariable
   | Warning_OptionalArgumentNotErased of optionalArgumentNotErased
+  | Warning_BadFileName of badFileName
   | Warning_CatchAll of string;
 
 type error =
@@ -84,7 +87,7 @@ type error =
   | Error_CatchAll of string;
 
 type fileError =
-  | NoneFile of string | NonexistentFile | CommandLine of string | BadFileName of string;
+  | NoneFile of string | NonexistentFile | CommandLine of string;
 
 type warning = {code: int, warningType: warningType};
 

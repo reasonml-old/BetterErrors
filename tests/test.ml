@@ -1,11 +1,16 @@
 (* Note: this file must be run at root directory of the project. Otherwise the
 Sys.command calls below happen in the wrong directory *)
 
+(* File's in ocaml for now, because our `ocaml tests/test.ml` call doesn't allow
+us to pass the `-pp refmt` option to parse reason code. Would be nice if `ocaml`
+had that like `ocamlc` *)
+
 let folders = [
   (* (directory, number of tests) *)
   ("noError", 1);
   ("prettyPrint", 2);
   ("1_bad_file_name", 1);
+  ("bad-file-name-2", 1);
   ("file_IllegalCharacter", 1);
   ("file_SyntaxError", 6);
   ("type_AppliedTooMany", 2);

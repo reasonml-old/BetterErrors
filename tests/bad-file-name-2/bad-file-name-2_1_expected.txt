@@ -1,0 +1,9 @@
+[36mtests/bad-file-name-2/bad-file-name-2_1.ml:1 0-0
+[0m1 │ [33m[0masd
+
+[33mWarning[0m 24: file name potentially invalid. The OCaml ecosystem's build systems usually turn file names into module names by simply upper-casing the first letter. In this case, `Bad-file-name-2_1.ml` contains `-`, which doesn't form a legal module name.
+Note: some build systems might e.g. turn kebab-case into CamelCase module, which is why this isn't a hard error.
+[36mtests/bad-file-name-2/bad-file-name-2_1.ml:1 0-3
+[0m1 │ [31masd[0m
+
+[31mError[0m: `asd` can't be found. Did you mean `asr`?

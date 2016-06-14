@@ -1,3 +1,4 @@
+
 open BetterErrorsTypes;
 
 open Helpers;
@@ -209,7 +210,7 @@ let parsers = [
   file_IllegalCharacter
 ];
 
-let goodFileNameR = Re_pcre.regexp {|^[a-zA-Z]|};
+let goodFileNameR = Re_pcre.regexp {|^[a-zA-Z][a-zA-Z_\d]+\.\S+$|};
 
 let cannotFindFileRStr = {|Cannot find file ([\s\S]+)|};
 
@@ -240,11 +241,6 @@ let specialParserThatChecksWhetherFileEvenExists filePath errorBody =>
       | Some moduleName => Some (ErrorFile (CommandLine moduleName))
       }
     }
-  | _
-      when
-        String.length filePath > 0 &&
-          not (Re_pcre.pmatch rex::goodFileNameR (Filename.basename filePath)) =>
-    Some (ErrorFile (BadFileName filePath))
   | _ => None
   };
 
