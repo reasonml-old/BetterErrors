@@ -1,6 +1,6 @@
 {
   "name": "ocamlBetterErrors",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Better errors for ocaml",
   "dependencies": {
     "ocamlRe": ">=0.0.4"
