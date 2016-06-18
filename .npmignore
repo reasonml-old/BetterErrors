@@ -1,6 +1,5 @@
-tests
-testa
 errs
 asd.js
+_build
 !_build/top/app.out
 .*
