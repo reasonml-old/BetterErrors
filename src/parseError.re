@@ -217,6 +217,7 @@ let cannotFindFileRStr = {|Cannot find file ([\s\S]+)|};
 let unboundModuleRStr = {|Unbound module ([\s\S]+)|};
 
 /* not pluggable yet (unlike `customErrorParsers` below)  */
+/* TODO: this doesn't work. What did I say about testing... */
 let specialParserThatChecksWhetherFileEvenExists filePath errorBody =>
   switch filePath {
   | "_none_" =>
