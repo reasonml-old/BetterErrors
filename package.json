@@ -1,6 +1,6 @@
 {
   "name": "ocamlBetterErrors",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Better errors for ocaml",
   "dependencies": {
     "ocamlRe": ">=0.0.4"
@@ -14,7 +14,7 @@
   },
   "author": "chenglou",
   "devDependencies": {
-    "jengaboot": "0.0.19"
+    "jengaboot": "0.0.20"
   },
   "scripts": {
     "start": "compile",

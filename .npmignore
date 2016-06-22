@@ -2,6 +2,7 @@ errs
 asd.js
 _build/**
 !_build/top/app.out
+!_build/top/appIntermediate.out
 .*
 .merlin
 a.out
