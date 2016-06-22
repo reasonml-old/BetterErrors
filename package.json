@@ -1,6 +1,6 @@
 {
   "name": "ocamlBetterErrors",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Better errors for ocaml",
   "dependencies": {
     "ocamlRe": ">=0.0.4"
@@ -10,7 +10,7 @@
     "url": "git+https://github.com/chenglou/BetterErrors.git"
   },
   "bin": {
-    "berror": "run"
+    "berror": "_build/top/app.out"
   },
   "author": "chenglou",
   "devDependencies": {
