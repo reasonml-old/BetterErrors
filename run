@@ -1,0 +1,2 @@
+# We can't call _build/top/app.out directly. Reason: https://github.com/chenglou/jengaboot/issues/10
+ocamlrun _build/top/app.out

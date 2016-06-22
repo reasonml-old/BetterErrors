@@ -1,6 +1,6 @@
 {
   "name": "ocamlBetterErrors",
-  "version": "0.0.5",
+  "version": "0.0.7",
   "description": "Better errors for ocaml",
   "dependencies": {
     "ocamlRe": ">=0.0.4"
@@ -10,11 +10,11 @@
     "url": "git+https://github.com/chenglou/BetterErrors.git"
   },
   "bin": {
-    "berror": "_build/top/app.out"
+    "berror": "run"
   },
   "author": "chenglou",
   "devDependencies": {
-    "jengaboot": "0.0.16"
+    "jengaboot": "0.0.19"
   },
   "scripts": {
     "start": "compile",
