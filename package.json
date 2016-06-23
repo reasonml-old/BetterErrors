@@ -1,0 +1,32 @@
+{
+  "name": "BetterErrors",
+  "version": "1.2.0",
+  "description": "BetterErrors library but with a package.json file added",
+  "personal-workflow-for-committing-force-pushing": "git add package.json && git commit --amend --no-edit && git tag -d npm-1.2.0 && git tag npm-1.2.0 && git push -f upstream HEAD:create1_2_0 && git push -f upstream --tags",
+  "scripts": {
+    "postinstall": "eval $(dependencyEnv) && make && make install-via-ocamlfind"
+  },
+  "exportedEnvVars": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/npm-ml/BetterErrors.git"
+  },
+  "keywords": [
+    "ocaml",
+    "flow",
+    "opam"
+  ],
+  "author": "",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "git://github.com/npm-ml/BetterErrors/issues"
+  },
+  "homepage": "git://github.com/npm-ml/BetterErrors",
+  "dependencies": {
+    "re": "https://github.com/npm-ml/re#npm-1.6.0",
+    "ocaml-findlib": "https://github.com/npm-ml/ocaml-findlib.git#npm-1.6.1",
+    "ocaml": "https://github.com/npm-ml/ocaml.git#npm-4.02.3",
+    "dependency-env": "https://github.com/npm-ml/dependency-env.git"
+  }
+}
