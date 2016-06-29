@@ -1,0 +1,1 @@
+[31mError[0m: Cannot find file [36mnonexistentFile.cmo[0m. Cmo files are artifacts the compiler looks for when compiling/linking dependent files.

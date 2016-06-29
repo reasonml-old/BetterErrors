@@ -7,6 +7,8 @@ had that like `ocamlc` *)
 
 let folders = [
   (* (directory, number of tests) *)
+  (* first one is special. See the actual tests loop below *)
+  ("specialTests", 3);
   ("noError", 1);
   ("prettyPrint", 2);
   ("1_bad_file_name", 1);
@@ -43,31 +45,41 @@ let readFile filePath =
     close_in chan;
     List.rev !lines |> String.concat "\n"
 
+(* these generate ocaml errors that points to nonexistant files. Handle them
+specially here *)
+let specialTestsCommands = [
+  "ocamlc -open NonExistantModule foo.ml";
+  "ocamlc nonexistentFile.cmo";
+  "ocamlc nonexistentFile.ml"
+]
+
 let () =
   try
     folders
-    |> List.iter (fun (dirname, fileCount) -> for i = 1 to fileCount do
+    |> List.iteri (fun i (dirname, fileCount) -> for j = 1 to fileCount do
       let testsDirname = Filename.concat "tests" dirname in
-      let filename = Filename.concat testsDirname (Printf.sprintf "%s_%d.ml" dirname i) in
-      let expectedOutputName = Filename.concat testsDirname (Printf.sprintf "%s_%d_expected.txt" dirname i) in
-      let actualOutputName = Filename.concat testsDirname (Printf.sprintf "%s_%d_actual.txt" dirname i) in
-        (* expecting compiling errors in stderr; pipe to a file *)
-        ignore @@ Sys.command @@ Printf.sprintf "ocamlc %s 2>&1 | ./_build/top/app.out > %s" filename actualOutputName;
-        (* open the produced error output *)
-        let expected = readFile expectedOutputName in
-        let actual = readFile actualOutputName in
-        (* swap-comment below two lines if you want to generate new expected
-        from the new actual *)
+      let filename = Filename.concat testsDirname (Printf.sprintf "%s_%d.ml" dirname j) in
+      let expectedOutputName = Filename.concat testsDirname (Printf.sprintf "%s_%d_expected.txt" dirname j) in
+      let actualOutputName = Filename.concat testsDirname (Printf.sprintf "%s_%d_actual.txt" dirname j) in
+      (* special handling of the first item, specialTests *)
+      let cmd = if i = 0 then List.nth specialTestsCommands (j - 1) else "ocamlc " ^ filename in
+      (* expecting compiling errors in stderr; pipe to a file *)
+      ignore @@ Sys.command @@ Printf.sprintf "%s 2>&1 | ./_build/top/app.out > %s" cmd actualOutputName;
+      (* open the produced error output *)
+      let expected = readFile expectedOutputName in
+      let actual = readFile actualOutputName in
+      (* swap-comment below two lines if you want to generate new expected
+      from the new actual *)
 
-        (* ignore @@ Sys.command @@ Printf.sprintf "cp %s %s" actualOutputName expectedOutputName *)
-        (* TODO: show the differences *)
-        if actual <> expected then (
-          print_endline "Actual:";
-          print_endline actual;
-          print_endline "Expected:";
-          print_endline expected;
-          raise (Not_equal filename)
-        )
+      (* ignore @@ Sys.command @@ Printf.sprintf "cp %s %s" actualOutputName expectedOutputName *)
+      (* TODO: show the differences *)
+      if actual <> expected then (
+        print_endline "Actual:";
+        print_endline actual;
+        print_endline "Expected:";
+        print_endline expected;
+        raise (Not_equal filename)
+      )
     done);
     print_endline "ALL GOOD!";
     ignore @@ Sys.command "rm -rf ./tests/**/*.{cmi,cmo}";
