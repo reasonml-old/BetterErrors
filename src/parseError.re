@@ -221,9 +221,7 @@ let unboundModuleRStr = {|Unbound module ([\s\S]+)|};
 let specialParserThatChecksWhetherFileEvenExists filePath errorBody =>
   switch filePath {
   | "_none_" =>
-    switch
-      /* TODO: test this */
-      errorBody {
+    switch errorBody {
     | None => None /* unrecognized? We're mainly trying to catch the case below */
     | Some err =>
       switch (get_match_maybe cannotFindFileRStr err) {
@@ -232,15 +230,20 @@ let specialParserThatChecksWhetherFileEvenExists filePath errorBody =>
       }
     }
   | "command line" =>
-    switch
-      /* TODO: test this */
-      errorBody {
+    switch errorBody {
     | None => None /* unrecognized? We're mainly trying to catch the case below */
     | Some err =>
       switch (get_match_maybe unboundModuleRStr err) {
       | None => None /* unrecognized? We're mainly trying to catch the case below */
       | Some moduleName => Some (ErrorFile (CommandLine moduleName))
       }
+    }
+  | "(stdin)" =>
+    /* piping into `utop -stdin`. Can't really indicate better errors here as we can't read into stdin
+       again */
+    switch errorBody {
+    | None => None /* unrecognized? We're mainly trying to catch the case below */
+    | Some err => Some (ErrorFile (Stdin err))
     }
   | _ => None
   };

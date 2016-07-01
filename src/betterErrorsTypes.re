@@ -86,8 +86,7 @@ type error =
   | File_IllegalCharacter of illegalCharacter
   | Error_CatchAll of string;
 
-type fileError =
-  | NoneFile of string | NonexistentFile | CommandLine of string;
+type fileError = | NoneFile of string | NonexistentFile | CommandLine of string | Stdin of string;
 
 type warning = {code: int, warningType: warningType};
 

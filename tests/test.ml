@@ -8,7 +8,7 @@ had that like `ocamlc` *)
 let folders = [
   (* (directory, number of tests) *)
   (* first one is special. See the actual tests loop below *)
-  ("specialTests", 3);
+  ("specialTests", 4);
   ("noError", 1);
   ("prettyPrint", 2);
   ("1_bad_file_name", 1);
@@ -50,7 +50,8 @@ specially here *)
 let specialTestsCommands = [
   "ocamlc -open NonExistantModule foo.ml";
   "ocamlc nonexistentFile.cmo";
-  "ocamlc nonexistentFile.ml"
+  "ocamlc nonexistentFile.ml";
+  "echo \"let a:string = 1\" | utop -stdin"
 ]
 
 let () =

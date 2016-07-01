@@ -147,9 +147,6 @@ let hasHintRStr = {|^Hint: Did you mean |};
 
 let hasHintR = Re_pcre.regexp flags::[Re_pcre.(`MULTILINE)] hasHintRStr;
 
-/* TODO: check if following tags are used
-   - Unparsable
-    */
 let parse customErrorParsers::customErrorParsers err =>
   /* we know whatever err is, it starts with "File: ..." because that's how `parse`
      is used */

@@ -142,7 +142,11 @@ let prettyPrintParsedResult (result: result) =>
        look like one printed error. */
     /* the effing length we'd go for better errors... someone gimme a cookie */
     str
-  | ErrorFile NonexistentFile => ""
+  | ErrorFile NonexistentFile =>
+    /* this case is never reached because we don't ever return `ErrorFile NonexistentFile` from
+       `ParseError.specialParserThatChecksWhetherFileEvenExists` */
+    ""
+  | ErrorFile (Stdin original) => sp "%s: (from stdin)\n%s" (red "Error") original
   | ErrorFile (CommandLine moduleName) => sp "%s: module `%s` not found." (red "Error") moduleName
   | ErrorFile (NoneFile filename) =>
     /* TODO: test case for this. Forgot how to repro it */
