@@ -12,17 +12,16 @@
 
 **Work in progress!**
 
-(OPAM package coming soon.)
 ```
-opam pin add BetterErrors https://github.com/chenglou/BetterErrors.git
+npm install -g ocamlBetterErrors
 ```
 
-This'll expose a `huh` command, for you to use like so:
+This'll expose a global `berror` CLI util, for you to use like so:
 ```sh
-ocamlc myApp.ml |& huh
+ocamlc myApp.ml |& berror
 ```
 
-**Explanation**: `|&` is a bash shortcut for `2>&1 |` (not available in vanilla sh), which, in turn, means "pipe the stuff from stderr into stdout, then pipe it back into stdin of the next command". `huh` takes in this info and searches for errors to pretty-print back.
+**Explanation**: `|&` is a bash shortcut for `2>&1 |` (not available in vanilla sh), which, in turn, means "pipe the stuff from stderr into stdout, then pipe it back into stdin of the next command". `berror` takes in this info and searches for errors to pretty-print back.
 
 Have fun!
 
@@ -30,10 +29,9 @@ Have fun!
 `git clone` this repo, `cd` into it, then run:
 
 ```sh
-git clone https://github.com/chenglou/BetterErrors.git ./BetterErrors
-cd ./BetterErrors
-make
-opam pin add BetterErrors ./
+npm install
+# to compile
+npm start
+# to test
+npm test
 ```
-
-`betterErrorsShell.byte` is the locally generated script that's the same as the production `huh`.
