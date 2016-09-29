@@ -1,4 +1,3 @@
-
 open BetterErrorsTypes;
 
 open Helpers;
@@ -43,8 +42,8 @@ let _printFile
   /* sometimes the snippet of file we show is really indented. We de-indent it
      for nicer display by trimming out the maximum amount of leading spaces we can. */
   let rowsForCountingStartingSpaces =
-    listDrop displayedStartRow content |>
-      listTake ((displayedEndRow - displayedStartRow) + 1) |> List.filter (fun row => row != "");
+    listDrop displayedStartRow content |> listTake (displayedEndRow - displayedStartRow + 1) |>
+    List.filter (fun row => row != "");
   let minIndent =
     switch rowsForCountingStartingSpaces {
     | [] => 0
@@ -78,7 +77,7 @@ let _printFile
       if (startRow == endRow) {
         result := [
           pad (string_of_int (i + 1)) lineNumWidth ^
-            sep ^ highlight color::color first::startColumn last::endColumn currLine,
+          sep ^ highlight color::color first::startColumn last::endColumn currLine,
           ...!result
         ]
       } else if (
@@ -86,7 +85,7 @@ let _printFile
       ) {
         result := [
           pad (string_of_int (i + 1)) lineNumWidth ^
-            sep ^ highlight color::color first::startColumn currLine,
+          sep ^ highlight color::color first::startColumn currLine,
           ...!result
         ]
       } else if (
@@ -94,7 +93,7 @@ let _printFile
       ) {
         result := [
           pad (string_of_int (i + 1)) lineNumWidth ^
-            sep ^ highlight color::color last::endColumn currLine,
+          sep ^ highlight color::color last::endColumn currLine,
           ...!result
         ]
       } else {
@@ -119,16 +118,7 @@ let printFile isWarning::isWarning=false {cachedContent, filePath, range} => {
       cyan @@ sp "%s:%d:%d-%d:%d\n" filePath (startRow + 1) startColumn (endRow + 1) endColumn
     };
   filePathDisplay ^
-    _printFile
-      highlightColor::(
-        if isWarning {
-          yellow
-        } else {
-          red
-        }
-      )
-      highlight::range
-      cachedContent
+  _printFile highlightColor::(if isWarning {yellow} else {red}) highlight::range cachedContent
 };
 
 let prettyPrintParsedResult (result: result) =>

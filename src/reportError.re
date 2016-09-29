@@ -1,4 +1,3 @@
-
 open BetterErrorsTypes;
 
 open Helpers;
@@ -40,8 +39,7 @@ let report parsedContent =>
       (red "This is:")
       (highlightPart color::red part::diffA actual)
       (green "Wanted:")
-      (highlightPart color::green part::diffB expected)
-      ^ (
+      (highlightPart color::green part::diffB expected) ^ (
       switch extra {
       | Some e => "\nExtra info: " ^ e
       | None => ""
@@ -49,9 +47,8 @@ let report parsedContent =>
     )
   | Type_NotAFunction {actual} =>
     "This is " ^
-      actual ^
-      ". You seem to have called it as a function.\n" ^
-      "Careful with spaces, semicolons, parentheses, and whatever in-between!"
+    actual ^
+    ". You seem to have called it as a function.\n" ^ "Careful with spaces, semicolons, parentheses, and whatever in-between!"
   | Type_AppliedTooMany {functionType, expectedArgCount} =>
     sp
       "This function has type %s\nIt accepts only %d arguments. You gave more. Maybe you forgot a `;` somewhere?"
@@ -64,16 +61,15 @@ let report parsedContent =>
       | None => "The syntax is wrong."
       }
     ) ^
-      "\n" ^
-      (
-        switch offendingString {
-        | ";" => "Semicolon is an infix symbol used *between* expressions that return `unit` (aka \"nothing\").\n"
-        | "else" =>
-          "Did you happen to have put a semicolon on the line before else?" ^ " Also, `then` accepts a single expression. If you've put many, wrap them in parentheses.\n"
-        | _ => ""
-        }
-      ) ^
-      "Note: the location indicated might not be accurate."
+    "\n" ^
+    (
+      switch offendingString {
+      | ";" => "Semicolon is an infix symbol used *between* expressions that return `unit` (aka \"nothing\").\n"
+      | "else" =>
+        "Did you happen to have put a semicolon on the line before else?" ^ " Also, `then` accepts a single expression. If you've put many, wrap them in parentheses.\n"
+      | _ => ""
+      }
+    ) ^ "Note: the location indicated might not be accurate."
   | File_IllegalCharacter {character} =>
     sp "The character `%s` is illegal. EVERY CHARACTER THAT'S NOT AMERICAN IS ILLEGAL!" character
   | Type_UnboundTypeConstructor {namespacedConstructor, suggestion} =>
@@ -105,18 +101,17 @@ let report parsedContent =>
       | None =>
         let pckName = String.lowercase unboundModule;
         "Hint: your build rules might be missing a link. If you're using: \n" ^
-          " - Oasis: make sure you have `" ^
-          pckName ^
-          "` under `BuildDepends` in your _oasis file.\n" ^
-          " - ocamlbuild: make sure you have `-pkgs " ^
-          pckName ^
-          "` in your build command.\n" ^
-          " - ocamlc | ocamlopt: make sure you have `-I +" ^
-          pckName ^
-          "` in your build command before the source files.\n" ^
-          " - ocamlfind: make sure you have `-package " ^
-          pckName ^
-          " -linkpkg` in your build command."
+        " - Oasis: make sure you have `" ^
+        pckName ^
+        "` under `BuildDepends` in your _oasis file.\n" ^
+        " - ocamlbuild: make sure you have `-pkgs " ^
+        pckName ^
+        "` in your build command.\n" ^
+        " - ocamlc | ocamlopt: make sure you have `-I +" ^
+        pckName ^
+        "` in your build command before the source files.\n" ^
+        " - ocamlfind: make sure you have `-package " ^
+        pckName ^ " -linkpkg` in your build command."
       }
     )
   | _ => "huh"

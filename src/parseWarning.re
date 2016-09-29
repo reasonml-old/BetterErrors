@@ -1,4 +1,3 @@
-
 open BetterErrorsTypes;
 
 open Helpers;
@@ -16,8 +15,8 @@ let warning_PatternNotExhaustive code err _ _ _ => {
   let unmatched =
     if (unmatchedRaw.[0] == '(') {
       /* format was (Variant1|Variant2|Variant3). We strip the surrounding parens */
-      unmatchedRaw |>
-        Helpers.stringSlice first::1 last::(String.length unmatchedRaw - 1) |> split {|\|[\s]*|}
+      unmatchedRaw |> Helpers.stringSlice first::1 last::(String.length unmatchedRaw - 1) |>
+      split {|\|[\s]*|}
     } else {
       [unmatchedRaw]
     };

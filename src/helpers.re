@@ -51,24 +51,22 @@ let optionMap f a =>
 
 let listFilterMap f lst =>
   List.map f lst |>
-    List.filter (
-      fun
-      | Some a => true
-      | None => false
-    ) |>
-    List.map optionGet;
+  List.filter (
+    fun
+    | Some a => true
+    | None => false
+  ) |>
+  List.map optionGet;
 
 let listFindMap f lst =>
   lst |>
-    List.find (
-      fun a =>
-        switch (f a) {
-        | Some x => true
-        | None => false
-        }
-    ) |>
-    f |>
-    optionGet;
+  List.find (
+    fun a =>
+      switch (f a) {
+      | Some x => true
+      | None => false
+      }
+  ) |> f |> optionGet;
 
 let stringSlice first::first=0 last::last=? str => {
   let last =
@@ -215,4 +213,4 @@ let sp = Printf.sprintf;
 
 let highlight color::color=red first::first=0 last::last=99999 str =>
   stringSlice last::first str ^
-    (color @@ stringSlice first::first last::last str) ^ stringSlice first::last str;
+  (color @@ stringSlice first::first last::last str) ^ stringSlice first::last str;

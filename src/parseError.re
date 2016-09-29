@@ -1,4 +1,3 @@
-
 open BetterErrorsTypes;
 
 open Helpers;
@@ -20,73 +19,69 @@ let applyToBoth f (a, b) => (f a, f b);
 
 let typeDiff a b =>
   /* look ma, functional programming! */
-  (Helpers.stringNsplit a by::".", Helpers.stringNsplit b by::".") |>
-    stripCommonPrefix |>
-    applyToBoth List.rev |>
-    stripCommonPrefix |>
-    applyToBoth List.rev |>
-    applyToBoth (String.concat ".");
+  (Helpers.stringNsplit a by::".", Helpers.stringNsplit b by::".") |> stripCommonPrefix |>
+  applyToBoth List.rev |> stripCommonPrefix |>
+  applyToBoth List.rev |>
+  applyToBoth (String.concat ".");
 
 let splitEquivalentTypes raw =>
   try (Some (Helpers.stringSplit raw by::"=")) {
   | Not_found => None
   };
 
-let functionArgsCount str =>
+let functionArgsCount str => {
   /* the func type 'a -> (int -> 'b) -> string has 2 arguments */
   /* strip out false positive -> from nested function types passed as param */
-  {
-    let nestedFunctionTypeR = Re_pcre.regexp {|\([\s\S]+\)|};
-    let cleaned = Re_pcre.substitute rex::nestedFunctionTypeR subst::(fun _ => "|||||") str;
-    /* TODO: allow pluggable function type syntax */
-    List.length (split {|->|} cleaned) - 1
-  };
+  let nestedFunctionTypeR = Re_pcre.regexp {|\([\s\S]+\)|};
+  let cleaned = Re_pcre.substitute rex::nestedFunctionTypeR subst::(fun _ => "|||||") str;
+  /* TODO: allow pluggable function type syntax */
+  List.length (split {|->|} cleaned) - 1
+};
 
 /* need: where the original expected comes from  */
 /* TODO: when it's a -> b vs b, ask if whether user forgot an argument to the
    func */
-let type_IncompatibleType err _ range =>
+let type_IncompatibleType err _ range => {
   /* the type actual and expected might be on their own line */
   /* sometimes the error msg might equivalent types, e.g. "myType = string isn't
      compatible to bla" */
-  {
-    let allR =
-      /* This regex query is brought to you by debuggex.com. Get your free
-         real-time regex visualization today. */
-      {|This expression has type([\s\S]*?)but an expression was expected of type([\s\S]*?)(Type\b([\s\S]*?)|$)?((The type constructor[\s\S]*?)|$)?((The type variable[\s\S]* occurs inside ([\s\S])*)|$)|};
-    let extraRaw = get_match_n_maybe 3 allR err;
-    let extra =
-      switch extraRaw {
-      | Some a =>
-        if (String.trim a == "") {
-          None
-        } else {
-          Some (String.trim a)
-        }
-      | None => None
-      };
-    let actualRaw = get_match_n 1 allR err;
-    let expectedRaw = get_match_n 2 allR err;
-    let (actual, actualEquivalentType) =
-      switch (splitEquivalentTypes actualRaw) {
-      | Some (a, b) => (String.trim a, Some (String.trim b))
-      | None => (String.trim actualRaw, None)
-      };
-    let (expected, expectedEquivalentType) =
-      switch (splitEquivalentTypes expectedRaw) {
-      | Some (a, b) => (String.trim a, Some (String.trim b))
-      | None => (String.trim expectedRaw, None)
-      };
-    Type_IncompatibleType {
-      actual,
-      expected,
-      differingPortion: typeDiff actual expected,
-      /* TODO: actually use this */
-      actualEquivalentType,
-      expectedEquivalentType,
-      extra
-    }
-  };
+  let allR =
+    /* This regex query is brought to you by debuggex.com. Get your free
+       real-time regex visualization today. */
+    {|This expression has type([\s\S]*?)but an expression was expected of type([\s\S]*?)(Type\b([\s\S]*?)|$)?((The type constructor[\s\S]*?)|$)?((The type variable[\s\S]* occurs inside ([\s\S])*)|$)|};
+  let extraRaw = get_match_n_maybe 3 allR err;
+  let extra =
+    switch extraRaw {
+    | Some a =>
+      if (String.trim a == "") {
+        None
+      } else {
+        Some (String.trim a)
+      }
+    | None => None
+    };
+  let actualRaw = get_match_n 1 allR err;
+  let expectedRaw = get_match_n 2 allR err;
+  let (actual, actualEquivalentType) =
+    switch (splitEquivalentTypes actualRaw) {
+    | Some (a, b) => (String.trim a, Some (String.trim b))
+    | None => (String.trim actualRaw, None)
+    };
+  let (expected, expectedEquivalentType) =
+    switch (splitEquivalentTypes expectedRaw) {
+    | Some (a, b) => (String.trim a, Some (String.trim b))
+    | None => (String.trim expectedRaw, None)
+    };
+  Type_IncompatibleType {
+    actual,
+    expected,
+    differingPortion: typeDiff actual expected,
+    /* TODO: actually use this */
+    actualEquivalentType,
+    expectedEquivalentType,
+    extra
+  }
+};
 
 /* TODO: differing portion data structure a-la diff table */
 let type_MismatchTypeArguments err _ _ => {
@@ -106,7 +101,7 @@ let type_UnboundValue err _ _ => {
   let suggestionR = {|Unbound value [\w\.]*[\s\S]Hint: Did you mean ([\s\S]+)\?|};
   let suggestions =
     get_match_maybe suggestionR err |>
-      Helpers.optionMap (Re_pcre.split rex::(Re_pcre.regexp {|, | or |}));
+    Helpers.optionMap (Re_pcre.split rex::(Re_pcre.regexp {|, | or |}));
   Type_UnboundValue {unboundValue, suggestions}
 };
 
@@ -253,16 +248,15 @@ let parse
     errorBody::errorBody
     cachedContent::cachedContent
     range::range =>
-  try
-    /* custom parsers go first */
-    (
-      customErrorParsers @ parsers |>
-        Helpers.listFindMap (
-          fun parse =>
-            try (Some (parse errorBody cachedContent range)) {
-            | _ => None
-            }
-        )
-    ) {
+  /* custom parsers go first */
+  try (
+    customErrorParsers @ parsers |>
+    Helpers.listFindMap (
+      fun parse =>
+        try (Some (parse errorBody cachedContent range)) {
+        | _ => None
+        }
+    )
+  ) {
   | Not_found => Error_CatchAll errorBody
   };

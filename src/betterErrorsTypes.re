@@ -1,6 +1,5 @@
 /* records that are only used by their variant tag of similar name below. We
    need inline record type declarations... */
-
 type mismatchTypeArguments = {typeConstructor: string, expectedCount: int, actualCount: int};
 
 type unboundValue = {unboundValue: string, suggestions: option (list string)};
@@ -29,7 +28,10 @@ type unusedVariable = {constructor: string, expectedCount: int, observedCount: i
 
 type fieldNotBelong = {actual: string, expected: string};
 
-type badFileName = | Leading of string | Contains of string | UnknownIllegalChar;
+type badFileName =
+  | Leading string
+  | Contains string
+  | UnknownIllegalChar;
 
 type incompatibleType = {
   actual: string,
@@ -56,37 +58,40 @@ type optionalArgumentNotErased = {argumentName: string};
 
 /* -------------------------- */
 type warningType =
-  | Warning_UnusedVariable of unusedVariable
-  | Warning_PatternNotExhaustive of patternNotExhaustive
-  | Warning_PatternUnused of unusedVariable
-  | Warning_OptionalArgumentNotErased of optionalArgumentNotErased
-  | Warning_BadFileName of badFileName
-  | Warning_CatchAll of string;
+  | Warning_UnusedVariable unusedVariable
+  | Warning_PatternNotExhaustive patternNotExhaustive
+  | Warning_PatternUnused unusedVariable
+  | Warning_OptionalArgumentNotErased optionalArgumentNotErased
+  | Warning_BadFileName badFileName
+  | Warning_CatchAll string;
 
 type error =
-  | Type_MismatchTypeArguments of mismatchTypeArguments
-  | Type_UnboundValue of unboundValue
-  | Type_SignatureMismatch of signatureMismatch
-  | Type_SignatureItemMissing of signatureItemMissing
-  | Type_UnboundModule of unboundModule
-  | Type_UnboundRecordField of unboundRecordField
-  | Type_UnboundConstructor of unboundConstructor
-  | Type_UnboundTypeConstructor of unboundTypeConstructor
-  | Type_AppliedTooMany of appliedTooMany
-  | Type_RecordFieldNotInExpression of recordFieldNotInExpression
-  | Type_RecordFieldError of recordFieldError
-  /* might be the same thing as above? jordan wrote "record expression" instead
-     of "pattern" */
-  | Type_RecordFieldNotBelong of recordFieldError
-  | Type_FieldNotBelong of fieldNotBelong
-  | Type_IncompatibleType of incompatibleType
-  | Type_NotAFunction of notAFunction
-  | File_SyntaxError of syntaxError
-  | Build_InconsistentAssumptions of inconsistentAssumptions
-  | File_IllegalCharacter of illegalCharacter
-  | Error_CatchAll of string;
+  | Type_MismatchTypeArguments mismatchTypeArguments
+  | Type_UnboundValue unboundValue
+  | Type_SignatureMismatch signatureMismatch
+  | Type_SignatureItemMissing signatureItemMissing
+  | Type_UnboundModule unboundModule
+  | Type_UnboundRecordField unboundRecordField
+  | Type_UnboundConstructor unboundConstructor
+  | Type_UnboundTypeConstructor unboundTypeConstructor
+  | Type_AppliedTooMany appliedTooMany
+  | Type_RecordFieldNotInExpression recordFieldNotInExpression
+  | Type_RecordFieldError recordFieldError
+  /* might be the same thing as above? jordan wrote "record expression" instead of "pattern" */
+  | Type_RecordFieldNotBelong recordFieldError
+  | Type_FieldNotBelong fieldNotBelong
+  | Type_IncompatibleType incompatibleType
+  | Type_NotAFunction notAFunction
+  | File_SyntaxError syntaxError
+  | Build_InconsistentAssumptions inconsistentAssumptions
+  | File_IllegalCharacter illegalCharacter
+  | Error_CatchAll string;
 
-type fileError = | NoneFile of string | NonexistentFile | CommandLine of string | Stdin of string;
+type fileError =
+  | NoneFile string
+  | NonexistentFile
+  | CommandLine string
+  | Stdin string;
 
 type warning = {code: int, warningType: warningType};
 
@@ -98,7 +103,7 @@ type withFileInfo 'a = {
 };
 
 type result =
-  | Unparsable of string
-  | ErrorFile of fileError
-  | ErrorContent of (withFileInfo error)
-  | Warning of (withFileInfo warning);
+  | Unparsable string
+  | ErrorFile fileError
+  | ErrorContent (withFileInfo error)
+  | Warning (withFileInfo warning);
