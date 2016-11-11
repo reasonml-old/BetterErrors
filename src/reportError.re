@@ -46,9 +46,9 @@ let report parsedContent =>
       }
     )
   | Type_NotAFunction {actual} =>
-    "This is " ^
+    "This is a " ^
     actual ^
-    ". You seem to have called it as a function.\n" ^ "Careful with spaces, semicolons, parentheses, and whatever in-between!"
+    ". You seem to have called it as a function.\n" ^ "Be careful with spaces, semicolons, parentheses, and whatever in-between!"
   | Type_AppliedTooMany {functionType, expectedArgCount} =>
     sp
       "This function has type %s\nIt accepts only %d arguments. You gave more. Maybe you forgot a `;` somewhere?"
