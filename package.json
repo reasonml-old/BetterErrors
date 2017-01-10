@@ -21,14 +21,15 @@
   },
   "scripts": {
     "start": "eval $(dependencyEnv) && nopam && rebuild -pkg re.pcre -pkg unix src/berror.native",
-    "test": "ocaml tests/test.ml"
+    "test": "ocaml tests/test.ml",
+    "postinstall": "npm start"
   },
   "exportedEnvVars": {
     "PATH": {
       "global": true,
       "globalCollisionBehavior": "joinPath",
       "resolveAsRelativePath": true,
-      "val": "./_build/src/berror.native"
+      "val": "./_build/src/"
     }
   }
 }
