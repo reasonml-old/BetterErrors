@@ -2,8 +2,6 @@ open BetterErrorsTypes;
 
 open Helpers;
 
-open OcamlRe;
-
 /* agnostic extractors, turning err string into proper data structures */
 /* TODO: don't make these raise error */
 /* get the diffing portion of two incompatible types, columns are 0-indexed */

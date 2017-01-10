@@ -1,1 +1,0 @@
-let () = Index.parseFromStdin customErrorParsers::[];

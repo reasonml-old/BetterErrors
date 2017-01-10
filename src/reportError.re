@@ -5,12 +5,29 @@ open Helpers;
 let listify suggestions =>
   suggestions |> List.map (fun sug => "- `" ^ sug ^ "`") |> String.concat "\n";
 
-let highlightPart color::color part::part str => {
+let highlightPart ::color ::part str => {
   let indexOfPartInStr = Helpers.stringFind str part;
-  highlight color::color first::indexOfPartInStr last::(indexOfPartInStr + String.length part) str
+  highlight ::color first::indexOfPartInStr last::(indexOfPartInStr + String.length part) str
 };
 
-let report parsedContent =>
+let report ::refmttypePath parsedContent => {
+  let formatOutputSyntax types =>
+    switch refmttypePath {
+    | None => types
+    | Some path =>
+      let types = String.concat {|\"|} types;
+      let cmd = path ^ (sp {| "%s"|}) types;
+      let input = Unix.open_process_in cmd;
+      let result = ref [];
+      try (
+        while true {
+          result := [input_line input, ...!result]
+        }
+      ) {
+      | End_of_file => ignore (Unix.close_process_in input)
+      };
+      List.rev !result
+    };
   switch parsedContent {
   | Error_CatchAll error => error
   | Type_MismatchTypeArguments {typeConstructor, expectedCount, actualCount} =>
@@ -33,23 +50,40 @@ let report parsedContent =>
       expectedEquivalentType,
       extra
     } =>
-    let (diffA, diffB) = differingPortion;
+    /* let (diffA, diffB) = differingPortion; */
+    let (actual, expected) =
+      switch (formatOutputSyntax [actual, expected]) {
+      | [a, b] => (a, b)
+      | _ => (actual, expected)
+      };
     sp
       "The types don't match.\n%s %s\n%s  %s"
       (red "This is:")
-      (highlightPart color::red part::diffA actual)
+      /* (highlightPart color::red part::diffA actual) */
+      (highlight actual)
       (green "Wanted:")
-      (highlightPart color::green part::diffB expected) ^ (
+      /* (highlightPart color::green part::diffB expected)  */
+      (highlight color::green expected) ^ (
       switch extra {
       | Some e => "\nExtra info: " ^ e
       | None => ""
       }
     )
   | Type_NotAFunction {actual} =>
+    let actual =
+      switch (formatOutputSyntax [actual]) {
+      | [a] => a
+      | _ => actual
+      };
     "This is " ^
     actual ^
     ". You seem to have called it as a function.\n" ^ "Careful with spaces, semicolons, parentheses, and whatever in-between!"
   | Type_AppliedTooMany {functionType, expectedArgCount} =>
+    let functionType =
+      switch (formatOutputSyntax [functionType]) {
+      | [a] => a
+      | _ => functionType
+      };
     sp
       "This function has type %s\nIt accepts only %d arguments. You gave more. Maybe you forgot a `;` somewhere?"
       functionType
@@ -73,6 +107,11 @@ let report parsedContent =>
   | File_IllegalCharacter {character} =>
     sp "The character `%s` is illegal. EVERY CHARACTER THAT'S NOT AMERICAN IS ILLEGAL!" character
   | Type_UnboundTypeConstructor {namespacedConstructor, suggestion} =>
+    let namespacedConstructor =
+      switch (formatOutputSyntax [namespacedConstructor]) {
+      | [a] => a
+      | _ => namespacedConstructor
+      };
     sp "The type constructor %s can't be found." namespacedConstructor ^ (
       switch suggestion {
       | None => ""
@@ -89,12 +128,22 @@ let report parsedContent =>
       sp "`%s` can't be found. Did you mean one of these?\n%s" unboundValue (listify hints)
     }
   | Type_UnboundRecordField {recordField, suggestion} =>
+    let recordField =
+      switch (formatOutputSyntax [recordField]) {
+      | [a] => a
+      | _ => recordField
+      };
     switch suggestion {
     | None => sp "Field `%s` can't be found in any record type." recordField
     | Some hint =>
       sp "Field `%s` can't be found in any record type. Did you mean `%s`?" recordField hint
     }
   | Type_UnboundModule {unboundModule, suggestion} =>
+    let unboundModule =
+      switch (formatOutputSyntax [unboundModule]) {
+      | [a] => a
+      | _ => unboundModule
+      };
     sp "Module `%s` not found in included libraries.\n" unboundModule ^ (
       switch suggestion {
       | Some s => sp "Hint: did you mean `%s`?" s
@@ -115,4 +164,5 @@ let report parsedContent =>
       }
     )
   | _ => "huh"
-  };
+  }
+};

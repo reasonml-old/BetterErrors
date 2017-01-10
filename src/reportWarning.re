@@ -2,7 +2,7 @@ open BetterErrorsTypes;
 
 open Helpers;
 
-let report code filePath parsedContent =>
+let report ::refmttypePath code filePath parsedContent =>
   switch parsedContent {
   | Warning_CatchAll message => message
   | Warning_PatternNotExhaustive {unmatched} =>

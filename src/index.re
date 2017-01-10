@@ -2,8 +2,6 @@ open BetterErrorsTypes;
 
 open Helpers;
 
-open OcamlRe;
-
 /* the compiler output might point to an error that spans across many lines;
    however, instead of indicating from (startRow, startColumn) to (endRow,
    endColumn), it'll indicate (startRow, startColumn, endColumn) where endColumn
@@ -224,8 +222,9 @@ let line_stream_of_channel channel =>
 
 /* entry point, for convenience purposes for now. Theoretically the parser and
    the reporters are decoupled */
-let parseFromStdin ::customErrorParsers => {
+let parseFromStdin ::refmttypePath ::customErrorParsers => {
   let errBuffer = ref "";
+  let prettyPrintParsedResult = TerminalReporter.prettyPrintParsedResult ::refmttypePath;
   try {
     line_stream_of_channel stdin |>
     Stream.iter (
@@ -250,7 +249,7 @@ let parseFromStdin ::customErrorParsers => {
              just assume here that this is also the beginning of a new error, unless
              a single error might span many (non-indented, god forbid) fileNames.
              Print out the current (previous) error and keep accumulating */
-          parse ::customErrorParsers errBuffer.contents |> TerminalReporter.prettyPrintParsedResult |> print_endline;
+          parse ::customErrorParsers errBuffer.contents |> prettyPrintParsedResult |> print_endline;
           errBuffer := line ^ "\n"
         | (_, _, _, true)
         | (_, _, true, _) =>
@@ -265,17 +264,17 @@ let parseFromStdin ::customErrorParsers => {
              errors provide non-indented messages... here's one such case */
           if (Re_pcre.pmatch rex::hasHintR line) {
             errBuffer := errBuffer.contents ^ line ^ "\n";
-            parse ::customErrorParsers errBuffer.contents |> TerminalReporter.prettyPrintParsedResult |> print_endline;
+            parse ::customErrorParsers errBuffer.contents |> prettyPrintParsedResult |> print_endline;
             errBuffer := ""
           } else {
-            parse ::customErrorParsers errBuffer.contents |> TerminalReporter.prettyPrintParsedResult |> print_endline;
+            parse ::customErrorParsers errBuffer.contents |> prettyPrintParsedResult |> print_endline;
             errBuffer := line ^ "\n"
           }
         }
     );
     /* might have accumulated a few more lines */
     if (String.trim errBuffer.contents != "") {
-      parse ::customErrorParsers errBuffer.contents |> TerminalReporter.prettyPrintParsedResult |> print_endline
+      parse ::customErrorParsers errBuffer.contents |> prettyPrintParsedResult |> print_endline
     };
     close_in stdin
   } {

@@ -3,7 +3,8 @@
   "version": "0.0.10",
   "description": "Better errors for ocaml",
   "dependencies": {
-    "ocamlRe": ">=0.0.4"
+    "fastrealpath": "^0.1.0",
+    "@opam-alpha/re": "*"
   },
   "repository": {
     "type": "git",
@@ -14,10 +15,20 @@
   },
   "author": "chenglou",
   "devDependencies": {
-    "jengaboot": "0.0.22"
+    "dependency-env": "*",
+    "nopam": "*",
+    "reason": "git://github.com/facebook/reason.git"
   },
   "scripts": {
-    "start": "compile",
+    "start": "eval $(dependencyEnv) && nopam && rebuild -pkg re.pcre -pkg unix src/berror.native",
     "test": "ocaml tests/test.ml"
+  },
+  "exportedEnvVars": {
+    "PATH": {
+      "global": true,
+      "globalCollisionBehavior": "joinPath",
+      "resolveAsRelativePath": true,
+      "val": "./_build/src/berror.native"
+    }
   }
 }

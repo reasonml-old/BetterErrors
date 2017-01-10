@@ -2,8 +2,6 @@ open BetterErrorsTypes;
 
 open Helpers;
 
-open OcamlRe;
-
 let numberOfDigits n => {
   let digits = ref 1;
   let nn = ref n;
@@ -64,9 +62,9 @@ let _printFile
   /* ellipsis vertical separator to indicate "there are white spaces before" */
   let sep =
     if (minIndent == 0) {
-      " │ "
+      " \226\148\130 "
     } else {
-      " ┆ "
+      " \226\148\134 "
     };
   let startColumn = startColumn - minIndent;
   let endColumn = endColumn - minIndent;
@@ -121,7 +119,7 @@ let printFile ::isWarning=false {cachedContent, filePath, range} => {
   _printFile highlightColor::(if isWarning {yellow} else {red}) highlight::range cachedContent
 };
 
-let prettyPrintParsedResult (result: result) =>
+let prettyPrintParsedResult ::refmttypePath (result: result) =>
   switch result {
   | Unparsable str =>
     /* output the line without any decoration around. We previously had some
@@ -153,7 +151,7 @@ let prettyPrintParsedResult (result: result) =>
       "%s\n\n%s: %s"
       (printFile withFileInfo)
       (red "Error")
-      (ReportError.report withFileInfo.parsedContent)
+      (ReportError.report ::refmttypePath withFileInfo.parsedContent)
   | Warning withFileInfo =>
     sp
       "%s\n\n%s %d: %s"
@@ -162,6 +160,7 @@ let prettyPrintParsedResult (result: result) =>
       withFileInfo.parsedContent.code
       (
         ReportWarning.report
+          ::refmttypePath
           withFileInfo.parsedContent.code
           withFileInfo.filePath
           withFileInfo.parsedContent.warningType
