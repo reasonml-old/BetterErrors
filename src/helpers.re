@@ -68,7 +68,7 @@ let listFindMap f lst =>
       }
   ) |> f |> optionGet;
 
-let stringSlice first::first=0 last::last=? str => {
+let stringSlice ::first=0 ::last=? str => {
   let last =
     switch last {
     | Some l => min l (String.length str)
@@ -95,7 +95,7 @@ let stringFind str part => {
   find' str part 0
 };
 
-let stringNsplit str by::by =>
+let stringNsplit str ::by =>
   if (String.length str == 0) {
     raise (Invalid_argument "stringNSplit: empty str not allowed")
   } else if (
@@ -103,27 +103,27 @@ let stringNsplit str by::by =>
   ) {
     []
   } else {
-    let rec split' str by::by accum curr => {
+    let rec split' str ::by accum curr => {
       let lengthBy = String.length by;
       let lengthStr = String.length str;
       if (lengthStr < lengthBy) {
         [curr ^ str, ...accum]
       } else if (String.sub str 0 lengthBy == by) {
-        split' (String.sub str lengthBy (lengthStr - lengthBy)) by::by [curr, ...accum] ""
+        split' (String.sub str lengthBy (lengthStr - lengthBy)) ::by [curr, ...accum] ""
       } else {
-        split' (String.sub str 1 (lengthStr - 1)) by::by accum (curr ^ String.sub str 0 1)
+        split' (String.sub str 1 (lengthStr - 1)) ::by accum (curr ^ String.sub str 0 1)
       }
     };
-    split' str by::by [] "" |> List.rev
+    split' str ::by [] "" |> List.rev
   };
 
-let stringSplit str by::by =>
+let stringSplit str ::by =>
   if (by == "") {
     ("", str)
   } else if (str == "") {
     raise Not_found
   } else {
-    switch (stringNsplit str by::by) {
+    switch (stringNsplit str ::by) {
     | []
     | [_] => raise Not_found
     | [x, ...xs] => (x, String.concat by xs)
@@ -149,7 +149,7 @@ let fileLinesOfExn filePath => linesOfChannelExn (open_in filePath);
 /* ============ */
 let get_match_n n pat str => {
   let rex = Re_pcre.regexp pat;
-  Re_pcre.get_substring (Re_pcre.exec rex::rex str) n
+  Re_pcre.get_substring (Re_pcre.exec ::rex str) n
 };
 
 /* get the first (presumably only) match in a string */
@@ -157,21 +157,21 @@ let get_match = get_match_n 1;
 
 let get_match_maybe pat str => {
   let rex = Re_pcre.regexp pat;
-  try (Some (Re_pcre.get_substring (Re_pcre.exec rex::rex str) 1)) {
+  try (Some (Re_pcre.get_substring (Re_pcre.exec ::rex str) 1)) {
   | Not_found => None
   }
 };
 
 let get_match_n_maybe n pat str => {
   let rex = Re_pcre.regexp pat;
-  try (Some (Re_pcre.get_substring (Re_pcre.exec rex::rex str) n)) {
+  try (Some (Re_pcre.get_substring (Re_pcre.exec ::rex str) n)) {
   | _ => None
   }
 };
 
 let execMaybe pat str => {
   let rex = Re_pcre.regexp pat;
-  try (Some (Re_pcre.exec rex::rex str)) {
+  try (Some (Re_pcre.exec ::rex str)) {
   | Not_found => None
   }
 };
@@ -183,14 +183,14 @@ let getSubstringMaybe result n =>
 
 let split sep str => {
   let rex = Re_pcre.regexp sep;
-  Re_pcre.split rex::rex str
+  Re_pcre.split ::rex str
 };
 
-let rec splitInto chunckSize::chunckSize (l: list 'a) :list (list 'a) =>
+let rec splitInto ::chunckSize (l: list 'a) :list (list 'a) =>
   if (List.length l <= chunckSize || chunckSize == 0) {
     [l]
   } else {
-    [listTake chunckSize l, ...splitInto chunckSize::chunckSize (listDrop chunckSize l)]
+    [listTake chunckSize l, ...splitInto ::chunckSize (listDrop chunckSize l)]
   };
 
 let resetANSI = "\027[0m";
@@ -211,6 +211,6 @@ let mapcat sep f l => String.concat sep (List.map f l);
 
 let sp = Printf.sprintf;
 
-let highlight color::color=red first::first=0 last::last=99999 str =>
+let highlight ::color=red ::first=0 ::last=99999 str =>
   stringSlice last::first str ^
-  (color @@ stringSlice first::first last::last str) ^ stringSlice first::last str;
+  (color @@ stringSlice ::first ::last str) ^ stringSlice first::last str;

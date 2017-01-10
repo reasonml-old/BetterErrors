@@ -243,11 +243,7 @@ let specialParserThatChecksWhetherFileEvenExists filePath errorBody =>
   | _ => None
   };
 
-let parse
-    customErrorParsers::customErrorParsers
-    errorBody::errorBody
-    cachedContent::cachedContent
-    range::range =>
+let parse ::customErrorParsers ::errorBody ::cachedContent ::range =>
   /* custom parsers go first */
   try (
     customErrorParsers @ parsers |>

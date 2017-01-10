@@ -15,11 +15,7 @@ open OcamlRe;
    expected, since you get easy column count through 3 - 0 */
 /* we'll use 0-indexed. It's a reporter (printer)'s job to normalize to
    1-indexed if it desires so */
-let normalizeCompilerLineColsToRange
-    fileLines::fileLines
-    lineRaw::lineRaw
-    col1Raw::col1Raw
-    col2Raw::col2Raw => {
+let normalizeCompilerLineColsToRange ::fileLines ::lineRaw ::col1Raw ::col2Raw => {
   /* accept strings to constraint usage to parse directly from raw data */
   let line = int_of_string lineRaw;
   let fileLength = List.length fileLines;
@@ -50,9 +46,8 @@ let normalizeCompilerLineColsToRange
   if (numberOfCharsBetweenStartAndEndColumn <= numberOfCharsLeftToCoverOnStartingRow) {
     ((startRow, col1), (startRow, col2))
   } else {
-    let howManyCharsLeftToCoverOnSubsequentLines = ref (
-      numberOfCharsBetweenStartAndEndColumn - numberOfCharsLeftToCoverOnStartingRow
-    );
+    let howManyCharsLeftToCoverOnSubsequentLines =
+      ref (numberOfCharsBetweenStartAndEndColumn - numberOfCharsLeftToCoverOnStartingRow);
     let suddenlyFunctionalProgrammingOutOfNowhere =
       fileLines |> Helpers.listDrop (startRow + 1) |> List.map String.length |>
       Helpers.listTakeWhile (
@@ -103,7 +98,7 @@ let extractFromFileMatch fileMatch =>
         filePath,
         cachedContent,
         normalizeCompilerLineColsToRange
-          fileLines::cachedContent lineRaw::lineNum col1Raw::col1Raw col2Raw::col2Raw,
+          fileLines::cachedContent lineRaw::lineNum ::col1Raw ::col2Raw,
         /* important, otherwise leaves random blank lines that defies some of
            our regex logic, maybe */
         String.trim body
@@ -113,20 +108,21 @@ let extractFromFileMatch fileMatch =>
   );
 
 /* debug helper */
-let printFullSplitResult = List.iteri (
-  fun i x => {
-    print_int i;
-    print_endline "";
-    Re_pcre.(
-      switch x {
-      | Delim a => print_endline @@ "Delim " ^ a
-      | Group _ a [@implicit_arity] => print_endline @@ "Group " ^ a
-      | Text a => print_endline @@ "Text " ^ a
-      | NoGroup => print_endline @@ "NoGroup"
-      }
-    )
-  }
-);
+let printFullSplitResult =
+  List.iteri (
+    fun i x => {
+      print_int i;
+      print_endline "";
+      Re_pcre.(
+        switch x {
+        | Delim a => print_endline @@ "Delim " ^ a
+        | Group _ a [@implicit_arity] => print_endline @@ "Group " ^ a
+        | Text a => print_endline @@ "Text " ^ a
+        | NoGroup => print_endline @@ "NoGroup"
+        }
+      )
+    }
+  );
 
 let fileR =
   Re_pcre.regexp
@@ -144,7 +140,7 @@ let hasHintRStr = {|^Hint: Did you mean |};
 
 let hasHintR = Re_pcre.regexp flags::[Re_pcre.(`MULTILINE)] hasHintRStr;
 
-let parse customErrorParsers::customErrorParsers err => {
+let parse ::customErrorParsers err => {
   /* we know whatever err is, it starts with "File: ..." because that's how `parse`
      is used */
   let err = String.trim err;
@@ -181,7 +177,7 @@ let parse customErrorParsers::customErrorParsers err => {
             };
           let range =
             normalizeCompilerLineColsToRange
-              fileLines::cachedContent lineRaw::lineNum col1Raw::col1Raw col2Raw::col2Raw;
+              fileLines::cachedContent lineRaw::lineNum ::col1Raw ::col2Raw;
           let warningCapture =
             switch (execMaybe {|^Warning (\d+): ([\s\S]+)|} body) {
             | None => (None, None)
@@ -194,11 +190,7 @@ let parse customErrorParsers::customErrorParsers err => {
               cachedContent,
               range,
               parsedContent:
-                ParseError.parse
-                  customErrorParsers::customErrorParsers
-                  errorBody::errorBody
-                  cachedContent::cachedContent
-                  range::range
+                ParseError.parse ::customErrorParsers ::errorBody ::cachedContent ::range
             }
           | (None, (Some code, Some warningBody)) =>
             let code = int_of_string code;
@@ -222,23 +214,17 @@ let parse customErrorParsers::customErrorParsers err => {
   }
 };
 
-/* let parse ~customErrorParsers err =
-   try
-     parse ~customErrorParsers err
-     |> TerminalReporter.prettyPrintParsedResult
-   with _ ->
-     (* final fallback, just print *)
-     Printf.sprintf "Something went wrong during error parsing.\n%s" err */
-let line_stream_of_channel channel => Stream.from (
-  fun _ =>
-    try (Some (input_line channel)) {
-    | End_of_file => None
-    }
-);
+let line_stream_of_channel channel =>
+  Stream.from (
+    fun _ =>
+      try (Some (input_line channel)) {
+      | End_of_file => None
+      }
+  );
 
 /* entry point, for convenience purposes for now. Theoretically the parser and
    the reporters are decoupled */
-let parseFromStdin customErrorParsers::customErrorParsers => {
+let parseFromStdin ::customErrorParsers => {
   let errBuffer = ref "";
   try {
     line_stream_of_channel stdin |>
@@ -264,7 +250,7 @@ let parseFromStdin customErrorParsers::customErrorParsers => {
              just assume here that this is also the beginning of a new error, unless
              a single error might span many (non-indented, god forbid) fileNames.
              Print out the current (previous) error and keep accumulating */
-          parse customErrorParsers::customErrorParsers errBuffer.contents |> TerminalReporter.prettyPrintParsedResult |> print_endline;
+          parse ::customErrorParsers errBuffer.contents |> TerminalReporter.prettyPrintParsedResult |> print_endline;
           errBuffer := line ^ "\n"
         | (_, _, _, true)
         | (_, _, true, _) =>
@@ -279,17 +265,17 @@ let parseFromStdin customErrorParsers::customErrorParsers => {
              errors provide non-indented messages... here's one such case */
           if (Re_pcre.pmatch rex::hasHintR line) {
             errBuffer := errBuffer.contents ^ line ^ "\n";
-            parse customErrorParsers::customErrorParsers errBuffer.contents |> TerminalReporter.prettyPrintParsedResult |> print_endline;
+            parse ::customErrorParsers errBuffer.contents |> TerminalReporter.prettyPrintParsedResult |> print_endline;
             errBuffer := ""
           } else {
-            parse customErrorParsers::customErrorParsers errBuffer.contents |> TerminalReporter.prettyPrintParsedResult |> print_endline;
+            parse ::customErrorParsers errBuffer.contents |> TerminalReporter.prettyPrintParsedResult |> print_endline;
             errBuffer := line ^ "\n"
           }
         }
     );
     /* might have accumulated a few more lines */
     if (String.trim errBuffer.contents != "") {
-      parse customErrorParsers::customErrorParsers errBuffer.contents |> TerminalReporter.prettyPrintParsedResult |> print_endline
+      parse ::customErrorParsers errBuffer.contents |> TerminalReporter.prettyPrintParsedResult |> print_endline
     };
     close_in stdin
   } {

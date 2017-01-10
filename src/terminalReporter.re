@@ -14,7 +14,7 @@ let numberOfDigits n => {
   !digits
 };
 
-let pad ch::ch=' ' content n => String.make (n - String.length content) ch ^ content;
+let pad ::ch=' ' content n => String.make (n - String.length content) ch ^ content;
 
 let startingSpacesCount str => {
   let rec startingSpacesCount' str idx =>
@@ -77,7 +77,7 @@ let _printFile
       if (startRow == endRow) {
         result := [
           pad (string_of_int (i + 1)) lineNumWidth ^
-          sep ^ highlight color::color first::startColumn last::endColumn currLine,
+          sep ^ highlight ::color first::startColumn last::endColumn currLine,
           ...!result
         ]
       } else if (
@@ -85,7 +85,7 @@ let _printFile
       ) {
         result := [
           pad (string_of_int (i + 1)) lineNumWidth ^
-          sep ^ highlight color::color first::startColumn currLine,
+          sep ^ highlight ::color first::startColumn currLine,
           ...!result
         ]
       } else if (
@@ -93,12 +93,12 @@ let _printFile
       ) {
         result := [
           pad (string_of_int (i + 1)) lineNumWidth ^
-          sep ^ highlight color::color last::endColumn currLine,
+          sep ^ highlight ::color last::endColumn currLine,
           ...!result
         ]
       } else {
         result := [
-          pad (string_of_int (i + 1)) lineNumWidth ^ sep ^ highlight color::color currLine,
+          pad (string_of_int (i + 1)) lineNumWidth ^ sep ^ highlight ::color currLine,
           ...!result
         ]
       }
@@ -109,7 +109,7 @@ let _printFile
   !result |> List.rev |> String.concat "\n"
 };
 
-let printFile isWarning::isWarning=false {cachedContent, filePath, range} => {
+let printFile ::isWarning=false {cachedContent, filePath, range} => {
   let ((startRow, startColumn), (endRow, endColumn)) = range;
   let filePathDisplay =
     if (startRow == endRow) {
