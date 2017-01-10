@@ -1,8 +1,6 @@
 errs
 asd.js
-_build/**
-!_build/top/app.out
-!_build/top/appIntermediate.out
+_build/
 .*
 .merlin
 a.out

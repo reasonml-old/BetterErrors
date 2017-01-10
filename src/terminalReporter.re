@@ -62,9 +62,9 @@ let _printFile
   /* ellipsis vertical separator to indicate "there are white spaces before" */
   let sep =
     if (minIndent == 0) {
-      " \226\148\130 "
+      " │ "
     } else {
-      " \226\148\134 "
+      " ┆ "
     };
   let startColumn = startColumn - minIndent;
   let endColumn = endColumn - minIndent;
