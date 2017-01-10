@@ -1,6 +1,6 @@
 {
   "name": "ocamlBetterErrors",
-  "version": "0.0.10",
+  "version": "0.1.0",
   "description": "Better errors for ocaml",
   "dependencies": {
     "@opam-alpha/re": "*",
@@ -13,8 +13,7 @@
     "url": "git+https://github.com/chenglou/BetterErrors.git"
   },
   "author": "chenglou",
-  "devDependencies": {
-  },
+  "devDependencies": {},
   "scripts": {
     "start": "eval $(dependencyEnv) && nopam && rebuild -pkg re.pcre -pkg unix src/berror.native",
     "test": "ocaml tests/test.ml",
