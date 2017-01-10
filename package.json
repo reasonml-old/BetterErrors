@@ -4,7 +4,10 @@
   "description": "Better errors for ocaml",
   "dependencies": {
     "fastrealpath": "^0.1.0",
-    "@opam-alpha/re": "*"
+    "@opam-alpha/re": "*",
+    "reason": "git://github.com/facebook/reason.git",
+    "dependency-env": "*",
+    "nopam": "*"
   },
   "repository": {
     "type": "git",
@@ -15,9 +18,6 @@
   },
   "author": "chenglou",
   "devDependencies": {
-    "dependency-env": "*",
-    "nopam": "*",
-    "reason": "git://github.com/facebook/reason.git"
   },
   "scripts": {
     "start": "eval $(dependencyEnv) && nopam && rebuild -pkg re.pcre -pkg unix src/berror.native",
