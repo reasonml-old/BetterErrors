@@ -3,7 +3,6 @@
   "version": "0.0.10",
   "description": "Better errors for ocaml",
   "dependencies": {
-    "fastrealpath": "^0.1.0",
     "@opam-alpha/re": "*",
     "reason": "git://github.com/facebook/reason.git",
     "dependency-env": "*",
@@ -12,9 +11,6 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/chenglou/BetterErrors.git"
-  },
-  "bin": {
-    "berror": "run"
   },
   "author": "chenglou",
   "devDependencies": {
