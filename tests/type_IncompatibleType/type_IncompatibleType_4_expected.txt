@@ -14,8 +14,8 @@ They will not be selected if the type becomes unknown.
 14 │ let asd: TopNotchModule.jeSuisStrings = ([31m[[[{nihao = 1}]]][0m: TopNotchModule.Nested.wow)
 
 [31mError[0m: The types don't match.
-[31mThis is:[0m TopNotchModule.[31mNested.wow[0m
-[32mWanted:[0m  TopNotchModule.[32mjeSuisStrings[0m
+[31mThis is:[0m [31mTopNotchModule.Nested.wow[0m
+[32mWanted:[0m  [32mTopNotchModule.jeSuisStrings[0m
 Extra info: Type
          TopNotchModule.myRecordListListList =
            TopNotchModule.myRecordListList list

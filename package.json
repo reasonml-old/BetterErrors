@@ -16,7 +16,7 @@
   "devDependencies": {},
   "scripts": {
     "start": "eval $(dependencyEnv) && nopam && rebuild -pkg re.pcre -pkg unix src/berror.native",
-    "test": "ocaml tests/test.ml",
+    "test": "npm run start && ocaml tests/test.ml",
     "postinstall": "npm start"
   },
   "exportedEnvVars": {

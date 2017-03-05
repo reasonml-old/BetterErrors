@@ -65,7 +65,7 @@ let () =
       (* special handling of the first item, specialTests *)
       let cmd = if i = 0 then List.nth specialTestsCommands (j - 1) else "ocamlc " ^ filename in
       (* expecting compiling errors in stderr; pipe to a file *)
-      ignore @@ Sys.command @@ Printf.sprintf "%s 2>&1 | ./_build/top/app.out > %s" cmd actualOutputName;
+      ignore @@ Sys.command @@ Printf.sprintf "%s 2>&1 | ./_build/src/berror.native > %s" cmd actualOutputName;
       (* open the produced error output *)
       let expected = readFile expectedOutputName in
       let actual = readFile actualOutputName in
