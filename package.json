@@ -4,7 +4,7 @@
   "description": "Better errors for ocaml",
   "dependencies": {
     "@opam-alpha/re": "*",
-    "reason": "git://github.com/facebook/reason.git",
+    "reason": "^1.9.0",
     "dependency-env": "*",
     "nopam": "*"
   },
