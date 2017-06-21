@@ -1,5 +1,9 @@
 **Work in progress!**
 
+### Setup
+
+To install BetterErrors we recommend installing [reason-cli](https://github.com/reasonml/reason-cli) which ships with BetterErrors by default.
+
 #### Before
 ![Before](https://cloud.githubusercontent.com/assets/1909539/13025465/4baf80c2-d1d6-11e5-8f88-1d7b8065567c.png)
 
@@ -11,11 +15,6 @@
 
 #### After
 ![Glorious After](https://cloud.githubusercontent.com/assets/1909539/13025492/a4895d30-d1d6-11e5-996a-b7e0e2ba63bf.png)
-
-
-```
-npm install -g ocamlBetterErrors
-```
 
 ```sh
 someCompilationCommand 2>&1 | berror
