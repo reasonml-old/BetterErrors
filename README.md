@@ -1,4 +1,9 @@
-**Work in progress!**
+## THIS REPO IS DEPRECATED
+
+BetterErrors is now built into [bsb](https://bucklescript.github.io/bucklescript/Manual.html#_bucklescript_build_system_code_bsb_code). You can enable it through adding `"bsc-flags": ["-bs-super-errors"]` in bsconfig.json. Accompanying blog post [here](https://reasonml.github.io/community/blog/#way-way-waaaay-nicer-error-messages).
+
+## === Old Setup ===
+
 
 ### Setup
 
